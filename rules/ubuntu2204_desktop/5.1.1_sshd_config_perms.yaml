@@ -1,0 +1,30 @@
+id: "5.1.1"
+title: "Ensure permissions on /etc/ssh/sshd_config are configured"
+description: >
+  The SSH daemon configuration file must be owned by root with restricted
+  permissions to prevent unauthorized modification of the SSH server's behaviour.
+rationale: >
+  If the sshd_config file is writable by non-root users, an attacker could
+  modify SSH settings to weaken authentication (e.g. enable PermitRootLogin,
+  disable public-key-only auth) without detection.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: high
+checks:
+  - type: file_permission
+    path: /etc/ssh/sshd_config
+    expected: "0600"
+    owner: root
+    group: root
+    op: equals
+remediation: >
+  Run: sudo chmod 600 /etc/ssh/sshd_config && sudo chown root:root /etc/ssh/sshd_config
+source: >
+  CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 5.1.1;
+  cross-referenced with reference/UBUNTU22-CIS-Audit/section_5/cis_5.1/5.1.1;
+  manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
