@@ -1,0 +1,31 @@
+id: "1.5.1"
+title: "Ensure address space layout randomization (ASLR) is enabled"
+description: >
+  Address space layout randomization (ASLR) randomizes the positions of code,
+  libraries, heap, and stack in a process's address space. This makes many
+  exploits significantly harder to execute reliably.
+rationale: >
+  Randomizing virtual address space placement makes it difficult for an attacker
+  to predict the location of code or data, mitigating entire classes of memory
+  corruption exploits (return-to-libc, ROP chains, heap sprays).
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: sysctl
+    key: kernel.randomize_va_space
+    expected: "2"
+    op: equals
+remediation: >
+  Set kernel.randomize_va_space = 2 in /etc/sysctl.conf or a file under
+  /etc/sysctl.d/ (e.g. /etc/sysctl.d/60-attestor-aslr.conf), then apply
+  immediately: sudo sysctl -w kernel.randomize_va_space=2
+source: >
+  CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 1.5.1;
+  cross-referenced with reference/UBUNTU22-CIS-Audit/section_1/cis_1.5/cis_1.5.1.yml;
+  manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
