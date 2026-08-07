@@ -1,0 +1,19 @@
+# FIXTURE — for validator testing only. NOT a real CIS control.
+id: "9.9.9.9"
+title: "EXAMPLE RULE — not a real control (valid fixture)"
+description: "Fake control used to prove the validator accepts a well-formed rule."
+rationale: "Testing only."
+benchmark: "EXAMPLE Benchmark — not real"
+benchmark_version: "v0.0.0"
+level: 1
+profile:
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: sysctl
+    key: example.fake.key
+    expected: "1"
+    op: equals
+remediation: "This is a fake remediation for the example fixture."
+source: "manual verification on EXAMPLE-OS 2026-08-07"

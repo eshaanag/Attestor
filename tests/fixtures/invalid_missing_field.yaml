@@ -1,0 +1,17 @@
+# FIXTURE — for validator testing only. NOT a real CIS control.
+# INVALID: missing the required "source" field.
+id: "9.9.9.9"
+title: "EXAMPLE RULE — not a real control (missing required field)"
+benchmark: "EXAMPLE Benchmark — not real"
+benchmark_version: "v0.0.0"
+level: 1
+profile:
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: sysctl
+    key: example.fake.key
+    expected: "1"
+    op: equals
+remediation: "Fake remediation; this fixture omits 'source' on purpose."

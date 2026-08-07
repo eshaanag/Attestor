@@ -1,0 +1,19 @@
+# FIXTURE — for validator testing only. NOT a real CIS control.
+# INVALID: "id" does not match the CIS control-ID pattern ^[0-9]+(\.[0-9]+)*$.
+id: "9.9.9.x"
+title: "EXAMPLE RULE — not a real control (bad id format)"
+benchmark: "EXAMPLE Benchmark — not real"
+benchmark_version: "v0.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: registry
+    path: 'HKLM:\SOFTWARE\Example\Fake'
+    name: ExampleValue
+    expected: 1
+    op: equals
+remediation: "Fake remediation; this fixture uses an invalid id on purpose."
+source: "manual verification on EXAMPLE-OS 2026-08-07"
