@@ -1,0 +1,30 @@
+id: "3.3.1.10"
+title: "Ensure secure ICMP redirects are not accepted (all interfaces)"
+description: >
+  Secure ICMP redirects are the same as ICMP redirects except they originate from
+  a gateway listed in the default gateway list. Even these should be rejected on
+  non-router systems to prevent routing-table manipulation.
+rationale: >
+  Accepting ICMP redirects — even from known gateways — allows an attacker who
+  has compromised a gateway to silently redirect traffic through a malicious path.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: sysctl
+    key: net.ipv4.conf.all.secure_redirects
+    expected: "0"
+    op: equals
+remediation: >
+  Set net.ipv4.conf.all.secure_redirects = 0 in
+  /etc/sysctl.d/60-attestor-network.conf, then:
+  sudo sysctl -w net.ipv4.conf.all.secure_redirects=0
+source: >
+  CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.10;
+  cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.10.yml;
+  manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
