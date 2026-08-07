@@ -1,0 +1,30 @@
+id: "1.5.3"
+title: "Ensure core dumps are restricted"
+description: >
+  Setting fs.suid_dumpable to 0 prevents core dumps from SUID programs.
+  Core dumps from privileged programs can contain sensitive data (credentials,
+  encryption keys) and should not be written to disk.
+rationale: >
+  A SUID program's core dump may expose privileged memory to unprivileged users.
+  Disabling SUID core dumps limits this attack surface.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: sysctl
+    key: fs.suid_dumpable
+    expected: "0"
+    op: equals
+remediation: >
+  Set fs.suid_dumpable = 0 in /etc/sysctl.conf or a file under /etc/sysctl.d/
+  (e.g. /etc/sysctl.d/60-attestor-coredump.conf), then apply:
+  sudo sysctl -w fs.suid_dumpable=0
+source: >
+  CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 1.5.3;
+  cross-referenced with reference/UBUNTU22-CIS-Audit/section_1/cis_1.5/cis_1.5.3.yml;
+  manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
