@@ -1,0 +1,28 @@
+id: "3.3.1.1"
+title: "Ensure ip forwarding is disabled"
+description: >
+  IP forwarding allows the system to route packets between interfaces. Unless the
+  system is functioning as a router, this should be disabled.
+rationale: >
+  A non-router system with IP forwarding enabled can be used as a pivot point for
+  lateral movement or to bypass network segmentation controls.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: sysctl
+    key: net.ipv4.ip_forward
+    expected: "0"
+    op: equals
+remediation: >
+  Set net.ipv4.ip_forward = 0 in /etc/sysctl.d/60-attestor-network.conf, then:
+  sudo sysctl -w net.ipv4.ip_forward=0
+source: >
+  CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.1;
+  cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.1.yml;
+  manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
