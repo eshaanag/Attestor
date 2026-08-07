@@ -70,7 +70,13 @@ attestor/
 
 ## Status
 
-Early development — structure only, no functional code yet.
+| Target | Engine | Controls verified | Status |
+|--------|--------|-------------------|--------|
+| Ubuntu 22.04 Desktop (Level 1) | `engines/linux/run_audit.py` | 10 (sysctl + file_permission) | ✅ In progress — engine + 10 controls pass/fail verified on real VM |
+| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 0 | Planned (Phase 2) |
+
+**Phase 0** (schema + validator) and **Phase 1** (Linux engine) complete.
+Next: Phase 2 (Windows engine), then Phase 3 (report generation).
 
 ---
 

@@ -16,7 +16,7 @@ Evidence = file path and/or commit that proves the claim.
 |---|---|---|---|
 | Audit Windows 11 (Standalone) vs CIS | PowerShell engine (`registry`, `secpol`, `account_policy`, `audit_policy`, `service_state`) + `windows11_standalone` rule pack | planned | schema check-type enum in `schema/rule_schema.json` |
 | Audit Windows 11 (Enterprise) vs CIS | Same engine; add `windows11_enterprise` rule pack (additive) | planned (Phase 2+) | deferral noted in `PROJECT_CONTEXT.md` |
-| Audit Ubuntu 22.04 Desktop vs CIS | Python engine (`kernel_module`, `sysctl`, `file_permission`, `package_installed`, `config_grep`, `service_state`) + `ubuntu2204_desktop` pack | planned | schema check-type enum; `docs/architecture.md` |
+| Audit Ubuntu 22.04 Desktop vs CIS | Python engine (`kernel_module`, `sysctl`, `file_permission`, `package_installed`, `config_grep`, `service_state`) + `ubuntu2204_desktop` pack | in progress (10/10 L1 verified, Phase 5 targets 30-40) | `engines/linux/run_audit.py` (d0623b2); 10 rule commits (4799f67–cc702bc) |
 | Audit RHEL 8/9, Ubuntu 20.04 / Server | Additive rule packs on the same engine/schema | planned (Phase 2+) | deferral rationale in `PROJECT_CONTEXT.md` |
 | GUI-based solution | Standalone offline HTML report + **local web GUI (Phase 7, round-1)**: FastAPI + Jinja2 + htmx, "Run audit" button with live NDJSON results | planned (Phase 7) | `docs/tech-stack.md` §8; AGENTS.md Phase 7 |
 | Generates findings reports | Jinja2 → self-contained offline HTML; per-control pass/fail/error/manual/NA + remediation + CIS ID + level | planned | `docs/architecture.md` §3 |
