@@ -22,8 +22,8 @@ Evidence = file path and/or commit that proves the claim.
 | Generates findings reports | Jinja2 → self-contained offline HTML; per-control pass/fail/error/manual/NA + remediation + CIS ID + level | planned | `docs/architecture.md` §3 |
 | Customizable per org needs | Rule-as-data YAML packs; `--include`/`--exclude`/`--level` filtering (Phase 6) | planned | `schema/rule_schema.json`; AGENTS.md Phase 6 |
 | Scales to large/diverse environments | Fleet backend + dashboard (Phase 2 stretch); honest about free-tier DB limits | planned (stretch) | `docs/tech-stack.md` §6 |
-| Reliable & accurate deviation detection | Fail-closed schema validation; no default-pass path; privilege detection; error≠pass | in progress | `schema/rule_schema.json`, `tests/validate_rules.py` (commit pending) |
-| Easy to update as benchmarks evolve | Purely additive rule packs; `benchmark_version` per rule; schema-gated authoring | in progress | `schema/rule_schema.json`, `docs/rule-schema.md` (commit pending) |
+| Reliable & accurate deviation detection | Fail-closed schema validation; no default-pass path; privilege detection; error≠pass | in progress | `schema/rule_schema.json` (d59cfac), `tests/validate_rules.py` (350c08a) |
+| Easy to update as benchmarks evolve | Purely additive rule packs; `benchmark_version` per rule; schema-gated authoring | in progress | `schema/rule_schema.json` (d59cfac), `docs/rule-schema.md` (7af47ab) |
 | Preferred languages (PowerShell / Python) | PowerShell (Windows), Python (Linux) — exactly as PS recommends | planned | `docs/tech-stack.md` §1–2 |
 
 ## B. Blockchain theme (theme is "Blockchain & Cybersecurity")
