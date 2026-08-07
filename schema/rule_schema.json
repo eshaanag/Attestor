@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://attestor.local/schema/rule_schema.json",
+  "title": "Attestor CIS Rule",
+  "description": "Schema for a single Attestor CIS benchmark control (rule YAML). MVP scope: Windows 11 Standalone + Ubuntu 22.04 Desktop, Level 1. See docs/rule-schema.md for field intent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "benchmark",
+    "benchmark_version",
+    "level",
+    "profile",
+    "automated",
+    "checks",
+    "remediation",
+    "source",
+    "severity"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "CIS control ID in dotted-number form, e.g. \"1.1.1.1\".",
+      "pattern": "^[0-9]+(\\.[0-9]+)*$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable control title."
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional. What the control checks and why (from the benchmark)."
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Optional. Security reasoning for the control."
+    },
+    "benchmark": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Name of the source CIS benchmark, e.g. \"CIS Ubuntu Linux 22.04 LTS Benchmark\"."
+    },
+    "benchmark_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Version of the source benchmark, e.g. \"v2.0.0\"."
+    },
+    "level": {
+      "type": "integer",
+      "enum": [1, 2],
+      "description": "CIS profile level: 1 or 2."
+    },
+    "profile": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["server", "workstation", "standalone", "enterprise"]
+      },
+      "description": "Applicable CIS profiles for this control."
+    },
+    "automated": {
+      "type": "boolean",
+      "description": "true if programmatically checkable; false => manual review only (checks may be empty)."
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["low", "medium", "high"],
+      "description": "Severity for report prioritization (borrowed from ComplianceAsCode)."
+    },
+    "checks": {
+      "type": "array",
+      "description": "Ordered list of checks; control passes only if ALL pass. May be empty only when automated is false.",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Check dispatcher type. MVP targets only (Win11 Standalone + Ubuntu 22.04).",
+            "enum": [
+              "kernel_module",
+              "sysctl",
+              "file_permission",
+              "package_installed",
+              "config_grep",
+              "service_state",
+              "registry",
+              "account_policy",
+              "secpol",
+              "audit_policy"
+            ]
+          },
+          "op": {
+            "type": "string",
+            "enum": ["equals", "matches", "absent", "present"],
+            "description": "Comparison operator for the check (type-specific params carry the rest)."
+          }
+        }
+      }
+    },
+    "remediation": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Actionable fix text shown in the report."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 10,
+      "description": "Traceable provenance: CIS benchmark section reference or \"manual verification on <OS> <date>\". Must not be empty or generic."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "automated": { "const": true } },
+        "required": ["automated"]
+      },
+      "then": {
+        "properties": { "checks": { "minItems": 1 } }
+      }
+    }
+  ]
+}
