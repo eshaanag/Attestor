@@ -21,6 +21,20 @@
 
 ---
 
+## Prerequisites
+
+- **Python 3.10+** — required on **both** Windows and Linux hosts. The Linux
+  audit engine is Python; on Windows the audit engine is native **PowerShell**,
+  but **report generation and the tamper-evident ledger are shared Python** and
+  run on both platforms, so Python is required everywhere Attestor produces or
+  chains a report.
+- **PowerShell 5.1+** — required on Windows hosts for the audit engine (ships
+  with Windows 11; no extra install).
+- Python packages (MVP): `pyyaml`, `jsonschema`, `jinja2` (see
+  `requirements.txt`). No external PowerShell modules are needed for the MVP.
+
+---
+
 ## Folder Structure
 
 ```

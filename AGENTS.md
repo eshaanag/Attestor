@@ -49,8 +49,8 @@ attestor/
 ├── schema/              rule_schema.json — validates every rule file
 ├── report/              Jinja2 HTML report generator
 ├── ledger/              SHA-256 hash chain (tamper-evident reports)
-├── backend/             [phase 2] FastAPI fleet collector
-├── dashboard/           [phase 2] React fleet dashboard
+├── backend/             [stretch] FastAPI fleet collector
+├── dashboard/           local web GUI (round-1) + [stretch] fleet dashboard — FastAPI+Jinja2+htmx
 ├── docs/                architecture.md, rule-schema.md
 ├── tests/               rule validation + engine unit tests
 └── reference/           cloned comparison repos — gitignored, never committed
@@ -111,16 +111,27 @@ done. Each phase has an exit condition — do not move on until it's met.
   engines, consistent flag behavior across PowerShell and Python.
   Exit: same flags produce equivalent filtered output on both engines.
 
-**PHASE 7 — [STRETCH] FLEET BACKEND + DASHBOARD**
-  Only start this if Phases 0-6 are fully done and verified. Do not start
-  early "to save time" — an unfinished fleet mode demoing worse than a
-  rock-solid standalone tool.
+**PHASE 7 — LOCAL WEB GUI (round-1 scope, NOT stretch)**
+  Minimal local web GUI (FastAPI + Jinja2 + htmx): a "Run audit" button that
+  invokes the engine, streams live per-check results via the engine's NDJSON
+  output, and links to the generated HTML report. Satisfies the PS's explicit
+  "GUI-based solution" requirement. The same stack becomes the foundation for
+  the Phase 8 fleet dashboard, so it is not throwaway work.
+  Exit: from a browser on the local host, clicking "Run audit" runs the real
+  engine, shows live pass/fail/error results as checks complete, and links to
+  a generated report that opens offline.
 
-**PHASE 8 — [STRETCH] TESTNET ANCHORING**
+**PHASE 8 — [STRETCH] FLEET BACKEND + DASHBOARD**
+  FastAPI collector + a server-rendered FastAPI + Jinja2 + htmx fleet
+  dashboard (NOT a React SPA). Only start this if Phases 0-7 are fully done
+  and verified. Do not start early "to save time" — an unfinished fleet mode
+  demos worse than a rock-solid standalone tool.
+
+**PHASE 9 — [STRETCH] TESTNET ANCHORING**
   Periodic ledger root hash → Polygon Amoy testnet contract. Only after
   Phase 4's local chain is fully working and tested.
 
-**PHASE 9 — SHIP**
+**PHASE 10 — SHIP**
   Full re-run of every control against clean VMs, demo script locked,
   fallback video recorded, README finalized.
 
