@@ -1,0 +1,29 @@
+id: "3.3.1.6"
+title: "Ensure bogus ICMP responses are ignored"
+description: >
+  Setting icmp_ignore_bogus_error_responses to 1 causes the kernel to ignore
+  ICMP error responses to frames sent to broadcast/multicast addresses.
+rationale: >
+  Bogus ICMP error responses can be used for reconnaissance or to fill logs,
+  creating noise that hides real attacks.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: sysctl
+    key: net.ipv4.icmp_ignore_bogus_error_responses
+    expected: "1"
+    op: equals
+remediation: >
+  Set net.ipv4.icmp_ignore_bogus_error_responses = 1 in
+  /etc/sysctl.d/60-attestor-network.conf, then:
+  sudo sysctl -w net.ipv4.icmp_ignore_bogus_error_responses=1
+source: >
+  CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.6;
+  cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.6.yml;
+  manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
