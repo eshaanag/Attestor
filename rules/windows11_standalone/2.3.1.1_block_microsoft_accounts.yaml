@@ -1,0 +1,31 @@
+id: "2.3.1.1"
+title: "Ensure 'Accounts: Block Microsoft accounts' is set to 'Users can't add or log on with Microsoft accounts'"
+description: >
+  This policy setting determines whether users can add new Microsoft accounts on
+  the computer. Setting this to 3 prevents users from creating new Microsoft
+  accounts and blocks sign-in with existing ones.
+rationale: >
+  Blocking Microsoft accounts reduces the attack surface by preventing cloud-
+  connected authentication on standalone/domain-joined systems where only local
+  or AD accounts should be used.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: medium
+checks:
+  - type: registry
+    path: "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"
+    name: NoConnectedUser
+    expected: "3"
+    op: equals
+remediation: >
+  Set the registry value: HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser (REG_DWORD) = 3.
+  Or via Group Policy: Computer Configuration > Windows Settings > Security Settings >
+  Local Policies > Security Options > 'Accounts: Block Microsoft accounts' = 'Users can't add or log on with Microsoft accounts'.
+source: >
+  CIS Microsoft Windows 11 Standalone Benchmark v3.0.0, section 2.3.1.1;
+  cross-referenced with reference/Windows-11-CIS/tasks/section_2/cis_2.3.1.x.yml;
+  manually verified on Windows 11 Pro VM (192.168.64.4) 2026-08-08
