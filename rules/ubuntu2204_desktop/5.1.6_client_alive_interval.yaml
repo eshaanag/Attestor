@@ -1,0 +1,22 @@
+id: "5.1.6"
+title: "Ensure sshd ClientAliveInterval is configured"
+rationale: >
+  Idle SSH sessions left open can be hijacked. ClientAliveInterval terminates idle connections.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: config_grep
+    path: /etc/ssh/sshd_config
+    pattern: "^ClientAliveInterval\\s+[1-9]"
+    op: matches
+    ignore_comments: true
+remediation: >
+  Set 'ClientAliveInterval 300' (or <=300) in /etc/ssh/sshd_config
+source: >
+  Control ID 5.1.6, cross-referenced via reference/UBUNTU22-CIS-Audit (which targets CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic) 2026-08-08.
