@@ -283,13 +283,136 @@ function Invoke-StubCheck {
         -Error "check_type '$CheckType' is not implemented yet (Phase 2 skeleton)"
 }
 
+function Invoke-AuditPolicyCheck {
+    param([string]$RuleId, [int]$Idx, [hashtable]$Check)
+
+    $subcategory = $Check["subcategory"]
+    $expected = $Check["expected"]  # e.g. "Success and Failure", "Success", "No Auditing"
+    $op = if ($Check.ContainsKey("op")) { $Check["op"] } else { "equals" }
+
+    if (-not $subcategory) {
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+            -Actual $null -Expected $expected `
+            -Evidence "audit_policy check missing required 'subcategory' param" `
+            -Error "malformed rule: 'subcategory' is required for audit_policy"
+    }
+
+    $evidence = "auditpol /get /subcategory:'$subcategory'"
+    try {
+        $output = & auditpol /get /subcategory:"$subcategory" 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+                -Actual $null -Expected $expected `
+                -Evidence $evidence -Error "auditpol failed: $output"
+        }
+
+        # Parse the output: find the line with the subcategory name and extract the setting
+        $actual = $null
+        foreach ($line in $output) {
+            if ($line -match "^\s+.+\s+(Success and Failure|Success|Failure|No Auditing)\s*$") {
+                $actual = $Matches[1].Trim()
+                break
+            }
+        }
+
+        if (-not $actual) {
+            return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+                -Actual $null -Expected $expected `
+                -Evidence "$evidence => $output" -Error "could not parse auditpol output"
+        }
+    }
+    catch {
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+            -Actual $null -Expected $expected `
+            -Evidence $evidence -Error $_.Exception.Message
+    }
+
+    $evidence = "auditpol /get '$subcategory' => $actual"
+
+    switch ($op) {
+        "equals" {
+            $status = if ($actual -eq [string]$expected) { "pass" } else { "fail" }
+        }
+        "matches" {
+            $status = if ($actual -match [string]$expected) { "pass" } else { "fail" }
+        }
+        default {
+            return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+                -Actual $actual -Expected $expected `
+                -Evidence $evidence -Error "op '$op' not implemented for audit_policy"
+        }
+    }
+
+    return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status $status `
+        -Actual $actual -Expected $expected -Evidence $evidence
+}
+
+function Invoke-ServiceStateCheck {
+    param([string]$RuleId, [int]$Idx, [hashtable]$Check)
+
+    $name = $Check["name"]
+    $expected = $Check["expected"]  # "Disabled", "Manual", "Automatic"
+    $op = if ($Check.ContainsKey("op")) { $Check["op"] } else { "equals" }
+
+    if (-not $name) {
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+            -Actual $null -Expected $expected `
+            -Evidence "service_state check missing required 'name' param" `
+            -Error "malformed rule: 'name' is required for service_state"
+    }
+
+    $evidence = "Get-Service -Name '$name'"
+    try {
+        $svc = Get-Service -Name $name -ErrorAction Stop
+        $actual = [string]$svc.StartType
+    }
+    catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
+        # Service not found — if we expect Disabled, a non-existent service can't run → pass
+        if ($expected -eq "Disabled") {
+            return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "pass" `
+                -Actual "not-found" -Expected $expected `
+                -Evidence "$evidence => service not found (cannot run)"
+        }
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "fail" `
+            -Actual "not-found" -Expected $expected `
+            -Evidence "$evidence => service not found"
+    }
+    catch {
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+            -Actual $null -Expected $expected `
+            -Evidence $evidence -Error $_.Exception.Message
+    }
+
+    $evidence = "Get-Service '$name' => StartType=$actual"
+
+    switch ($op) {
+        "equals" {
+            $status = if ($actual -eq [string]$expected) { "pass" } else { "fail" }
+        }
+        "matches" {
+            $status = if ($actual -match [string]$expected) { "pass" } else { "fail" }
+        }
+        default {
+            return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
+                -Actual $actual -Expected $expected `
+                -Evidence $evidence -Error "op '$op' not implemented for service_state"
+        }
+    }
+
+    return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status $status `
+        -Actual $actual -Expected $expected -Evidence $evidence
+}
+
 # Dispatch table: check_type → function.
+# NOTE: account_policy reuses Invoke-SecpolCheck — same secedit mechanism,
+# same [System Access] section. Schema keeps both names for CIS organizational
+# clarity, but the code path is shared (see PROGRESS.md brainstorm).
 $script:DISPATCH = @{
     "registry"         = { param($rid, $idx, $ck) Invoke-RegistryCheck $rid $idx $ck }
     "secpol"           = { param($rid, $idx, $ck) Invoke-SecpolCheck $rid $idx $ck }
-    "account_policy"   = { param($rid, $idx, $ck) Invoke-StubCheck "account_policy" $rid $idx $ck }
-    "audit_policy"     = { param($rid, $idx, $ck) Invoke-StubCheck "audit_policy" $rid $idx $ck }
-    "service_state"    = { param($rid, $idx, $ck) Invoke-StubCheck "service_state" $rid $idx $ck }
+    "account_policy"   = { param($rid, $idx, $ck) Invoke-SecpolCheck $rid $idx $ck }
+    "audit_policy"     = { param($rid, $idx, $ck) Invoke-AuditPolicyCheck $rid $idx $ck }
+    "service_state"    = { param($rid, $idx, $ck) Invoke-ServiceStateCheck $rid $idx $ck }
 }
 
 function Invoke-Check {
