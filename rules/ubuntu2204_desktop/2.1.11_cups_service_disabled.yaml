@@ -1,0 +1,23 @@
+id: "2.1.11"
+title: "Ensure print server services are not in use (service)"
+description: >
+  If cups is installed, its service should at minimum be disabled or masked to prevent it from running.
+rationale: >
+  A running cups service exposes a network-accessible attack surface unnecessarily.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: service_state
+    name: cups
+    expected: disabled
+    op: equals
+remediation: >
+  Run: sudo systemctl disable --now cups && sudo systemctl mask cups
+source: >
+  Control ID 2.1.11, cross-referenced via reference/UBUNTU22-CIS-Audit (which targets CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic) 2026-08-08.
