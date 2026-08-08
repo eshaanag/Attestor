@@ -22,7 +22,7 @@ Evidence = file path and/or commit that proves the claim.
 | Generates findings reports | Jinja2 → self-contained offline HTML; per-control pass/fail/error/manual/NA + remediation + CIS ID + level; failures sorted first; incomplete-run flagged; accessibility handled | done | `report/generate_report.py` (da70d39); `reports/sample-report.html` (bbd51cd) |
 | Customizable per org needs | Rule-as-data YAML packs; `--include`/`--exclude`/`--level` filtering (Phase 6) | planned | `schema/rule_schema.json`; AGENTS.md Phase 6 |
 | Scales to large/diverse environments | Fleet backend + dashboard (Phase 2 stretch); honest about free-tier DB limits | planned (stretch) | `docs/tech-stack.md` §6 |
-| Reliable & accurate deviation detection | Fail-closed schema validation; no default-pass path; privilege detection; error≠pass | in progress | `schema/rule_schema.json` (d59cfac), `tests/validate_rules.py` (350c08a) |
+| Reliable & accurate deviation detection | Fail-closed schema validation; no default-pass path; privilege detection; error≠pass; all 10 check_types proven on real hardware (Linux: sysctl, file_permission, kernel_module, package_installed, service_state, config_grep; Windows: registry, secpol, account_policy, audit_policy, service_state) | in progress | All dispatchers VM-verified (Phase 5A commits ce10008–d99de57); 28 rules total |
 | Easy to update as benchmarks evolve | Purely additive rule packs; `benchmark_version` per rule; schema-gated authoring | in progress | `schema/rule_schema.json` (d59cfac), `docs/rule-schema.md` (7af47ab) |
 | Preferred languages (PowerShell / Python) | PowerShell (Windows), Python (Linux) — exactly as PS recommends | planned | `docs/tech-stack.md` §1–2 |
 
