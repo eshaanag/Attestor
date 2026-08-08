@@ -101,6 +101,18 @@ python3 engines/linux/run_audit.py --exclude 2.1.11
 
 **Filter precedence:** `--include` narrows the rule set first (only listed IDs run), then `--exclude` removes from that set. `--level` filters independently (ANDed).
 
+### Local Web GUI
+
+```bash
+# Start the GUI server (runs on the machine being audited)
+python3 dashboard/app.py
+# Open http://localhost:8000 in a browser
+# Select target + level, click "Run Audit"
+# Watch live pass/fail results stream in, then click the report link
+```
+
+Requires: `pip install fastapi uvicorn` (in addition to base requirements).
+
 ---
 
 ## License
