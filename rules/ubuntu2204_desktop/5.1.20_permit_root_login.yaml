@@ -1,0 +1,24 @@
+id: "5.1.20"
+title: "Ensure sshd PermitRootLogin is disabled"
+description: >
+  The PermitRootLogin directive specifies whether root can log in directly via SSH.
+rationale: >
+  Allowing root login via SSH enables brute-force attacks directly against the most privileged account.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: high
+checks:
+  - type: config_grep
+    path: /etc/ssh/sshd_config
+    pattern: "^PermitRootLogin\\s+no"
+    op: matches
+    ignore_comments: true
+remediation: >
+  Set 'PermitRootLogin no' in /etc/ssh/sshd_config, then: sudo systemctl restart sshd
+source: >
+  Control ID 5.1.20, cross-referenced via reference/UBUNTU22-CIS-Audit (which targets CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic) 2026-08-08.
