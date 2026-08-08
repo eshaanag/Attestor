@@ -1,0 +1,22 @@
+id: "1.1.1.1"
+title: "Ensure cramfs kernel module is not available"
+description: >
+  The cramfs filesystem is a compressed read-only filesystem. Disabling it reduces attack surface by preventing exploitation of vulnerabilities in unused filesystem drivers.
+rationale: >
+  Removing support for unneeded filesystem types reduces the local attack surface of the system.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: kernel_module
+    name: cramfs
+    op: absent
+remediation: >
+  Create /etc/modprobe.d/CIS.conf with 'install cramfs /bin/false' and 'blacklist cramfs', then run: rmmod cramfs 2>/dev/null
+source: >
+  Control ID 1.1.1.1, cross-referenced via reference/UBUNTU22-CIS-Audit (which targets CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic) 2026-08-08.
