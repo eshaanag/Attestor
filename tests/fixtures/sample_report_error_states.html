@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attestor CIS Audit Report — Eshaans-MacBook-Pro.local (2026-08-08T09:08:16Z)</title>
+<style>
+:root {
+  --pass: #1a7f37; --fail: #cf222e; --error: #9a6700;
+  --manual: #0969da; --na: #656d76;
+  --bg: #ffffff; --fg: #1f2328; --border: #d0d7de;
+  --header-bg: #f6f8fa; --card-bg: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+       color: var(--fg); background: var(--bg); line-height: 1.5; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+.header { background: var(--header-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; margin-bottom: 1.5rem; }
+.header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; margin-top: 0.75rem; }
+.header-grid dt { font-weight: 600; font-size: 0.85rem; color: #656d76; }
+.header-grid dd { font-size: 0.95rem; }
+.incomplete-banner { background: #fff8c5; border: 2px solid #d4a72c; border-radius: 6px;
+                     padding: 1rem; margin-bottom: 1.5rem; font-weight: 600; text-align: center; }
+.summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.summary-item { padding: 0.75rem 1.25rem; border-radius: 6px; border: 1px solid var(--border);
+                text-align: center; min-width: 100px; }
+.summary-item .count { font-size: 1.75rem; font-weight: 700; }
+.summary-item .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.s-pass { border-color: var(--pass); } .s-pass .count { color: var(--pass); }
+.s-fail { border-color: var(--fail); } .s-fail .count { color: var(--fail); }
+.s-error { border-color: var(--error); } .s-error .count { color: var(--error); }
+.s-manual { border-color: var(--manual); } .s-manual .count { color: var(--manual); }
+.s-na { border-color: var(--na); } .s-na .count { color: var(--na); }
+.control { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem;
+           padding: 1rem; background: var(--card-bg); }
+.control-header { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px;
+         font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.badge-pass { background: #dafbe1; color: var(--pass); }
+.badge-fail { background: #ffebe9; color: var(--fail); }
+.badge-error { background: #fff8c5; color: var(--error); }
+.badge-manual { background: #ddf4ff; color: var(--manual); }
+.badge-not_applicable { background: #eaeef2; color: var(--na); }
+.badge-severity { font-size: 0.7rem; padding: 0.1rem 0.4rem; border: 1px solid var(--border); }
+.control-id { font-weight: 700; font-family: monospace; font-size: 0.9rem; }
+.control-title { flex: 1; }
+.control-details { margin-top: 0.75rem; font-size: 0.9rem; }
+.control-details dt { font-weight: 600; margin-top: 0.5rem; }
+.control-details dd { margin-left: 1rem; white-space: pre-wrap; word-break: break-word; }
+.evidence-block { background: #f6f8fa; border: 1px solid var(--border); border-radius: 4px;
+                  padding: 0.5rem 0.75rem; font-family: monospace; font-size: 0.8rem;
+                  overflow-x: auto; margin-top: 0.25rem; }
+footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);
+         font-size: 0.8rem; color: #656d76; text-align: center; }
+@media (max-width: 600px) { .header-grid { grid-template-columns: 1fr; } .summary { flex-direction: column; } }
+/* Print styles */
+@media print { body { padding: 0.5rem; } .control { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<h1>Attestor CIS Compliance Report</h1>
+
+<div class="header">
+  <strong>CIS Ubuntu Linux 22.04 LTS Benchmark</strong> v2.0.0
+  <dl class="header-grid">
+    <dt>Host</dt><dd>Eshaans-MacBook-Pro.local</dd>
+    <dt>OS</dt><dd>Darwin 25.5.0</dd>
+    <dt>Kernel / Build</dt><dd>25.5.0</dd>
+    <dt>Architecture</dt><dd>arm64</dd>
+    <dt>Environment</dt><dd>native</dd>
+    <dt>Elevated</dt><dd>No</dd>
+    <dt>User</dt><dd>eshaanog</dd>
+    <dt>Engine</dt><dd>linux v0.1.0</dd>
+    <dt>Run started</dt><dd>2026-08-08T09:08:16Z</dd>
+    <dt>Run finished</dt><dd>2026-08-08T09:08:16Z</dd>
+    <dt>Controls evaluated</dt><dd>10 / 10</dd>
+  </dl>
+</div>
+
+
+
+<h2>Summary</h2>
+<div class="summary" role="group" aria-label="Compliance summary counts">
+  <div class="summary-item s-pass"><div class="count">0</div><div class="label">Pass</div></div>
+  <div class="summary-item s-fail"><div class="count">1</div><div class="label">Fail</div></div>
+  <div class="summary-item s-error"><div class="count">9</div><div class="label">Error</div></div>
+  <div class="summary-item s-manual"><div class="count">0</div><div class="label">Manual</div></div>
+  <div class="summary-item s-na"><div class="count">0</div><div class="label">N/A</div></div>
+</div>
+
+<h2>Controls (10 total — failures &amp; errors first)</h2>
+
+<div class="control" id="ctrl-1.5.1">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">1.5.1</span>
+    <span class="control-title">Ensure address space layout randomization (ASLR) is enabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;kernel.randomize_va_space&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set kernel.randomize_va_space = 2 in /etc/sysctl.conf or a file under /etc/sysctl.d/ (e.g. /etc/sysctl.d/60-attestor-aslr.conf), then apply immediately: sudo sysctl -w kernel.randomize_va_space=2
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 1.5.1; cross-referenced with reference/UBUNTU22-CIS-Audit/section_1/cis_1.5/cis_1.5.1.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-1.5.2">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">1.5.2</span>
+    <span class="control-title">Ensure ptrace_scope is restricted</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;kernel.yama.ptrace_scope&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set kernel.yama.ptrace_scope = 1 (or higher) in /etc/sysctl.conf or a file under /etc/sysctl.d/ (e.g. /etc/sysctl.d/60-attestor-ptrace.conf), then apply: sudo sysctl -w kernel.yama.ptrace_scope=1
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 1.5.2; cross-referenced with reference/UBUNTU22-CIS-Audit/section_1/cis_1.5/cis_1.5.2.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-1.5.3">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">1.5.3</span>
+    <span class="control-title">Ensure core dumps are restricted</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;fs.suid_dumpable&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set fs.suid_dumpable = 0 in /etc/sysctl.conf or a file under /etc/sysctl.d/ (e.g. /etc/sysctl.d/60-attestor-coredump.conf), then apply: sudo sysctl -w fs.suid_dumpable=0
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 1.5.3; cross-referenced with reference/UBUNTU22-CIS-Audit/section_1/cis_1.5/cis_1.5.3.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-3.3.1.1">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">3.3.1.1</span>
+    <span class="control-title">Ensure ip forwarding is disabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;net.ipv4.ip_forward&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set net.ipv4.ip_forward = 0 in /etc/sysctl.d/60-attestor-network.conf, then: sudo sysctl -w net.ipv4.ip_forward=0
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.1; cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.1.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-3.3.1.10">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">3.3.1.10</span>
+    <span class="control-title">Ensure secure ICMP redirects are not accepted (all interfaces)</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;net.ipv4.conf.all.secure_redirects&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set net.ipv4.conf.all.secure_redirects = 0 in /etc/sysctl.d/60-attestor-network.conf, then: sudo sysctl -w net.ipv4.conf.all.secure_redirects=0
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.10; cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.10.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-3.3.1.4">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">3.3.1.4</span>
+    <span class="control-title">Ensure packet redirect sending is disabled (all interfaces)</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;net.ipv4.conf.all.send_redirects&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set net.ipv4.conf.all.send_redirects = 0 in /etc/sysctl.d/60-attestor-network.conf, then: sudo sysctl -w net.ipv4.conf.all.send_redirects=0
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.4; cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.4.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-3.3.1.5">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">3.3.1.5</span>
+    <span class="control-title">Ensure packet redirect sending is disabled (default interfaces)</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;net.ipv4.conf.default.send_redirects&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set net.ipv4.conf.default.send_redirects = 0 in /etc/sysctl.d/60-attestor-network.conf, then: sudo sysctl -w net.ipv4.conf.default.send_redirects=0
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.5; cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.5.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-3.3.1.6">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">3.3.1.6</span>
+    <span class="control-title">Ensure bogus ICMP responses are ignored</span>
+    <span class="badge badge-severity">low</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;net.ipv4.icmp_ignore_bogus_error_responses&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set net.ipv4.icmp_ignore_bogus_error_responses = 1 in /etc/sysctl.d/60-attestor-network.conf, then: sudo sysctl -w net.ipv4.icmp_ignore_bogus_error_responses=1
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.6; cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.6.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-3.3.1.7">
+  <div class="control-header">
+    <span class="badge badge-error">ERROR</span>
+    <span class="control-id">3.3.1.7</span>
+    <span class="control-title">Ensure broadcast ICMP requests are ignored</span>
+    <span class="badge badge-severity">low</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[error] sysctl exit 1: sysctl: unknown oid &#39;net.ipv4.icmp_echo_ignore_broadcasts&#39;</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set net.ipv4.icmp_echo_ignore_broadcasts = 1 in /etc/sysctl.d/60-attestor-network.conf, then: sudo sysctl -w net.ipv4.icmp_echo_ignore_broadcasts=1
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 3.3.1.7; cross-referenced with reference/UBUNTU22-CIS-Audit/section_3/cis_3.3.1/cis_3.3.1.7.yml; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-5.1.1">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">5.1.1</span>
+    <span class="control-title">Ensure permissions on /etc/ssh/sshd_config are configured</span>
+    <span class="badge badge-severity">high</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] stat /etc/ssh/sshd_config =&gt; mode=0644 owner=root group=wheel</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Run: sudo chmod 600 /etc/ssh/sshd_config &amp;&amp; sudo chown root:root /etc/ssh/sshd_config
+</dd>
+    
+    <dt>Source</dt>
+    <dd>CIS Ubuntu Linux 22.04 LTS Benchmark v2.0.0, section 5.1.1; cross-referenced with reference/UBUNTU22-CIS-Audit/section_5/cis_5.1/5.1.1; manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic, aarch64) 2026-08-07
+</dd>
+  </dl>
+</div>
+
+
+<footer>
+  Generated by Attestor v0.1.0 | Format version 1.0 |
+  Report ID: 249cfea5-ba74-450f-ad0b-94ea0757ca1d | Target: ubuntu2204_desktop
+</footer>
+</body>
+</html>
