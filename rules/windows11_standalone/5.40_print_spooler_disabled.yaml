@@ -1,0 +1,22 @@
+id: "5.40"
+title: "Ensure 'Print Spooler (Spooler)' is set to 'Disabled'"
+description: >
+  The Print Spooler service manages print jobs. It has been the target of critical remote code execution vulnerabilities (PrintNightmare).
+rationale: >
+  The Spooler service has a history of critical CVEs (CVE-2021-34527 PrintNightmare). Disabling it on systems that don't need printing eliminates this attack surface.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: service_state
+    name: Spooler
+    expected: "Disabled"
+    op: equals
+remediation: >
+  Run: Stop-Service Spooler -Force; Set-Service Spooler -StartupType Disabled
+source: >
+  Control ID 5.40, cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_5/cis_5.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted — no direct PDF access to confirm. Get-Service mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
