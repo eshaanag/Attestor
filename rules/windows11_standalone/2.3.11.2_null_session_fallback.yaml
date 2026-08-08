@@ -1,0 +1,23 @@
+id: "2.3.11.2"
+title: "Ensure 'Network security: Allow LocalSystem NULL session fallback' is set to Disabled"
+description: >
+  Prevents NTLM from falling back to a NULL session when used with Local System.
+rationale: >
+  NULL session fallback allows unauthenticated access to resources, weakening network security.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: medium
+checks:
+  - type: registry
+    path: "HKLM:\\System\\CurrentControlSet\\Control\\Lsa\\MSV1_0"
+    name: AllowNullSessionFallback
+    expected: "0"
+    op: equals
+remediation: >
+  Set HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\AllowNullSessionFallback (REG_DWORD) = 0.
+source: >
+  Control ID 2.3.11.2, registry path, and expected value (AllowNullSessionFallback=0) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.11.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted — no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
