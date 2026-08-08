@@ -1,0 +1,33 @@
+id: "2.3.1.2"
+title: "Ensure 'Accounts: Guest account status' is set to 'Disabled'"
+description: >
+  The Guest account allows unauthenticated network users to log on without a password.
+  This account must be disabled to prevent unauthorized access.
+rationale: >
+  An enabled Guest account provides unauthenticated access to the system, which attackers
+  can exploit for reconnaissance and lateral movement without needing credentials.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: secpol
+    section: "System Access"
+    key: EnableGuestAccount
+    expected: "0"
+    op: equals
+remediation: >
+  Via Group Policy: Computer Configuration > Windows Settings > Security Settings >
+  Local Policies > Security Options > 'Accounts: Guest account status' = Disabled.
+  Or via command: net user guest /active:no
+source: >
+  Control ID 2.3.1.2, secedit section/key (System Access / EnableGuestAccount = 0)
+  cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.1.x.yml,
+  which targets CIS Windows 11 benchmark v3.0.0, uses community.windows.win_security_policy).
+  NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org);
+  the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted —
+  no direct PDF access to confirm. Secedit export mechanics VM-verified on Windows 11 Pro
+  (192.168.64.4, build 26200) 2026-08-08.
