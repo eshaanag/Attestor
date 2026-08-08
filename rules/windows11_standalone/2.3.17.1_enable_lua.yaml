@@ -1,0 +1,21 @@
+id: "2.3.17.1"
+title: "Ensure 'User Account Control: Admin Approval Mode for Built-in Administrator' is Enabled"
+rationale: >
+  UAC Admin Approval Mode prevents silent elevation of the built-in Admin account.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: registry
+    path: "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"
+    name: EnableLUA
+    expected: "1"
+    op: equals
+remediation: >
+  Refer to CIS Benchmark section 2.3.17.1 for detailed remediation steps.
+source: >
+  Control ID 2.3.17.1, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_2.3.17.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Registry VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.

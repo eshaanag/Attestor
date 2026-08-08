@@ -1,0 +1,20 @@
+id: "5.44"
+title: "Ensure 'Windows Remote Management (WinRM)' is set to 'Disabled'"
+rationale: >
+  WinRM enables remote command execution; disable if not needed for management.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: service_state
+    name: WinRM
+    expected: "Disabled"
+    op: equals
+remediation: >
+  Refer to CIS Benchmark section 5.44 for detailed remediation steps.
+source: >
+  Control ID 5.44, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_5.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Get-Service VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.

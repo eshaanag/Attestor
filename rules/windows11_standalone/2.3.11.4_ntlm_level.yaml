@@ -1,0 +1,21 @@
+id: "2.3.11.4"
+title: "Ensure 'Network security: LAN Manager authentication level' is set to NTLMv2 only"
+rationale: >
+  Restricting to NTLMv2 prevents weaker protocols that are vulnerable to credential capture.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: registry
+    path: "HKLM:\\System\\CurrentControlSet\\Control\\Lsa"
+    name: LmCompatibilityLevel
+    expected: "5"
+    op: equals
+remediation: >
+  Refer to CIS Benchmark section 2.3.11.4 for detailed remediation steps.
+source: >
+  Control ID 2.3.11.4, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_2.3.11.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Registry VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.

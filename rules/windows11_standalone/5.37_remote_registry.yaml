@@ -1,0 +1,20 @@
+id: "5.37"
+title: "Ensure 'Remote Registry (RemoteRegistry)' is set to 'Disabled'"
+rationale: >
+  Remote Registry allows remote access to the registry, which is a significant attack surface.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: service_state
+    name: RemoteRegistry
+    expected: "Disabled"
+    op: equals
+remediation: >
+  Refer to CIS Benchmark section 5.37 for detailed remediation steps.
+source: >
+  Control ID 5.37, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_5.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Get-Service VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.

@@ -1,0 +1,20 @@
+id: "5.21"
+title: "Ensure 'Link-Layer Topology Discovery Mapper (lltdsvc)' is set to 'Disabled'"
+rationale: >
+  LLTD is a network discovery protocol that reveals system information to the network.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: low
+checks:
+  - type: service_state
+    name: lltdsvc
+    expected: "Disabled"
+    op: equals
+remediation: >
+  Refer to CIS Benchmark section 5.21 for detailed remediation steps.
+source: >
+  Control ID 5.21, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_5.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Get-Service VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
