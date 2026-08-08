@@ -28,7 +28,8 @@ remediation: >
 source: >
   Control ID 2.3.1.1, registry path, and expected value (NoConnectedUser=3) cross-referenced
   via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.1.x.yml, which targets CIS
-  Windows 11 benchmark v3.0.0) and a CIS Windows Server 2022 community hardening gist using
-  the same path/value. NOT directly verified against the official CIS Windows 11 Standalone
-  Benchmark PDF — no direct document access. Registry read/write mechanics and pass/fail
-  behavior manually verified on Windows 11 Pro VM (192.168.64.4, build 26200) 2026-08-08.
+  Windows 11 benchmark v3.0.0) and a CIS Server 2022 community gist using the same path/value.
+  NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org);
+  the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted in v5.0.0 —
+  no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro
+  (192.168.64.4, build 26200) 2026-08-08.
