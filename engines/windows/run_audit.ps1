@@ -56,9 +56,42 @@ $ErrorActionPreference = "Stop"
 $script:ENGINE_NAME = "windows"
 $script:ENGINE_VERSION = "0.1.0"
 $script:FORMAT_VERSION = "1.0"
-$script:REPO_ROOT = (Resolve-Path (Join-Path $PSScriptRoot ".." "..")).Path
+$script:REPO_ROOT = (Resolve-Path (Join-Path (Join-Path $PSScriptRoot "..") "..")).Path
+
+# Detect Python command (Windows has 'python'; the 'python3' App Execution Alias
+# is a non-functional stub on many Windows installs — test it actually runs).
+$script:PYTHON = $null
+foreach ($candidate in @("python3", "python")) {
+    try {
+        $out = & $candidate --version 2>&1
+        if ($LASTEXITCODE -eq 0 -and $out -match "Python 3") {
+            $script:PYTHON = $candidate
+            break
+        }
+    } catch { }
+}
+if (-not $script:PYTHON) {
+    throw "Python 3 not found. Install Python 3.10+ (required for schema validation)."
+}
 
 # ─────────────────────────── helpers ───────────────────────────
+
+function ConvertTo-Hashtable {
+    <# Recursively convert PSCustomObject (from ConvertFrom-Json) to hashtable.
+       PS 5.1 doesn't have ConvertFrom-Json -AsHashtable. #>
+    param($InputObject)
+    if ($InputObject -is [System.Management.Automation.PSCustomObject]) {
+        $ht = @{}
+        foreach ($prop in $InputObject.PSObject.Properties) {
+            $ht[$prop.Name] = ConvertTo-Hashtable $prop.Value
+        }
+        return $ht
+    }
+    elseif ($InputObject -is [System.Collections.IEnumerable] -and $InputObject -isnot [string]) {
+        return @($InputObject | ForEach-Object { ConvertTo-Hashtable $_ })
+    }
+    return $InputObject
+}
 
 function Get-UtcTimestamp {
     [DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
@@ -125,9 +158,12 @@ function Invoke-RegistryCheck {
             -Evidence $evidence -Error "registry path not found: $path"
     }
     catch [System.Management.Automation.PSArgumentException] {
-        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
-            -Actual $null -Expected $expected `
-            -Evidence $evidence -Error "registry value not found: $name in $path"
+        # Value name doesn't exist in the path — policy not configured.
+        # This is a compliance failure (not an engine error): the setting
+        # isn't what CIS requires. Return fail with actual="(not set)".
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "fail" `
+            -Actual "(not set)" -Expected $expected `
+            -Evidence "$evidence => value '$name' does not exist (policy not configured)"
     }
     catch {
         return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
@@ -281,7 +317,7 @@ function Invoke-Check {
 function Get-ControlStatus {
     param([bool]$Automated, [array]$CheckResults)
     if (-not $Automated) { return "manual" }
-    $statuses = $CheckResults | ForEach-Object { $_.status }
+    $statuses = $CheckResults | ForEach-Object { $_["status"] }
     if (-not $statuses) { return "error" }  # Defensive: automated + 0 checks = bug.
     if ($statuses -contains "error")          { return "error" }
     if ($statuses -contains "fail")           { return "fail" }
@@ -295,13 +331,15 @@ function Get-EvidenceSummary {
     if (-not $Automated) { return "manual review required (control marked automated: false)" }
     if (-not $CheckResults) { return "engine error: automated control has no checks" }
     if ($ControlStatus -eq "pass") {
-        return ($CheckResults | ForEach-Object { $_.evidence }) -join "; " | Select-Object -First 500
+        $evLines = $CheckResults | ForEach-Object { $_["evidence"] }
+        return ($evLines -join "; ").Substring(0, [Math]::Min(500, ($evLines -join "; ").Length))
     }
     # Surface the first offending check.
     $order = @{ "error" = 0; "fail" = 1; "manual" = 2; "not_applicable" = 3; "pass" = 4 }
-    $worst = $CheckResults | Sort-Object { $order[$_.status] } | Select-Object -First 1
-    $detail = if ($worst.error) { $worst.error } else { $worst.evidence }
-    return "[$($worst.status)] $detail".Substring(0, [Math]::Min(500, "[$($worst.status)] $detail".Length))
+    $worst = $CheckResults | Sort-Object { $order[$_["status"]] } | Select-Object -First 1
+    $detail = if ($worst.Contains("error") -and $worst["error"]) { $worst["error"] } else { $worst["evidence"] }
+    $msg = "[$($worst["status"])] $detail"
+    return $msg.Substring(0, [Math]::Min(500, $msg.Length))
 }
 
 # ─────────────────────── host metadata ─────────────────────────
@@ -349,7 +387,7 @@ if errs:
     sys.exit(1)
 sys.exit(0)
 "@
-    $result = & python3 -c $pyScript 2>&1
+    $result = & $script:PYTHON -c $pyScript 2>&1
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Schema validation failed for $FilePath`: $result"
         return $false
@@ -358,8 +396,8 @@ sys.exit(0)
 }
 
 function Get-RuleFiles {
-    if ($Rule.Count -gt 0) {
-        return $Rule | ForEach-Object { Resolve-Path $_ }
+    if (@($Rule).Count -gt 0) {
+        return @($Rule) | ForEach-Object { Resolve-Path $_ }
     }
     $dir = if ($RulesDir) { $RulesDir } else { Join-Path $script:REPO_ROOT "rules" $Target }
     if (-not (Test-Path $dir)) {
@@ -374,36 +412,46 @@ function Import-Rules {
     $validRules = @()
     $loadErrors = @()
 
-    foreach ($path in $Paths) {
-        # Parse YAML via Python (PowerShell has no built-in YAML parser).
-        $pyParse = @"
+    foreach ($filePath in $Paths) {
+        # Parse YAML + validate via a temp Python script (avoids -c quoting issues).
+        $tmpPy = [System.IO.Path]::GetTempFileName() + ".py"
+        $repoEscaped = $script:REPO_ROOT -replace '\\', '\\\\'
+        $fileEscaped = $filePath -replace '\\', '\\\\'
+        $pyCode = @"
 import sys, json, yaml
-sys.path.insert(0, r'$($script:REPO_ROOT)')
+sys.stdout.reconfigure(encoding='utf-8')
+sys.path.insert(0, r"$repoEscaped")
 from tests.validate_rules import load_validator, format_errors
 try:
-    doc = yaml.safe_load(open(r'$path', encoding='utf-8').read())
+    doc = yaml.safe_load(open(r"$fileEscaped", encoding="utf-8").read())
 except Exception as e:
-    print(json.dumps({"error": str(e)}))
+    print(json.dumps(dict(error=str(e))))
     sys.exit(1)
 v = load_validator()
 errs = format_errors(v, doc)
 if errs:
-    print(json.dumps({"error": "; ".join(errs)}))
+    print(json.dumps(dict(error="; ".join(errs))))
     sys.exit(1)
 print(json.dumps(doc, ensure_ascii=False))
 sys.exit(0)
 "@
-        $raw = & python3 -c $pyParse 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            $loadErrors += "$([System.IO.Path]::GetFileName($path)): $raw"
-            continue
-        }
+        Set-Content -Path $tmpPy -Value $pyCode -Encoding UTF8
         try {
-            $rule = $raw | ConvertFrom-Json -AsHashtable
-            $validRules += $rule
+            $raw = & $script:PYTHON $tmpPy 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                $loadErrors += "$([System.IO.Path]::GetFileName($filePath)): $raw"
+                continue
+            }
+            try {
+                $rule = ConvertTo-Hashtable ($raw | ConvertFrom-Json)
+                $validRules += $rule
+            }
+            catch {
+                $loadErrors += "$([System.IO.Path]::GetFileName($filePath)): JSON parse error from Python"
+            }
         }
-        catch {
-            $loadErrors += "$([System.IO.Path]::GetFileName($path)): JSON parse error from Python"
+        finally {
+            Remove-Item $tmpPy -Force -ErrorAction SilentlyContinue
         }
     }
     return @{ Rules = $validRules; Errors = $loadErrors }
@@ -418,7 +466,7 @@ function Invoke-Rule {
     $checkResults = @()
 
     if ($automated) {
-        $checks = $RuleObj["checks"]
+        $checks = @($RuleObj["checks"])
         for ($i = 0; $i -lt $checks.Count; $i++) {
             $ck = $checks[$i]
             # Convert PSCustomObject to hashtable if needed.
@@ -457,14 +505,14 @@ function Invoke-Rule {
 function Main {
     $startedAt = Get-UtcTimestamp
 
-    $rulePaths = Get-RuleFiles
+    $rulePaths = @(Get-RuleFiles)
     if ($rulePaths.Count -eq 0) {
         Write-Warning "0 rule files found for target '$Target'. Nothing to audit."
     }
 
     $loaded = Import-Rules -Paths $rulePaths
-    $rules = $loaded.Rules
-    $loadErrors = $loaded.Errors
+    $rules = @($loaded.Rules)
+    $loadErrors = @($loaded.Errors)
 
     foreach ($err in $loadErrors) {
         Write-Host "LOAD ERROR (excluded): $err" -ForegroundColor Red
@@ -472,17 +520,18 @@ function Main {
 
     $controls = @()
     foreach ($rule in $rules) {
-        $controls += Invoke-Rule -RuleObj $rule
+        $controls += ,(Invoke-Rule -RuleObj $rule)
     }
+    $controls = @($controls)
 
     # Sort controls by rule_id (dotted-int) per interfaces.md §4.
-    $controls = $controls | Sort-Object {
+    $controls = @($controls | Sort-Object {
         ($_.rule_id -split '\.' | ForEach-Object { [int]$_ }) -join '.'
-    }
+    })
 
     # Build summary counts.
     $summary = [ordered]@{ pass = 0; fail = 0; error = 0; manual = 0; not_applicable = 0 }
-    foreach ($c in $controls) { $summary[$c.status]++ }
+    foreach ($c in $controls) { $summary[$c["status"]]++ }
 
     $complete = ($loadErrors.Count -eq 0) -and ($controls.Count -eq $rulePaths.Count)
 
@@ -491,8 +540,8 @@ function Main {
         attestor_format_version = $script:FORMAT_VERSION
         report_id               = [guid]::NewGuid().ToString()
         target                  = $Target
-        benchmark               = if ($rules.Count -gt 0) { $rules[0]["benchmark"] } else { "unknown" }
-        benchmark_version       = if ($rules.Count -gt 0) { $rules[0]["benchmark_version"] } else { "unknown" }
+        benchmark               = if (@($rules).Count -gt 0) { $rules[0]["benchmark"] } else { "unknown" }
+        benchmark_version       = if (@($rules).Count -gt 0) { $rules[0]["benchmark_version"] } else { "unknown" }
         host                    = Get-HostMetadata
         run                     = [ordered]@{
             started_at     = $startedAt
