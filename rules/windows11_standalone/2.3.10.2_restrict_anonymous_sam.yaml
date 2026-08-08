@@ -1,0 +1,23 @@
+id: "2.3.10.2"
+title: "Ensure 'Network access: Do not allow anonymous enumeration of SAM accounts' is set to Enabled"
+description: >
+  Prevents anonymous users from enumerating Security Account Manager (SAM) accounts.
+rationale: >
+  Anonymous SAM enumeration reveals local user/group names, aiding brute-force and privilege-escalation attacks.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: high
+checks:
+  - type: registry
+    path: "HKLM:\\System\\CurrentControlSet\\Control\\Lsa"
+    name: RestrictAnonymousSAM
+    expected: "1"
+    op: equals
+remediation: >
+  Set HKLM\System\CurrentControlSet\Control\Lsa\RestrictAnonymousSAM (REG_DWORD) = 1.
+source: >
+  Control ID 2.3.10.2, registry path, and expected value (RestrictAnonymousSAM=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.10.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted — no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
