@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attestor CIS Audit Report — WIN-R6AV6BLOFJF (2026-08-08T09:01:49Z)</title>
+<style>
+:root {
+  --pass: #1a7f37; --fail: #cf222e; --error: #9a6700;
+  --manual: #0969da; --na: #656d76;
+  --bg: #ffffff; --fg: #1f2328; --border: #d0d7de;
+  --header-bg: #f6f8fa; --card-bg: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+       color: var(--fg); background: var(--bg); line-height: 1.5; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+.header { background: var(--header-bg); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; margin-bottom: 1.5rem; }
+.header-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; margin-top: 0.75rem; }
+.header-grid dt { font-weight: 600; font-size: 0.85rem; color: #656d76; }
+.header-grid dd { font-size: 0.95rem; }
+.incomplete-banner { background: #fff8c5; border: 2px solid #d4a72c; border-radius: 6px;
+                     padding: 1rem; margin-bottom: 1.5rem; font-weight: 600; text-align: center; }
+.summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.summary-item { padding: 0.75rem 1.25rem; border-radius: 6px; border: 1px solid var(--border);
+                text-align: center; min-width: 100px; }
+.summary-item .count { font-size: 1.75rem; font-weight: 700; }
+.summary-item .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.s-pass { border-color: var(--pass); } .s-pass .count { color: var(--pass); }
+.s-fail { border-color: var(--fail); } .s-fail .count { color: var(--fail); }
+.s-error { border-color: var(--error); } .s-error .count { color: var(--error); }
+.s-manual { border-color: var(--manual); } .s-manual .count { color: var(--manual); }
+.s-na { border-color: var(--na); } .s-na .count { color: var(--na); }
+.control { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.75rem;
+           padding: 1rem; background: var(--card-bg); }
+.control-header { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 3px;
+         font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.badge-pass { background: #dafbe1; color: var(--pass); }
+.badge-fail { background: #ffebe9; color: var(--fail); }
+.badge-error { background: #fff8c5; color: var(--error); }
+.badge-manual { background: #ddf4ff; color: var(--manual); }
+.badge-not_applicable { background: #eaeef2; color: var(--na); }
+.badge-severity { font-size: 0.7rem; padding: 0.1rem 0.4rem; border: 1px solid var(--border); }
+.control-id { font-weight: 700; font-family: monospace; font-size: 0.9rem; }
+.control-title { flex: 1; }
+.control-details { margin-top: 0.75rem; font-size: 0.9rem; }
+.control-details dt { font-weight: 600; margin-top: 0.5rem; }
+.control-details dd { margin-left: 1rem; white-space: pre-wrap; word-break: break-word; }
+.evidence-block { background: #f6f8fa; border: 1px solid var(--border); border-radius: 4px;
+                  padding: 0.5rem 0.75rem; font-family: monospace; font-size: 0.8rem;
+                  overflow-x: auto; margin-top: 0.25rem; }
+footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);
+         font-size: 0.8rem; color: #656d76; text-align: center; }
+@media (max-width: 600px) { .header-grid { grid-template-columns: 1fr; } .summary { flex-direction: column; } }
+/* Print styles */
+@media print { body { padding: 0.5rem; } .control { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<h1>Attestor CIS Compliance Report</h1>
+
+<div class="header">
+  <strong>CIS Microsoft Windows 11 Standalone Benchmark</strong> v3.0.0
+  <dl class="header-grid">
+    <dt>Host</dt><dd>WIN-R6AV6BLOFJF</dd>
+    <dt>OS</dt><dd>Microsoft Windows 11 Pro 10.0.26200</dd>
+    <dt>Kernel / Build</dt><dd>26200</dd>
+    <dt>Architecture</dt><dd>ARM64</dd>
+    <dt>Environment</dt><dd>native</dd>
+    <dt>Elevated</dt><dd>Yes</dd>
+    <dt>User</dt><dd>lab</dd>
+    <dt>Engine</dt><dd>windows v0.1.0</dd>
+    <dt>Run started</dt><dd>2026-08-08T09:01:47Z</dd>
+    <dt>Run finished</dt><dd>2026-08-08T09:01:49Z</dd>
+    <dt>Controls evaluated</dt><dd>11 / 11</dd>
+  </dl>
+</div>
+
+
+
+<h2>Summary</h2>
+<div class="summary" role="group" aria-label="Compliance summary counts">
+  <div class="summary-item s-pass"><div class="count">4</div><div class="label">Pass</div></div>
+  <div class="summary-item s-fail"><div class="count">7</div><div class="label">Fail</div></div>
+  <div class="summary-item s-error"><div class="count">0</div><div class="label">Error</div></div>
+  <div class="summary-item s-manual"><div class="count">0</div><div class="label">Manual</div></div>
+  <div class="summary-item s-na"><div class="count">0</div><div class="label">N/A</div></div>
+</div>
+
+<h2>Controls (11 total — failures &amp; errors first)</h2>
+
+<div class="control" id="ctrl-2.3.1.1">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.1.1</span>
+    <span class="control-title">Ensure &#39;Accounts: Block Microsoft accounts&#39; is set to &#39;Users can&#39;t add or log on with Microsoft accounts&#39;</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System&#39; -Name &#39;NoConnectedUser&#39; =&gt; value &#39;NoConnectedUser&#39; does not exist (policy not configured)</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set the registry value: HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\NoConnectedUser (REG_DWORD) = 3. Or via Group Policy: Computer Configuration &gt; Windows Settings &gt; Security Settings &gt; Local Policies &gt; Security Options &gt; &#39;Accounts: Block Microsoft accounts&#39; = &#39;Users can&#39;t add or log on with Microsoft accounts&#39;.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.1.1, registry path, and expected value (NoConnectedUser=3) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.1.x.yml, which targets CIS Windows 11 benchmark v3.0.0) and a CIS Server 2022 community gist using the same path/value. NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted in v5.0.0 ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.10.3">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.10.3</span>
+    <span class="control-title">Ensure &#39;Network access: Do not allow anonymous enumeration of SAM accounts and shares&#39; is set to Enabled</span>
+    <span class="badge badge-severity">high</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa&#39; -Name &#39;RestrictAnonymous&#39; =&gt; 0</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set HKLM\System\CurrentControlSet\Control\Lsa\RestrictAnonymous (REG_DWORD) = 1.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.10.3, registry path, and expected value (RestrictAnonymous=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.10.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.10.4">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.10.4</span>
+    <span class="control-title">Ensure &#39;Network access: Do not allow storage of passwords and credentials for network authentication&#39; is set to Enabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa&#39; -Name &#39;DisableDomainCreds&#39; =&gt; 0</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set HKLM\System\CurrentControlSet\Control\Lsa\DisableDomainCreds (REG_DWORD) = 1.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.10.4, registry path, and expected value (DisableDomainCreds=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.10.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.11.1">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.11.1</span>
+    <span class="control-title">Ensure &#39;Network security: Allow Local System to use computer identity for NTLM&#39; is set to Enabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa&#39; -Name &#39;UseMachineId&#39; =&gt; value &#39;UseMachineId&#39; does not exist (policy not configured)</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set HKLM\System\CurrentControlSet\Control\Lsa\UseMachineId (REG_DWORD) = 1.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.11.1, registry path, and expected value (UseMachineId=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.11.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.11.2">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.11.2</span>
+    <span class="control-title">Ensure &#39;Network security: Allow LocalSystem NULL session fallback&#39; is set to Disabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0&#39; -Name &#39;AllowNullSessionFallback&#39; =&gt; value &#39;AllowNullSessionFallback&#39; does not exist (policy not configured)</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set HKLM\System\CurrentControlSet\Control\Lsa\MSV1_0\AllowNullSessionFallback (REG_DWORD) = 0.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.11.2, registry path, and expected value (AllowNullSessionFallback=0) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.11.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.7.1">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.7.1</span>
+    <span class="control-title">Ensure &#39;Interactive logon: Do not require CTRL+ALT+DEL&#39; is set to Disabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System&#39; -Name &#39;DisableCAD&#39; =&gt; value &#39;DisableCAD&#39; does not exist (policy not configured)</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\DisableCAD (REG_DWORD) = 0.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.7.1, registry path, and expected value (DisableCAD=0) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.7.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.7.2">
+  <div class="control-header">
+    <span class="badge badge-fail">FAIL</span>
+    <span class="control-id">2.3.7.2</span>
+    <span class="control-title">Ensure &#39;Interactive logon: Don&#39;t display last signed-in&#39; is set to Enabled</span>
+    <span class="badge badge-severity">medium</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">[fail] Get-ItemProperty -Path &#39;HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System&#39; -Name &#39;DontDisplayLastUserName&#39; =&gt; 0</div></dd>
+    
+    <dt>Remediation</dt>
+    <dd>Set HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\DontDisplayLastUserName (REG_DWORD) = 1.
+</dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.7.2, registry path, and expected value (DontDisplayLastUserName=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.7.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.1.2">
+  <div class="control-header">
+    <span class="badge badge-pass">PASS</span>
+    <span class="control-id">2.3.1.2</span>
+    <span class="control-title">Ensure &#39;Accounts: Guest account status&#39; is set to &#39;Disabled&#39;</span>
+    <span class="badge badge-severity">high</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">secedit [System Access] EnableGuestAccount = 0</div></dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.1.2, secedit section/key (System Access / EnableGuestAccount = 0) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.1.x.yml, which targets CIS Windows 11 benchmark v3.0.0, uses community.windows.win_security_policy). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Secedit export mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.1.3">
+  <div class="control-header">
+    <span class="badge badge-pass">PASS</span>
+    <span class="control-id">2.3.1.3</span>
+    <span class="control-title">Ensure &#39;Accounts: Limit local account use of blank passwords to console logon only&#39; is set to Enabled</span>
+    <span class="badge badge-severity">high</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa&#39; -Name &#39;LimitBlankPasswordUse&#39; =&gt; 1</div></dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.1.3, registry path, and expected value (LimitBlankPasswordUse=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.1.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.10.2">
+  <div class="control-header">
+    <span class="badge badge-pass">PASS</span>
+    <span class="control-id">2.3.10.2</span>
+    <span class="control-title">Ensure &#39;Network access: Do not allow anonymous enumeration of SAM accounts&#39; is set to Enabled</span>
+    <span class="badge badge-severity">high</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa&#39; -Name &#39;RestrictAnonymousSAM&#39; =&gt; 1</div></dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.10.2, registry path, and expected value (RestrictAnonymousSAM=1) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.10.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+<div class="control" id="ctrl-2.3.10.5">
+  <div class="control-header">
+    <span class="badge badge-pass">PASS</span>
+    <span class="control-id">2.3.10.5</span>
+    <span class="control-title">Ensure &#39;Network access: Let Everyone permissions apply to anonymous users&#39; is set to Disabled</span>
+    <span class="badge badge-severity">high</span>
+    <span class="badge badge-severity">L1</span>
+  </div>
+  <dl class="control-details">
+    <dt>Evidence</dt>
+    <dd><div class="evidence-block">Get-ItemProperty -Path &#39;HKLM:\System\CurrentControlSet\Control\Lsa&#39; -Name &#39;EveryoneIncludesAnonymous&#39; =&gt; 0</div></dd>
+    
+    <dt>Source</dt>
+    <dd>Control ID 2.3.10.5, registry path, and expected value (EveryoneIncludesAnonymous=0) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.10.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted ÔÇö no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
+</dd>
+  </dl>
+</div>
+
+
+<footer>
+  Generated by Attestor v0.1.0 | Format version 1.0 |
+  Report ID: 0965878c-5822-46c9-9670-652600361039 | Target: windows11_standalone
+</footer>
+</body>
+</html>
