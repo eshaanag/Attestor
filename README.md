@@ -80,6 +80,27 @@ Next: Phase 6 (CLI polish), then Phase 7 (local web GUI).
 
 See [`reports/sample-report.html`](reports/sample-report.html) for an example rendered report (opens offline, no network required).
 
+### CLI Usage
+
+```bash
+# Linux — run all Level 1 controls and generate HTML report
+python3 engines/linux/run_audit.py --level 1 --format html --output results.json
+
+# Linux — run only specific controls
+python3 engines/linux/run_audit.py --include 1.5.1 3.3.1.1 5.1.20
+
+# Linux — exclude specific controls
+python3 engines/linux/run_audit.py --exclude 2.1.11
+
+# Windows (PowerShell) — run all Level 1 controls
+.\engines\windows\run_audit.ps1 -Level 1 -Format html -Output results.json
+
+# Windows — include/exclude
+.\engines\windows\run_audit.ps1 -Include "2.3.1.1","2.3.17.1" -Format json
+```
+
+**Filter precedence:** `--include` narrows the rule set first (only listed IDs run), then `--exclude` removes from that set. `--level` filters independently (ANDed).
+
 ---
 
 ## License
