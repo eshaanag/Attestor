@@ -73,10 +73,10 @@ attestor/
 | Target | Engine | Controls verified | Status |
 |--------|--------|-------------------|--------|
 | Ubuntu 22.04 Desktop (Level 1) | `engines/linux/run_audit.py` | 10 (sysctl + file_permission) | ✅ In progress — engine + 10 controls pass/fail verified on real VM |
-| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 10 (registry only) | ✅ In progress — engine + 10 controls pass/fail verified on real VM (secpol/audit_policy untested) |
+| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 11 (10 registry + 1 secpol) | ✅ In progress — engine + 11 controls pass/fail verified on real VM |
 
-**Phase 0** (schema + validator), **Phase 1** (Linux engine), **Phase 2** (Windows engine), and **Phase 3** (report generation) complete.
-Next: Phase 4 (tamper-evident ledger), then Phase 5 (rule pack expansion).
+**Phase 0** (schema + validator), **Phase 1** (Linux engine), **Phase 2** (Windows engine), **Phase 3** (report generation), and **Phase 4** (tamper-evident ledger) complete.
+Next: Phase 5 (rule pack expansion to 30-40 controls per target), then Phase 6 (CLI polish).
 
 See [`reports/sample-report.html`](reports/sample-report.html) for an example rendered report (opens offline, no network required).
 
