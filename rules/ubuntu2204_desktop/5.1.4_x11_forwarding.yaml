@@ -1,0 +1,22 @@
+id: "5.1.4"
+title: "Ensure sshd X11Forwarding is disabled"
+rationale: >
+  X11 forwarding over SSH can allow a compromised remote host to attack the local X11 session.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: config_grep
+    path: /etc/ssh/sshd_config
+    pattern: "^X11Forwarding\\s+no"
+    op: matches
+    ignore_comments: true
+remediation: >
+  Set 'X11Forwarding no' in /etc/ssh/sshd_config
+source: >
+  Control ID 5.1.4, cross-referenced via reference/UBUNTU22-CIS-Audit (which targets CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic) 2026-08-08.

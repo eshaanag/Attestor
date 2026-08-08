@@ -1,0 +1,23 @@
+id: "7.2.2"
+title: "Ensure permissions on /etc/shadow are configured"
+rationale: >
+  /etc/shadow contains password hashes and must be restricted.
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: high
+checks:
+  - type: file_permission
+    path: /etc/shadow
+    expected: "0640"
+    owner: root
+    group: shadow
+    op: equals
+remediation: >
+  Run: chmod 640 /etc/shadow && chown root:shadow /etc/shadow
+source: >
+  Control ID 7.2.2, cross-referenced via reference/UBUNTU22-CIS-Audit (which targets CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3, kernel 5.15.0-87-generic) 2026-08-08.
