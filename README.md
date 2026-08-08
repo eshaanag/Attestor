@@ -73,10 +73,10 @@ attestor/
 | Target | Engine | Controls verified | Status |
 |--------|--------|-------------------|--------|
 | Ubuntu 22.04 Desktop (Level 1) | `engines/linux/run_audit.py` | 10 (sysctl + file_permission) | ✅ In progress — engine + 10 controls pass/fail verified on real VM |
-| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 0 | Planned (Phase 2) |
+| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 10 (registry only) | ✅ In progress — engine + 10 controls pass/fail verified on real VM (secpol/audit_policy untested) |
 
-**Phase 0** (schema + validator) and **Phase 1** (Linux engine) complete.
-Next: Phase 2 (Windows engine), then Phase 3 (report generation).
+**Phase 0** (schema + validator), **Phase 1** (Linux engine), and **Phase 2** (Windows engine) complete.
+Next: Phase 3 (report generation), then Phase 4 (tamper-evident ledger).
 
 ---
 
