@@ -219,22 +219,183 @@ def _expected_summary(mode: Any, owner: Any, group: Any) -> str:
     return " ".join(parts) if parts else None
 
 
+def check_kernel_module(rule_id: str, idx: int, check: dict[str, Any]) -> dict[str, Any]:
+    name = check.get("name")
+    op = check.get("op", "absent")  # CIS typically wants modules absent/disabled
+    if not name:
+        return _check_result(rule_id, idx, "error", None, None,
+                             "kernel_module check missing required 'name' param",
+                             error="malformed rule: 'name' is required for kernel_module")
+
+    evidence_parts = []
+    # Check 1: is it currently loaded?
+    try:
+        proc = subprocess.run(["lsmod"], capture_output=True, text=True, timeout=15)
+        loaded = any(line.split()[0] == name for line in proc.stdout.splitlines()[1:] if line.strip())
+        evidence_parts.append(f"lsmod | grep {name} => {'loaded' if loaded else 'not loaded'}")
+    except (FileNotFoundError, subprocess.TimeoutExpired) as exc:
+        return _check_result(rule_id, idx, "error", None, op,
+                             f"lsmod failed", error=str(exc))
+
+    # Check 2: is it disabled in modprobe config?
+    try:
+        proc2 = subprocess.run(["modprobe", "-n", "-v", name],
+                               capture_output=True, text=True, timeout=15)
+        output = proc2.stdout.strip()
+        disabled = bool(re.search(r'install\s+/bin/(true|false)', output))
+        evidence_parts.append(f"modprobe -n -v {name} => {output or '(empty)'}")
+    except FileNotFoundError:
+        return _check_result(rule_id, idx, "error", None, op,
+                             " ; ".join(evidence_parts), error="modprobe binary not found")
+    except subprocess.TimeoutExpired:
+        return _check_result(rule_id, idx, "error", None, op,
+                             " ; ".join(evidence_parts), error="modprobe timed out")
+
+    evidence = " ; ".join(evidence_parts)
+    actual = "loaded" if loaded else ("disabled" if disabled else "available")
+
+    if op == "absent":
+        # Module should be not loaded AND disabled in config
+        status = "pass" if (not loaded and disabled) else "fail"
+    elif op == "present":
+        status = "pass" if loaded else "fail"
+    else:
+        raise NotImplementedError(f"kernel_module op '{op}' not implemented")
+
+    return _check_result(rule_id, idx, status, actual, op, evidence)
+
+
+def check_package_installed(rule_id: str, idx: int, check: dict[str, Any]) -> dict[str, Any]:
+    name = check.get("name")
+    op = check.get("op", "present")
+    if not name:
+        return _check_result(rule_id, idx, "error", None, op,
+                             "package_installed check missing required 'name' param",
+                             error="malformed rule: 'name' is required for package_installed")
+
+    cmd = ["dpkg-query", "-W", "-f=${Status}", name]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    except FileNotFoundError:
+        return _check_result(rule_id, idx, "error", None, op,
+                             f"ran: {' '.join(cmd)}", error="dpkg-query not found")
+    except subprocess.TimeoutExpired:
+        return _check_result(rule_id, idx, "error", None, op,
+                             f"ran: {' '.join(cmd)}", error="dpkg-query timed out")
+
+    installed = proc.returncode == 0 and "install ok installed" in proc.stdout
+    actual = "installed" if installed else "not installed"
+    evidence = f"dpkg-query -W {name} => {proc.stdout.strip() or proc.stderr.strip() or '(not found)'}"
+
+    if op == "present":
+        status = "pass" if installed else "fail"
+    elif op == "absent":
+        status = "pass" if not installed else "fail"
+    else:
+        raise NotImplementedError(f"package_installed op '{op}' not implemented")
+
+    return _check_result(rule_id, idx, status, actual, op, evidence)
+
+
+def check_service_state(rule_id: str, idx: int, check: dict[str, Any]) -> dict[str, Any]:
+    name = check.get("name")
+    expected = check.get("expected")  # "enabled", "disabled", "masked"
+    op = check.get("op", "equals")
+    if not name:
+        return _check_result(rule_id, idx, "error", None, expected,
+                             "service_state check missing required 'name' param",
+                             error="malformed rule: 'name' is required for service_state")
+
+    cmd = ["systemctl", "is-enabled", name]
+    try:
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+    except FileNotFoundError:
+        return _check_result(rule_id, idx, "error", None, expected,
+                             f"ran: {' '.join(cmd)}", error="systemctl not found")
+    except subprocess.TimeoutExpired:
+        return _check_result(rule_id, idx, "error", None, expected,
+                             f"ran: {' '.join(cmd)}", error="systemctl timed out")
+
+    actual = proc.stdout.strip()
+    evidence = f"systemctl is-enabled {name} => {actual or proc.stderr.strip()}"
+
+    # "not-found" means the service doesn't exist
+    if "not-found" in actual or "No such file" in proc.stderr:
+        # If we expect disabled/masked, a non-existent service can't run → pass
+        if expected in ("disabled", "masked"):
+            return _check_result(rule_id, idx, "pass", "not-found", expected, evidence)
+        else:
+            return _check_result(rule_id, idx, "fail", "not-found", expected, evidence)
+
+    if op == "equals":
+        # "masked" satisfies "disabled" (stricter), but "disabled" doesn't satisfy "masked"
+        if expected == "disabled":
+            status = "pass" if actual in ("disabled", "masked") else "fail"
+        else:
+            status = "pass" if actual == expected else "fail"
+    elif op == "matches":
+        status = "pass" if re.search(str(expected), actual) else "fail"
+    else:
+        raise NotImplementedError(f"service_state op '{op}' not implemented")
+
+    return _check_result(rule_id, idx, status, actual, expected, evidence)
+
+
+def check_config_grep(rule_id: str, idx: int, check: dict[str, Any]) -> dict[str, Any]:
+    path = check.get("path")
+    pattern = check.get("pattern")
+    op = check.get("op", "matches")  # "matches" = pattern found = pass; "absent" = not found = pass
+    ignore_comments = check.get("ignore_comments", True)
+    if not path or not pattern:
+        return _check_result(rule_id, idx, "error", None, pattern,
+                             "config_grep check missing required 'path' or 'pattern' param",
+                             error="malformed rule: 'path' and 'pattern' are required for config_grep")
+
+    try:
+        lines = Path(path).read_text(encoding="utf-8", errors="replace").splitlines()
+    except FileNotFoundError:
+        return _check_result(rule_id, idx, "error", None, pattern,
+                             f"read {path}", error=f"file not found: {path}")
+    except PermissionError as exc:
+        return _check_result(rule_id, idx, "error", None, pattern,
+                             f"read {path}", error=f"permission denied: {exc}")
+
+    # Filter comments if requested
+    if ignore_comments:
+        lines = [l for l in lines if not l.lstrip().startswith("#")]
+
+    # Search for pattern
+    matching_lines = [l for l in lines if re.search(pattern, l)]
+    found = len(matching_lines) > 0
+    actual = matching_lines[0].strip() if matching_lines else None
+    evidence = f"grep '{pattern}' {path} => {actual or '(no match)'} ({len(matching_lines)} matches)"
+
+    if op == "matches":
+        status = "pass" if found else "fail"
+    elif op == "absent":
+        status = "pass" if not found else "fail"
+    else:
+        raise NotImplementedError(f"config_grep op '{op}' not implemented")
+
+    return _check_result(rule_id, idx, status, actual, pattern, evidence)
+
+
 def _stub(check_type: str) -> Callable[..., dict[str, Any]]:
     def _raise(rule_id: str, idx: int, check: dict[str, Any]) -> dict[str, Any]:
         raise NotImplementedError(
-            f"check_type '{check_type}' is not implemented yet (Phase 1 skeleton)"
+            f"check_type '{check_type}' is not implemented yet"
         )
     return _raise
 
 
-# check_type → dispatcher. Implemented + explicit stubs (never a silent miss).
+# check_type → dispatcher. All Linux types now implemented.
 DISPATCH: dict[str, Callable[..., dict[str, Any]]] = {
     "sysctl": check_sysctl,
     "file_permission": check_file_permission,
-    "kernel_module": _stub("kernel_module"),
-    "package_installed": _stub("package_installed"),
-    "service_state": _stub("service_state"),
-    "config_grep": _stub("config_grep"),
+    "kernel_module": check_kernel_module,
+    "package_installed": check_package_installed,
+    "service_state": check_service_state,
+    "config_grep": check_config_grep,
 }
 
 
