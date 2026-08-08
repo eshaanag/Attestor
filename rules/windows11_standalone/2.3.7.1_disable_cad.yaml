@@ -1,0 +1,23 @@
+id: "2.3.7.1"
+title: "Ensure 'Interactive logon: Do not require CTRL+ALT+DEL' is set to Disabled"
+description: >
+  Disabling this setting requires users to press CTRL+ALT+DEL before logging on, preventing credential-harvesting via fake logon screens.
+rationale: >
+  Without the secure attention sequence (CTRL+ALT+DEL), a trojan program could present a fake logon dialog to capture credentials.
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: medium
+checks:
+  - type: registry
+    path: "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System"
+    name: DisableCAD
+    expected: "0"
+    op: equals
+remediation: >
+  Set HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\System\DisableCAD (REG_DWORD) = 0.
+source: >
+  Control ID 2.3.7.1, registry path, and expected value (DisableCAD=0) cross-referenced via ansible-lockdown/Windows-11-CIS (tasks/section_2/cis_2.3.7.x.yml, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0 (confirmed on cisecurity.org); the ansible-lockdown ref targets v3.0.0 and control numbering may have shifted — no direct PDF access to confirm. Registry mechanics VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
