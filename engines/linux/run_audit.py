@@ -612,15 +612,32 @@ def _benchmark_of(rules: list[dict[str, Any]]) -> tuple[str, str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Attestor Linux audit engine (Phase 1 skeleton)")
+    parser = argparse.ArgumentParser(
+        description="Attestor — CIS Benchmark audit engine for Linux.",
+        epilog=(
+            "Filter precedence: --include narrows the rule set first (only listed IDs run), "
+            "then --exclude removes from that set. --level filters independently (ANDed with "
+            "include/exclude). If --include is not specified, all rules in the target are "
+            "candidates (minus any --exclude)."
+        ),
+    )
     parser.add_argument("--target", default="ubuntu2204_desktop",
                         help="rule-pack target under rules/ (default: ubuntu2204_desktop)")
     parser.add_argument("--rules-dir", default=None,
                         help="override rule directory (default: rules/<target>)")
     parser.add_argument("--rule", action="append",
-                        help="explicit rule file(s) to run; repeatable. Overrides --rules-dir.")
-    parser.add_argument("--output", default="results.json",
-                        help="path to write final results.json (default: ./results.json)")
+                        help="explicit rule file(s) to run; repeatable. Overrides --rules-dir/--target.")
+    parser.add_argument("--level", type=int, choices=[1, 2], default=None,
+                        help="filter rules by CIS level (1 or 2). Default: run all levels present.")
+    parser.add_argument("--include", nargs="+", metavar="ID", default=None,
+                        help="space-separated list of CIS control IDs to include (only these run)")
+    parser.add_argument("--exclude", nargs="+", metavar="ID", default=None,
+                        help="space-separated list of CIS control IDs to exclude (these are skipped)")
+    parser.add_argument("--format", choices=["json", "html", "ndjson"], default="json",
+                        help="output format: json (results.json), html (also generates HTML report), "
+                             "ndjson (stream only, no file written). Default: json.")
+    parser.add_argument("--output", "-o", default="results.json",
+                        help="path to write results.json / HTML report (default: ./results.json)")
     args = parser.parse_args(argv)
 
     started_at = _now()
@@ -632,7 +649,28 @@ def main(argv: list[str] | None = None) -> int:
     for err in load_errors:
         print(f"LOAD ERROR (excluded): {err}", file=sys.stderr)
 
+    # --- Apply filters: --level, --include, --exclude ---
+    filtered = rules
+    if args.level is not None:
+        filtered = [r for r in filtered if r.get("level") == args.level]
+    if args.include is not None:
+        include_set = set(args.include)
+        filtered = [r for r in filtered if r["id"] in include_set]
+        # Warn about IDs that don't exist in the pack
+        found_ids = {r["id"] for r in filtered}
+        missing = include_set - found_ids
+        if missing:
+            print(f"WARNING: --include IDs not found in rule pack: {sorted(missing)}", file=sys.stderr)
+    if args.exclude is not None:
+        exclude_set = set(args.exclude)
+        filtered = [r for r in filtered if r["id"] not in exclude_set]
+
+    rules = filtered
+    total_selected = len(rules)
+
     controls: list[dict[str, Any]] = []
+
+    ndjson_mode = args.format == "ndjson"
 
     def emit(check_obj: dict[str, Any]) -> None:
         # Live NDJSON line to stdout, one per check as it completes.
@@ -642,11 +680,25 @@ def main(argv: list[str] | None = None) -> int:
     for rule in rules:
         controls.append(evaluate_rule(rule, emit))
 
-    results = build_results(rules, load_errors, len(rule_paths), args.target,
+    results = build_results(rules, load_errors, total_selected, args.target,
                             started_at, controls)
 
-    Path(args.output).write_text(
-        json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    # --- Output handling ---
+    if args.format != "ndjson":
+        Path(args.output).write_text(
+            json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    if args.format == "html":
+        # Invoke report generator
+        html_path = str(Path(args.output).with_suffix(".html"))
+        try:
+            sys.path.insert(0, str(REPO_ROOT))
+            from report.generate_report import load_results as _lr, render
+            html = render(results)
+            Path(html_path).write_text(html, encoding="utf-8")
+            print(f"HTML report → {html_path}", file=sys.stderr)
+        except Exception as exc:
+            print(f"WARNING: HTML generation failed: {exc}", file=sys.stderr)
 
     r = results["run"]
     s = results["summary"]
@@ -655,10 +707,10 @@ def main(argv: list[str] | None = None) -> int:
         f"evaluated {r['evaluated']}/{r['total_controls']} controls "
         f"(pass={s['pass']} fail={s['fail']} error={s['error']} "
         f"manual={s['manual']} n/a={s['not_applicable']}); "
-        f"{len(load_errors)} load error(s). results.json → {args.output}",
+        f"{len(load_errors)} load error(s)."
+        + (f" results.json → {args.output}" if args.format != "ndjson" else ""),
         file=sys.stderr,
     )
-    # Exit non-zero if the run was incomplete (load errors or unevaluated controls).
     return 0 if r["complete"] else 1
 
 

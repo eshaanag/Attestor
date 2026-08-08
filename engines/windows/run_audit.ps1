@@ -47,6 +47,12 @@ param(
     [string]$Target = "windows11_standalone",
     [string]$RulesDir = "",
     [string[]]$Rule = @(),
+    [ValidateSet(1, 2)]
+    [int]$Level = 0,  # 0 = all levels
+    [string[]]$Include = @(),
+    [string[]]$Exclude = @(),
+    [ValidateSet("json", "html", "ndjson")]
+    [string]$Format = "json",
     [string]$Output = "results.json"
 )
 
@@ -641,6 +647,27 @@ function Main {
         Write-Host "LOAD ERROR (excluded): $err" -ForegroundColor Red
     }
 
+    # --- Apply filters: -Level, -Include, -Exclude ---
+    # Precedence: Include narrows first, then Exclude removes, Level filters independently (ANDed).
+    if ($Level -gt 0) {
+        $rules = @($rules | Where-Object { $_["level"] -eq $Level })
+    }
+    if (@($Include).Count -gt 0) {
+        $includeSet = @($Include)
+        $rules = @($rules | Where-Object { $includeSet -contains $_["id"] })
+        $foundIds = @($rules | ForEach-Object { $_["id"] })
+        $missing = @($includeSet | Where-Object { $foundIds -notcontains $_ })
+        if ($missing.Count -gt 0) {
+            Write-Warning "Include IDs not found in rule pack: $($missing -join ', ')"
+        }
+    }
+    if (@($Exclude).Count -gt 0) {
+        $excludeSet = @($Exclude)
+        $rules = @($rules | Where-Object { $excludeSet -notcontains $_["id"] })
+    }
+
+    $totalSelected = @($rules).Count
+
     $controls = @()
     foreach ($rule in $rules) {
         $controls += ,(Invoke-Rule -RuleObj $rule)
@@ -656,7 +683,7 @@ function Main {
     $summary = [ordered]@{ pass = 0; fail = 0; error = 0; manual = 0; not_applicable = 0 }
     foreach ($c in $controls) { $summary[$c["status"]]++ }
 
-    $complete = ($loadErrors.Count -eq 0) -and ($controls.Count -eq $rulePaths.Count)
+    $complete = ($loadErrors.Count -eq 0) -and ($controls.Count -eq $totalSelected)
 
     # Build results.json (§3).
     $results = [ordered]@{
@@ -670,7 +697,7 @@ function Main {
             started_at     = $startedAt
             finished_at    = Get-UtcTimestamp
             complete       = $complete
-            total_controls = $rulePaths.Count
+            total_controls = $totalSelected
             evaluated      = $controls.Count
             engine         = $script:ENGINE_NAME
             engine_version = $script:ENGINE_VERSION
@@ -679,15 +706,29 @@ function Main {
         controls                = $controls
     }
 
-    # Write results.json.
-    $results | ConvertTo-Json -Depth 20 | Set-Content -Path $Output -Encoding UTF8
+    # --- Output handling ---
+    if ($Format -ne "ndjson") {
+        $results | ConvertTo-Json -Depth 20 | Set-Content -Path $Output -Encoding UTF8
+    }
+
+    if ($Format -eq "html") {
+        $htmlPath = [System.IO.Path]::ChangeExtension($Output, ".html")
+        try {
+            $pyCmd = "$($script:PYTHON) `"$($script:REPO_ROOT)/report/generate_report.py`" `"$Output`" -o `"$htmlPath`""
+            Invoke-Expression $pyCmd 2>&1 | Out-Null
+            Write-Host "HTML report -> $htmlPath" -ForegroundColor Green
+        } catch {
+            Write-Warning "HTML generation failed: $_"
+        }
+    }
 
     # Summary to stderr.
     $completeStr = if ($complete) { "COMPLETE" } else { "INCOMPLETE" }
-    $msg = "Run $completeStr`: evaluated $($controls.Count)/$($rulePaths.Count) controls " +
+    $msg = "Run $completeStr`: evaluated $($controls.Count)/$($totalSelected) controls " +
         "(pass=$($summary.pass) fail=$($summary.fail) error=$($summary.error) " +
         "manual=$($summary.manual) n/a=$($summary.not_applicable)); " +
-        "$($loadErrors.Count) load error(s). results.json -> $Output"
+        "$($loadErrors.Count) load error(s)."
+    if ($Format -ne "ndjson") { $msg += " results.json -> $Output" }
     Write-Host "`n$msg" -ForegroundColor Cyan
 
     if (-not $complete) { exit 1 }
