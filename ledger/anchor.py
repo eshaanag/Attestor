@@ -158,7 +158,7 @@ def anchor(args):
     tx = contract.functions.anchorRoot(root_bytes).build_transaction({
         "from": account.address,
         "nonce": w3.eth.get_transaction_count(account.address),
-        "gas": 100_000,
+        "gas": 200_000,
         "gasPrice": w3.eth.gas_price,
         "chainId": w3.eth.chain_id,
     })
