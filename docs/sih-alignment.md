@@ -31,7 +31,7 @@ Evidence = file path and/or commit that proves the claim.
 | Item | How Attestor addresses it | Status | Evidence |
 |---|---|---|---|
 | Real, explainable blockchain mechanism | SHA-256 hash-chained report ledger, per host, with break detection | done | `ledger/chain.py` (062fe39); `tests/test_ledger_chain.py` (8299c2b); 3-report chain proven intact, tamper at link 1 correctly detected |
-| Publicly verifiable, not just internal | Anchor chain root hash to Polygon Amoy testnet | planned (Phase 9 stretch) | `PROJECT_CONTEXT.md` (Level 2) |
+| Publicly verifiable, not just internal | Anchor chain root hash to Polygon Amoy testnet | done | Contract `0x5630C39abe14B8a4A23d696961Fc9067C7a6C129` deployed; [tx proof](https://amoy.polygonscan.com/tx/cb7157d36a6f9657f3efd4a82f378ef0088c9db03f78a6b685e21e9a2412359b) |
 | Tamper-evidence is honest | Canonical serialization so hashes are reproducible (no false "tamper" alarms); distinct failure modes (report-tampered vs chain-corrupted) | done | `ledger/canonical.py` (a7bd5a1); `tests/test_canonical_hash.py` + `test_reserialization_no_false_break` (8299c2b) |
 
 ## C. Judging lenses → how we score

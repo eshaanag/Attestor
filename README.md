@@ -72,11 +72,13 @@ attestor/
 
 | Target | Engine | Controls verified | Status |
 |--------|--------|-------------------|--------|
-| Ubuntu 22.04 Desktop (Level 1) | `engines/linux/run_audit.py` | 35 (sysctl + file_permission + kernel_module + config_grep + service_state + package_installed) | ✅ In progress — engine + 35 controls pass/fail verified on real VM |
-| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 30 (registry + secpol + account_policy + audit_policy + service_state) | ✅ In progress — engine + 30 controls pass/fail verified on real VM |
+| Ubuntu 22.04 Desktop (Level 1+2) | `engines/linux/run_audit.py` | 50 (sysctl + file_permission + kernel_module + config_grep + service_state + package_installed) | ✅ In progress — engine + 50 controls pass/fail verified on real VM |
+| Windows 11 Standalone (Level 1+2) | `engines/windows/run_audit.ps1` | 50 (registry + secpol + account_policy + audit_policy + service_state) | ✅ In progress — engine + 50 controls pass/fail verified on real VM |
 
-**Phase 0** (schema + validator), **Phase 1** (Linux engine), **Phase 2** (Windows engine), **Phase 3** (report generation), **Phase 4** (tamper-evident ledger), **Phase 5** (rule pack expansion to 30-40 controls per target), **Phase 6** (CLI polish), and **Phase 7** (local web GUI) complete.
-Stretch goals (Phase 8: fleet backend, Phase 9: testnet anchoring) are designed-for but not yet implemented.
+**Phase 0** (schema + validator), **Phase 1** (Linux engine), **Phase 2** (Windows engine), **Phase 3** (report generation), **Phase 4** (tamper-evident ledger), **Phase 5** (rule pack expansion), **Phase 6** (CLI polish), **Phase 7** (local web GUI), and **Phase 9** (testnet anchoring) complete.
+Stretch goal remaining: Phase 8 (fleet backend/dashboard).
+
+**Blockchain proof:** Contract [`0x5630C39abe14B8a4A23d696961Fc9067C7a6C129`](https://amoy.polygonscan.com/address/0x5630C39abe14B8a4A23d696961Fc9067C7a6C129) on Polygon Amoy — [anchor transaction](https://amoy.polygonscan.com/tx/cb7157d36a6f9657f3efd4a82f378ef0088c9db03f78a6b685e21e9a2412359b).
 
 See [`reports/sample-report.html`](reports/sample-report.html) for an example rendered report (opens offline, no network required).
 
