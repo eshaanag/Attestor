@@ -1,0 +1,20 @@
+id: "5.4.1.2"
+title: "Ensure minimum days between password changes is configured"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: config_grep
+    path: /etc/login.defs
+    pattern: "^PASS_MIN_DAYS\\s+[1-9]"
+    op: matches
+    ignore_comments: true
+remediation: >
+  Set PASS_MIN_DAYS 1 (or more) in /etc/login.defs
+source: >
+  Control ID 5.4.1.2, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-11.

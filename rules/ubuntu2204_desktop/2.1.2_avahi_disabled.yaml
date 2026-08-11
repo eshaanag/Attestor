@@ -1,0 +1,19 @@
+id: "2.1.2"
+title: "Ensure avahi-daemon is disabled"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: service_state
+    name: avahi-daemon
+    expected: disabled
+    op: equals
+remediation: >
+  Run: sudo systemctl disable --now avahi-daemon
+source: >
+  Control ID 2.1.2, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-11.

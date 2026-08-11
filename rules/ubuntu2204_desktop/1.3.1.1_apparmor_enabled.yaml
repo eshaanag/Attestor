@@ -1,0 +1,19 @@
+id: "1.3.1.1"
+title: "Ensure AppArmor is enabled and enforcing"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: high
+checks:
+  - type: service_state
+    name: apparmor
+    expected: enabled
+    op: equals
+remediation: >
+  Run: sudo systemctl enable apparmor
+source: >
+  Control ID 1.3.1.1, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-11.

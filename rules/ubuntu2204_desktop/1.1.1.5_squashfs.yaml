@@ -1,0 +1,18 @@
+id: "1.1.1.5"
+title: "Ensure squashfs kernel module is not available"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: kernel_module
+    name: squashfs
+    op: absent
+remediation: >
+  Add 'install squashfs /bin/false' and 'blacklist squashfs' to /etc/modprobe.d/
+source: >
+  Control ID 1.1.1.5, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-11.

@@ -1,0 +1,18 @@
+id: "3.2.1"
+title: "Ensure USB storage kernel module is not available"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: kernel_module
+    name: usb-storage
+    op: absent
+remediation: >
+  Add 'install usb-storage /bin/false' and 'blacklist usb-storage' to /etc/modprobe.d/
+source: >
+  Control ID 3.2.1, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). Manually verified on Ubuntu 22.04.3 LTS VM (192.168.64.3) 2026-08-11.
