@@ -159,9 +159,12 @@ function Invoke-RegistryCheck {
         $actual = [string]($regValue.$name)
     }
     catch [System.Management.Automation.ItemNotFoundException] {
-        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "error" `
-            -Actual $null -Expected $expected `
-            -Evidence $evidence -Error "registry path not found: $path"
+        # Registry path doesn't exist — policy not configured via GPO.
+        # This is a compliance failure (not an engine error): the setting
+        # isn't what CIS requires. Return fail with actual="(not configured)".
+        return New-CheckResult -RuleId $RuleId -CheckIndex $Idx -Status "fail" `
+            -Actual "(not configured)" -Expected $expected `
+            -Evidence "$evidence => registry path does not exist (policy not configured)"
     }
     catch [System.Management.Automation.PSArgumentException] {
         # Value name doesn't exist in the path — policy not configured.
