@@ -638,6 +638,9 @@ def main(argv: list[str] | None = None) -> int:
                              "ndjson (stream only, no file written). Default: json.")
     parser.add_argument("--output", "-o", default="results.json",
                         help="path to write results.json / HTML report (default: ./results.json)")
+    parser.add_argument("--blockchain", action="store_true", default=False,
+                        help="anchor the report hash to Ethereum Sepolia testnet after audit completes "
+                             "(requires ALCHEMY_URL and PRIVATE_KEY env vars)")
     args = parser.parse_args(argv)
 
     started_at = _now()
@@ -711,6 +714,59 @@ def main(argv: list[str] | None = None) -> int:
         + (f" results.json → {args.output}" if args.format != "ndjson" else ""),
         file=sys.stderr,
     )
+
+    # --- Blockchain anchoring ---
+    if args.blockchain and args.format != "ndjson":
+        try:
+            import os
+            from web3 import Web3
+            from eth_account import Account
+
+            rpc_url = os.environ.get("ALCHEMY_URL")
+            priv_key = os.environ.get("PRIVATE_KEY")
+            if not rpc_url or not priv_key:
+                print("WARNING: --blockchain requires ALCHEMY_URL and PRIVATE_KEY env vars", file=sys.stderr)
+            else:
+                # Compute content hash
+                sys.path.insert(0, str(REPO_ROOT))
+                from ledger.canonical import content_hash
+                report_hash = content_hash(results)
+
+                # Connect and send
+                w3 = Web3(Web3.HTTPProvider(rpc_url))
+                acct = Account.from_key(priv_key)
+
+                # Load contract
+                contract_file = REPO_ROOT / "ledger" / "contracts" / "sepolia_address.txt"
+                if not contract_file.exists():
+                    print("WARNING: No Sepolia contract deployed. Run: python ledger/anchor.py deploy", file=sys.stderr)
+                else:
+                    contract_addr = contract_file.read_text().strip()
+                    abi = json.loads((REPO_ROOT / "ledger" / "contracts" / "AttestorAnchor.abi.json").read_text())
+                    contract = w3.eth.contract(address=contract_addr, abi=abi)
+
+                    root_bytes = bytes.fromhex(report_hash)
+                    tx = contract.functions.anchorRoot(root_bytes).build_transaction({
+                        "from": acct.address,
+                        "nonce": w3.eth.get_transaction_count(acct.address),
+                        "gas": 200_000,
+                        "gasPrice": w3.eth.gas_price,
+                        "chainId": w3.eth.chain_id,
+                    })
+                    signed = acct.sign_transaction(tx)
+                    tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
+                    print(f"\n🔗 Blockchain: anchoring report hash to Ethereum Sepolia...", file=sys.stderr)
+                    receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+                    if receipt.status == 1:
+                        print(f"✓ Anchored on-chain! Tx: https://sepolia.etherscan.io/tx/{tx_hash.hex()}", file=sys.stderr)
+                        print(f"  Report hash: 0x{report_hash[:32]}...", file=sys.stderr)
+                    else:
+                        print(f"✗ Transaction reverted", file=sys.stderr)
+        except ImportError:
+            print("WARNING: --blockchain requires web3 package. Run: pip install web3", file=sys.stderr)
+        except Exception as exc:
+            print(f"WARNING: Blockchain anchoring failed: {exc}", file=sys.stderr)
+
     return 0 if r["complete"] else 1
 
 
