@@ -3,59 +3,57 @@ pragma solidity ^0.8.19;
 
 /**
  * @title AttestorAnchor
- * @notice Minimal contract for anchoring Attestor ledger root hashes
- *         to a public blockchain (Polygon Amoy testnet).
- *
- * Purpose: Make the local SHA-256 hash chain publicly, independently
- * verifiable. Anyone can query this contract to confirm that a specific
- * root hash was anchored at a specific time — no special access needed.
- *
- * Design: deliberately minimal. One function, one event, one mapping.
- * No admin, no upgradability, no access control beyond msg.sender tracking.
+ * @notice Anchors Attestor ledger report hashes to a public blockchain.
+ *         Each anchor stores BOTH the current report hash AND the previous
+ *         report hash, making the chain linkage visible on-chain (in Etherscan
+ *         event logs) — not just locally.
  */
 contract AttestorAnchor {
     struct Anchor {
         bytes32 root;
+        bytes32 previousRoot;
         uint256 timestamp;
         address submitter;
     }
 
-    /// @notice All anchored roots, newest last.
     Anchor[] public anchors;
 
-    /// @notice Emitted when a new root is anchored.
-    event RootAnchored(
+    /// @notice Emitted when a report is anchored. Both hashes visible in Etherscan logs.
+    event ReportAnchored(
         bytes32 indexed root,
+        bytes32 indexed previousRoot,
         uint256 timestamp,
-        address indexed submitter,
-        uint256 index
+        address indexed submitter
     );
 
-    /// @notice Anchor a ledger root hash on-chain.
-    /// @param root The SHA-256 hash (as bytes32) of the latest chain state.
-    function anchorRoot(bytes32 root) external {
-        uint256 idx = anchors.length;
+    /// @notice Anchor a report hash with its chain predecessor.
+    /// @param root The SHA-256 hash of the current report.
+    /// @param previousRoot The SHA-256 hash of the previous report (0x00..00 if first).
+    function anchorReport(bytes32 root, bytes32 previousRoot) external {
         anchors.push(Anchor({
             root: root,
+            previousRoot: previousRoot,
             timestamp: block.timestamp,
             submitter: msg.sender
         }));
-        emit RootAnchored(root, block.timestamp, msg.sender, idx);
+        emit ReportAnchored(root, previousRoot, block.timestamp, msg.sender);
     }
 
-    /// @notice Get total number of anchored roots.
+    /// @notice Get total anchored reports.
     function anchorCount() external view returns (uint256) {
         return anchors.length;
     }
 
-    /// @notice Verify if a specific root has ever been anchored.
-    /// @return found Whether the root exists, and its timestamp if so.
-    function verifyRoot(bytes32 root) external view returns (bool found, uint256 timestamp, address submitter) {
+    /// @notice Verify a root exists and get its chain predecessor.
+    function verifyRoot(bytes32 root) external view returns (
+        bool found, bytes32 previousRoot, uint256 timestamp, address submitter
+    ) {
         for (uint256 i = anchors.length; i > 0; i--) {
             if (anchors[i-1].root == root) {
-                return (true, anchors[i-1].timestamp, anchors[i-1].submitter);
+                Anchor memory a = anchors[i-1];
+                return (true, a.previousRoot, a.timestamp, a.submitter);
             }
         }
-        return (false, 0, address(0));
+        return (false, bytes32(0), 0, address(0));
     }
 }

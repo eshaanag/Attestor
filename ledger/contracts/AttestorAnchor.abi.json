@@ -9,6 +9,12 @@
         "type": "bytes32"
       },
       {
+        "indexed": true,
+        "internalType": "bytes32",
+        "name": "previousRoot",
+        "type": "bytes32"
+      },
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "timestamp",
@@ -19,15 +25,9 @@
         "internalType": "address",
         "name": "submitter",
         "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "index",
-        "type": "uint256"
       }
     ],
-    "name": "RootAnchored",
+    "name": "ReportAnchored",
     "type": "event"
   },
   {
@@ -49,9 +49,14 @@
         "internalType": "bytes32",
         "name": "root",
         "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "previousRoot",
+        "type": "bytes32"
       }
     ],
-    "name": "anchorRoot",
+    "name": "anchorReport",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -69,6 +74,11 @@
       {
         "internalType": "bytes32",
         "name": "root",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "previousRoot",
         "type": "bytes32"
       },
       {
@@ -99,6 +109,11 @@
         "internalType": "bool",
         "name": "found",
         "type": "bool"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "previousRoot",
+        "type": "bytes32"
       },
       {
         "internalType": "uint256",

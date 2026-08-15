@@ -756,12 +756,12 @@ def main(argv: list[str] | None = None) -> int:
                     contract = w3.eth.contract(address=contract_addr, abi=abi)
 
                     root_bytes = bytes.fromhex(chain_rec["content_hash"])
-                    tx = contract.functions.anchorRoot(root_bytes).build_transaction({
+                    prev_bytes = bytes.fromhex(chain_rec["prev_hash"])
+                    tx = contract.functions.anchorReport(root_bytes, prev_bytes).build_transaction({
                         "from": acct.address,
                         "nonce": w3.eth.get_transaction_count(acct.address),
                         "gas": 200_000,
-                        "maxFeePerGas": w3.eth.gas_price * 2,
-                        "maxPriorityFeePerGas": w3.to_wei(2, "gwei"),
+                        "gasPrice": w3.eth.gas_price * 2,
                         "chainId": w3.eth.chain_id,
                     })
                     signed = acct.sign_transaction(tx)
