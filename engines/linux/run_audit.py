@@ -727,39 +727,50 @@ def main(argv: list[str] | None = None) -> int:
             if not rpc_url or not priv_key:
                 print("WARNING: --blockchain requires ALCHEMY_URL and PRIVATE_KEY env vars", file=sys.stderr)
             else:
-                # Compute content hash
+                # Step 1: Chain the report locally (link to previous)
                 sys.path.insert(0, str(REPO_ROOT))
                 from ledger.canonical import content_hash
-                report_hash = content_hash(results)
+                from ledger.chain import append, verify
 
-                # Connect and send
+                chain_file = REPO_ROOT / "ledger" / "chain.jsonl"
+                host_id = results.get("host", {}).get("hostname", "unknown")
+
+                # Append to local chain (links to previous report for this host)
+                chain_rec = append(args.output, host_id, chain_path=chain_file)
+
+                print(f"\n🔗 Hash chain:", file=sys.stderr)
+                print(f"  Report hash:   0x{chain_rec['content_hash'][:32]}...", file=sys.stderr)
+                print(f"  Previous hash: 0x{chain_rec['prev_hash'][:32]}...", file=sys.stderr)
+                print(f"  Host: {host_id} | Chain links: {verify(host_id, chain_path=chain_file)['links']}", file=sys.stderr)
+
+                # Step 2: Anchor on Ethereum Sepolia
                 w3 = Web3(Web3.HTTPProvider(rpc_url))
                 acct = Account.from_key(priv_key)
 
-                # Load contract
                 contract_file = REPO_ROOT / "ledger" / "contracts" / "sepolia_address.txt"
                 if not contract_file.exists():
-                    print("WARNING: No Sepolia contract deployed. Run: python ledger/anchor.py deploy", file=sys.stderr)
+                    print("WARNING: No Sepolia contract deployed.", file=sys.stderr)
                 else:
                     contract_addr = contract_file.read_text().strip()
                     abi = json.loads((REPO_ROOT / "ledger" / "contracts" / "AttestorAnchor.abi.json").read_text())
                     contract = w3.eth.contract(address=contract_addr, abi=abi)
 
-                    root_bytes = bytes.fromhex(report_hash)
+                    root_bytes = bytes.fromhex(chain_rec["content_hash"])
                     tx = contract.functions.anchorRoot(root_bytes).build_transaction({
                         "from": acct.address,
                         "nonce": w3.eth.get_transaction_count(acct.address),
                         "gas": 200_000,
-                        "gasPrice": w3.eth.gas_price,
+                        "maxFeePerGas": w3.eth.gas_price * 2,
+                        "maxPriorityFeePerGas": w3.to_wei(2, "gwei"),
                         "chainId": w3.eth.chain_id,
                     })
                     signed = acct.sign_transaction(tx)
                     tx_hash = w3.eth.send_raw_transaction(signed.raw_transaction)
-                    print(f"\n🔗 Blockchain: anchoring report hash to Ethereum Sepolia...", file=sys.stderr)
+                    print(f"\n⛓️  Anchoring to Ethereum Sepolia...", file=sys.stderr)
                     receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
                     if receipt.status == 1:
-                        print(f"✓ Anchored on-chain! Tx: https://sepolia.etherscan.io/tx/{tx_hash.hex()}", file=sys.stderr)
-                        print(f"  Report hash: 0x{report_hash[:32]}...", file=sys.stderr)
+                        print(f"✓ On-chain! https://sepolia.etherscan.io/tx/{tx_hash.hex()}", file=sys.stderr)
+                        print(f"  Anyone can verify this report existed at this moment.", file=sys.stderr)
                     else:
                         print(f"✗ Transaction reverted", file=sys.stderr)
         except ImportError:
