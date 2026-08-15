@@ -1,0 +1,21 @@
+id: "7.2.10"
+title: "Ensure permissions on /etc/security/opasswd are configured"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: high
+checks:
+  - type: file_permission
+    path: /etc/security/opasswd
+    expected: "0600"
+    owner: root
+    group: root
+    op: equals
+remediation: >
+  Run: chmod 600 /etc/security/opasswd && chown root:root /etc/security/opasswd
+source: >
+  Control ID 7.2.10, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

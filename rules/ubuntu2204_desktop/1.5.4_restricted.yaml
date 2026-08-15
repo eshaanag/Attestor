@@ -1,0 +1,19 @@
+id: "1.5.4"
+title: "Ensure kernel dmesg access is restricted"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: sysctl
+    key: kernel.dmesg_restrict
+    expected: "1"
+    op: equals
+remediation: >
+  Set kernel.dmesg_restrict = 1 in /etc/sysctl.d/99-attestor.conf and run sysctl -p
+source: >
+  Control ID 1.5.4, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

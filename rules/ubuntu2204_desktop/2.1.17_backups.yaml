@@ -1,0 +1,18 @@
+id: "2.1.17"
+title: "Ensure rsync is installed for backups"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: package_installed
+    name: rsync
+    op: present
+remediation: >
+  Run: sudo apt install rsync
+source: >
+  Control ID 2.1.17, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

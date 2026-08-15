@@ -1,0 +1,20 @@
+id: "5.4.2.4"
+title: "Ensure shell timeout (TMOUT) is configured"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: config_grep
+    path: /etc/profile
+    pattern: "^(export\\s+)?TMOUT="
+    op: matches
+    ignore_comments: true
+remediation: >
+  Configure the required setting in /etc/profile
+source: >
+  Control ID 5.4.2.4, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

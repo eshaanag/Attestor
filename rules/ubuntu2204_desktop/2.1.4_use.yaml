@@ -1,0 +1,19 @@
+id: "2.1.4"
+title: "Ensure vsftpd service is not in use"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: service_state
+    name: vsftpd
+    expected: disabled
+    op: equals
+remediation: >
+  Run: sudo systemctl disable --now vsftpd
+source: >
+  Control ID 2.1.4, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

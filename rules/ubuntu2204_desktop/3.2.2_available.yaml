@@ -1,0 +1,18 @@
+id: "3.2.2"
+title: "Ensure TIPC kernel module is not available"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: kernel_module
+    name: tipc
+    op: absent
+remediation: >
+  Add 'install tipc /bin/false' and 'blacklist tipc' to /etc/modprobe.d/attestor.conf
+source: >
+  Control ID 3.2.2, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

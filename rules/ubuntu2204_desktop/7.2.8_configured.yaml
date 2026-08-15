@@ -1,0 +1,21 @@
+id: "7.2.8"
+title: "Ensure permissions on /etc/issue.net are configured"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: file_permission
+    path: /etc/issue.net
+    expected: "0644"
+    owner: root
+    group: root
+    op: equals
+remediation: >
+  Run: chmod 644 /etc/issue.net && chown root:root /etc/issue.net
+source: >
+  Control ID 7.2.8, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

@@ -1,0 +1,20 @@
+id: "5.4.2.2"
+title: "Ensure inactive password lock is 30 days or less"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: medium
+checks:
+  - type: config_grep
+    path: /etc/default/useradd
+    pattern: "^INACTIVE\\s+(-1|[0-9]|[12][0-9]|30)$"
+    op: matches
+    ignore_comments: true
+remediation: >
+  Configure the required setting in /etc/default/useradd
+source: >
+  Control ID 5.4.2.2, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

@@ -1,0 +1,20 @@
+id: "5.1.10"
+title: "Ensure sshd Banner is configured"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: config_grep
+    path: /etc/ssh/sshd_config
+    pattern: "^Banner\\s+/"
+    op: matches
+    ignore_comments: true
+remediation: >
+  Configure the required setting in /etc/ssh/sshd_config
+source: >
+  Control ID 5.1.10, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

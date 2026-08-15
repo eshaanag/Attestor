@@ -192,14 +192,33 @@ async def run_audit(target: str = "ubuntu2204_desktop", level: int = 1):
     output_path = RESULTS_DIR / f"run_{run_id}.json"
     html_path = RESULTS_DIR / f"run_{run_id}.html"
 
-    # Build engine command
-    cmd = [
-        sys.executable, str(REPO_ROOT / "engines" / "linux" / "run_audit.py"),
-        "--target", target,
-        "--level", str(level),
-        "--format", "html",
-        "--output", str(output_path),
-    ]
+    # Build engine command based on target
+    if "windows" in target:
+        # Windows: SSH to the Windows VM and run PowerShell engine
+        win_host = "192.168.64.4"
+        win_user = "lab"
+        win_pass = "lab"
+        ps_cmd = (
+            f"Set-Location C:\\attestor; "
+            f".\\engines\\windows\\run_audit.ps1 "
+            f"-RulesDir 'C:\\attestor\\rules\\{target}' "
+            f"-Level {level} -Format ndjson -Output 'C:\\attestor\\run_{run_id}.json'"
+        )
+        cmd = [
+            "sshpass", "-p", win_pass,
+            "ssh", "-o", "StrictHostKeyChecking=no",
+            f"{win_user}@{win_host}",
+            f"powershell -NoProfile -ExecutionPolicy Bypass -Command \"{ps_cmd}\""
+        ]
+    else:
+        # Linux: local subprocess
+        cmd = [
+            sys.executable, str(REPO_ROOT / "engines" / "linux" / "run_audit.py"),
+            "--target", target,
+            "--level", str(level),
+            "--format", "html",
+            "--output", str(output_path),
+        ]
 
     async def event_stream() -> AsyncGenerator[str, None]:
         process = await asyncio.create_subprocess_exec(

@@ -1,0 +1,21 @@
+id: "7.2.9"
+title: "Ensure permissions on /var/log/syslog are restricted"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: high
+checks:
+  - type: file_permission
+    path: /var/log/syslog
+    expected: "0640"
+    owner: syslog
+    group: adm
+    op: equals
+remediation: >
+  Run: chmod 640 /var/log/syslog && chown syslog:adm /var/log/syslog
+source: >
+  Control ID 7.2.9, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

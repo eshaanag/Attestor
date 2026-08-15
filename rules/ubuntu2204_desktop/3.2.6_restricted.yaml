@@ -1,0 +1,18 @@
+id: "3.2.6"
+title: "Ensure VFAT kernel module is restricted"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: kernel_module
+    name: vfat
+    op: absent
+remediation: >
+  Add 'install vfat /bin/false' and 'blacklist vfat' to /etc/modprobe.d/attestor.conf
+source: >
+  Control ID 3.2.6, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

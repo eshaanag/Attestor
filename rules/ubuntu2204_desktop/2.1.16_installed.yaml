@@ -1,0 +1,18 @@
+id: "2.1.16"
+title: "Ensure LDAP client is not installed"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 1
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: package_installed
+    name: ldap-utils
+    op: absent
+remediation: >
+  Run: sudo apt purge ldap-utils
+source: >
+  Control ID 2.1.16, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

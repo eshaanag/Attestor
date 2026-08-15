@@ -1,0 +1,19 @@
+id: "1.5.5"
+title: "Ensure kernel perf_event_paranoid is set to 3 or higher"
+benchmark: "CIS Ubuntu Linux 22.04 LTS Benchmark"
+benchmark_version: "v2.0.0"
+level: 2
+profile:
+  - server
+  - workstation
+automated: true
+severity: low
+checks:
+  - type: sysctl
+    key: kernel.perf_event_paranoid
+    expected: "3"
+    op: equals
+remediation: >
+  Set kernel.perf_event_paranoid = 3 in /etc/sysctl.d/99-attestor.conf and run sysctl -p
+source: >
+  Control ID 1.5.5, cross-referenced via reference/UBUNTU22-CIS-Audit (CIS Ubuntu 22.04 LTS Benchmark v2.0.0, Level 2). VM-verified on Ubuntu 22.04 (192.168.64.6) 2026-08-15.

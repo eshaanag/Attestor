@@ -1,0 +1,19 @@
+id: "1.2.3"
+title: "Ensure 'Reset account lockout counter' is 15 or more minutes"
+benchmark: "CIS Microsoft Windows 11 Standalone Benchmark"
+benchmark_version: "v3.0.0"
+level: 1
+profile:
+  - standalone
+automated: true
+severity: medium
+checks:
+  - type: account_policy
+    section: "System Access"
+    key: ResetLockoutCount
+    expected: "15"
+    op: equals
+remediation: >
+  Refer to CIS Benchmark section 1.2.3 for detailed remediation steps.
+source: >
+  Control ID 1.2.3, cross-referenced via ansible-lockdown/Windows-11-CIS (CIS Windows 11 benchmark v3.0.0). NOTE: current is v5.0.0; no direct PDF access. Secedit VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-15.
