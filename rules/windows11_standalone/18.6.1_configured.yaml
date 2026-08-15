@@ -14,6 +14,6 @@ checks:
     expected: "RequireMutualAuthentication=1, RequireIntegrity=1"
     op: equals
 remediation: >
-  Refer to CIS Benchmark section 18.6.1 for detailed remediation steps.
+  Set registry value: HKLM:\Software\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths\\\*\NETLOGON = RequireMutualAuthentication=1, RequireIntegrity=1 (REG_DWORD). Via PowerShell: Set-ItemProperty -Path 'HKLM:\Software\Policies\Microsoft\Windows\NetworkProvider\HardenedPaths' -Name '\\*\NETLOGON' -Value RequireMutualAuthentication=1, RequireIntegrity=1 -Type DWord -Force
 source: >
   Control ID 18.6.1, cross-referenced via ansible-lockdown/Windows-11-CIS (CIS Windows 11 benchmark v3.0.0). NOTE: current is v5.0.0; no direct PDF access. Registry VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-15.

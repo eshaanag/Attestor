@@ -16,6 +16,6 @@ checks:
     expected: "1"
     op: equals
 remediation: >
-  Refer to CIS Benchmark section 2.3.17.5 for detailed remediation steps.
+  Set registry value: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\PromptOnSecureDesktop = 1 (REG_DWORD). Via PowerShell: Set-ItemProperty -Path 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System' -Name 'PromptOnSecureDesktop' -Value 1 -Type DWord -Force
 source: >
   Control ID 2.3.17.5, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_2.3.17.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Registry VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.

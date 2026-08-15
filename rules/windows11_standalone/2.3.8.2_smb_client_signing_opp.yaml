@@ -16,6 +16,6 @@ checks:
     expected: "1"
     op: equals
 remediation: >
-  Refer to CIS Benchmark section 2.3.8.2 for detailed remediation steps.
+  Set registry value: HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\EnableSecuritySignature = 1 (REG_DWORD). Via PowerShell: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Services\LanmanWorkstation\Parameters' -Name 'EnableSecuritySignature' -Value 1 -Type DWord -Force
 source: >
   Control ID 2.3.8.2, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_2.3.8.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Registry VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.

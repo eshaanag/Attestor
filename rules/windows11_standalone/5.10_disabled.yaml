@@ -13,6 +13,6 @@ checks:
     expected: "Disabled"
     op: equals
 remediation: >
-  Refer to CIS Benchmark section 5.10 for detailed remediation steps.
+  Run: Stop-Service SharedAccess -Force; Set-Service SharedAccess -StartupType Disabled
 source: >
   Control ID 5.10, cross-referenced via ansible-lockdown/Windows-11-CIS (CIS Windows 11 benchmark v3.0.0). NOTE: current is v5.0.0; no direct PDF access. Get-Service VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-15.

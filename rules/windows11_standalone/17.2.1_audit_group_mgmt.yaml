@@ -15,6 +15,6 @@ checks:
     expected: "Success"
     op: equals
 remediation: >
-  Refer to CIS Benchmark section 17.2.1 for detailed remediation steps.
+  Run: auditpol /set /subcategory:"Security Group Management" /success:enable
 source: >
   Control ID 17.2.1, cross-referenced via ansible-lockdown/Windows-11-CIS (cis_17.2.x, which targets CIS Windows 11 benchmark v3.0.0). NOTE: current CIS Windows 11 Standalone benchmark is v5.0.0; no direct PDF access. Auditpol VM-verified on Windows 11 Pro (192.168.64.4, build 26200) 2026-08-08.
