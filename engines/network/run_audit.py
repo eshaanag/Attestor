@@ -33,7 +33,7 @@ from tests.validate_rules import format_errors, load_validator  # noqa: E402
 
 
 ENGINE_NAME = "network"
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"
 ATTESTOR_FORMAT_VERSION = "1.0"
 VALID_STATUSES = {"pass", "fail", "error", "manual", "not_applicable"}
 WRAPPER_COMMANDS = {"enable", "configure terminal", "end", "write memory"}
@@ -64,6 +64,65 @@ class ConfigDocument:
             if match:
                 return match.group(1)
         return None
+
+
+@dataclass(frozen=True)
+class ConfigBlock:
+    context_type: str
+    header: ConfigLine
+    children: tuple[ConfigLine, ...]
+
+
+def _block_header_matches(context_type: str, normalized: str) -> bool:
+    if context_type == "line_vty":
+        return bool(re.match(r"^line\s+vty(?:\s|$)", normalized, re.IGNORECASE))
+    if context_type == "interface":
+        return bool(re.match(r"^interface\s+\S+", normalized, re.IGNORECASE))
+    return False
+
+
+def parse_blocks(config: ConfigDocument, context_type: str) -> tuple[ConfigBlock, ...]:
+    """Parse only the supported IOS top-level stanza contexts.
+
+    IOS configuration is hierarchical, but Phase D needs only enough context to
+    keep indented child commands attached to their own ``line vty`` or
+    ``interface`` header. A non-indented active line closes the current block;
+    ``exit`` is also treated as an explicit close marker.
+    """
+    if context_type not in {"line_vty", "interface"}:
+        raise ValueError(f"unsupported config_block context_type: {context_type!r}")
+
+    blocks: list[ConfigBlock] = []
+    current_header: ConfigLine | None = None
+    children: list[ConfigLine] = []
+
+    def close() -> None:
+        nonlocal current_header, children
+        if current_header is not None:
+            blocks.append(ConfigBlock(context_type, current_header, tuple(children)))
+        current_header = None
+        children = []
+
+    for line in config.lines:
+        indented = bool(line.raw) and line.raw[0].isspace()
+        if current_header is None:
+            if not indented and _block_header_matches(context_type, line.normalized):
+                current_header = line
+            continue
+
+        if not indented:
+            close()
+            if _block_header_matches(context_type, line.normalized):
+                current_header = line
+            continue
+
+        if line.normalized.casefold() == "exit":
+            close()
+            continue
+        children.append(line)
+
+    close()
+    return tuple(blocks)
 
 
 def _now() -> str:
@@ -201,6 +260,104 @@ def check_config_grep(
     return _check_result(rule_id, idx, status, actual, pattern, evidence)
 
 
+def check_config_block(
+    rule_id: str,
+    idx: int,
+    check: dict[str, Any],
+    config: ConfigDocument,
+) -> dict[str, Any]:
+    """Evaluate required/forbidden patterns independently inside each block."""
+    context_type = check.get("context_type")
+    header_pattern = check.get("header_pattern")
+    required = check.get("required_patterns", [])
+    forbidden = check.get("forbidden_patterns", [])
+    expected = "all selected blocks satisfy required/forbidden patterns"
+
+    if context_type not in {"line_vty", "interface"}:
+        return _check_result(
+            rule_id, idx, "error", None, expected,
+            "config_block has unsupported context_type",
+            error="context_type must be 'line_vty' or 'interface'",
+        )
+    if not isinstance(header_pattern, str) or not header_pattern:
+        return _check_result(
+            rule_id, idx, "error", None, expected,
+            "config_block check missing non-empty header_pattern",
+            error="header_pattern is required for config_block",
+        )
+    if not isinstance(required, list) or not all(isinstance(p, str) and p for p in required):
+        return _check_result(
+            rule_id, idx, "error", None, expected,
+            "config_block required_patterns must be a list of non-empty strings",
+            error="malformed required_patterns",
+        )
+    if not isinstance(forbidden, list) or not all(isinstance(p, str) and p for p in forbidden):
+        return _check_result(
+            rule_id, idx, "error", None, expected,
+            "config_block forbidden_patterns must be a list of non-empty strings",
+            error="malformed forbidden_patterns",
+        )
+
+    try:
+        header_regex = re.compile(header_pattern, re.IGNORECASE)
+        required_regexes = [re.compile(pattern, re.IGNORECASE) for pattern in required]
+        forbidden_regexes = [re.compile(pattern, re.IGNORECASE) for pattern in forbidden]
+        blocks = parse_blocks(config, context_type)
+    except (re.error, ValueError) as exc:
+        return _check_result(
+            rule_id, idx, "error", None, expected,
+            "config_block could not be compiled or parsed",
+            error=f"config_block setup failed: {exc}",
+        )
+
+    selected = [block for block in blocks if header_regex.search(block.header.normalized)]
+    if not selected:
+        return _check_result(
+            rule_id, idx, "error", None, expected,
+            f"config_block {context_type} matched no headers in {config.path}",
+            error="no matching configuration blocks; compliance cannot be inferred",
+        )
+
+    block_observations: list[dict[str, Any]] = []
+    failures = False
+    for block in selected:
+        child_text = [line.normalized for line in block.children]
+        missing = [
+            pattern for pattern, regex in zip(required, required_regexes)
+            if not any(regex.search(text) for text in child_text)
+        ]
+        forbidden_matches = [
+            {
+                "pattern": pattern,
+                "lines": [
+                    {"number": line.number, "text": line.normalized}
+                    for line, text in zip(block.children, child_text)
+                    if regex.search(text)
+                ],
+            }
+            for pattern, regex in zip(forbidden, forbidden_regexes)
+            if any(regex.search(text) for text in child_text)
+        ]
+        if missing or forbidden_matches:
+            failures = True
+        block_observations.append(
+            {
+                "header": block.header.normalized,
+                "header_line": block.header.number,
+                "missing_required": missing,
+                "forbidden_matches": forbidden_matches,
+            }
+        )
+
+    status = "fail" if failures else "pass"
+    evidence = (
+        f"config_block {context_type} header {header_pattern!r} in {config.path}: "
+        + json.dumps(block_observations, ensure_ascii=False, sort_keys=True)
+    )
+    actual = f"{len(selected)} selected {context_type} block(s) evaluated"
+    return _check_result(rule_id, idx, status, actual, expected, evidence)
+
+
 def run_check(
     rule_id: str,
     idx: int,
@@ -208,6 +365,15 @@ def run_check(
     config: ConfigDocument,
 ) -> dict[str, Any]:
     check_type = check.get("type")
+    if check_type == "config_block":
+        try:
+            return check_config_block(rule_id, idx, check, config)
+        except Exception as exc:  # a crashing check must never become a pass
+            return _check_result(
+                rule_id, idx, "error", None, check,
+                "network config_block raised during execution",
+                error=f"{type(exc).__name__}: {exc}",
+            )
     if check_type != "config_grep":
         return _check_result(
             rule_id,
@@ -217,8 +383,8 @@ def run_check(
             check.get("expected"),
             f"network Phase C has no dispatcher for check_type {check_type!r}",
             error=(
-                "only flat config_grep is implemented; config_block and other "
-                "types remain outside Phase C"
+                "only config_grep and config_block are implemented; other "
+                "network check types remain outside the current scope"
             ),
         )
     try:
@@ -396,7 +562,7 @@ def resolve_rule_paths(args: argparse.Namespace) -> list[Path]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Attestor — offline Cisco IOS flat configuration audit engine (Phase C)."
+        description="Attestor — offline Cisco IOS configuration audit engine (Phase C/D)."
     )
     parser.add_argument("--config", required=True, help="saved Cisco IOS/IOS-XE config file")
     parser.add_argument("--device-id", default=None, help="stable device ID; defaults to parsed hostname")

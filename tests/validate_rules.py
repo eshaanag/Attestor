@@ -40,6 +40,7 @@ FIXTURE_EXPECTATIONS = {
     "invalid_bad_id.yaml": False,
     "invalid_network_missing_device.yaml": False,
     "invalid_framework_mapping.yaml": False,
+    "invalid_network_block.yaml": False,
 }
 
 

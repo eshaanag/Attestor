@@ -1,0 +1,31 @@
+# Parser verification fixture only. This is not a CIS control or production rule.
+id: "99.0.2"
+title: "Phase D block-aware config verification fixture"
+benchmark: "Attestor Phase D parser verification"
+benchmark_version: "2026-08-24"
+level: 1
+profile:
+  - network_device
+device:
+  vendor: Cisco
+  platform: IOS
+  roles:
+    - router
+  config_format: reference-config
+automated: true
+severity: low
+checks:
+  - type: config_block
+    context_type: interface
+    header_pattern: "^interface\\s+\\S+"
+    required_patterns:
+      - "^no shutdown$"
+    forbidden_patterns: []
+  - type: config_block
+    context_type: interface
+    header_pattern: "^interface\\s+\\S+"
+    required_patterns: []
+    forbidden_patterns:
+      - "^switchport mode access$"
+remediation: "Fixture only; no remediation claim."
+source: "Attestor Phase D parser verification fixture; manually reviewed 2026-08-24"

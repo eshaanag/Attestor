@@ -50,8 +50,13 @@ is `true` inside a check.
   `config_grep`, `service_state`
 - **Windows 11 Standalone**: `registry`, `account_policy`, `secpol`, `audit_policy`,
   `service_state`
-- **Network track (contract only in Phase A)**: existing `config_grep` for flat
-  text checks and `config_block` for block-aware checks.
+- **Network track**: existing `config_grep` for flat text checks and
+  `config_block` for block-aware checks.
+
+`config_block` additionally requires `context_type` (`line_vty` or
+`interface`), a non-empty `header_pattern`, and `required_patterns` /
+`forbidden_patterns` arrays of regex strings. This is a parser contract, not a
+claim that a corresponding CIS control has been sourced or verified.
 
 `service_state` is shared across both engines.
 

@@ -173,7 +173,41 @@
             "enum": ["equals", "matches", "absent", "present"],
             "description": "Comparison operator for the check (type-specific params carry the rest)."
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": { "type": { "const": "config_block" } },
+              "required": ["type"]
+            },
+            "then": {
+              "required": [
+                "context_type",
+                "header_pattern",
+                "required_patterns",
+                "forbidden_patterns"
+              ],
+              "properties": {
+                "context_type": {
+                  "type": "string",
+                  "enum": ["line_vty", "interface"]
+                },
+                "header_pattern": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "required_patterns": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 }
+                },
+                "forbidden_patterns": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "remediation": {

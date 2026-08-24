@@ -90,15 +90,16 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | Phase | Scope | Status | Evidence |
 |---|---|---|---|
 | A | Additive schema + interface contracts | Complete | 200 legacy rules validate unchanged; 6 schema fixtures behave as expected; canonical/ledger/anchor tests pass |
-| B | Genuine Cisco IOS config corpus | Complete pending commit/push protocol | 8 MIT-licensed source-backed IOS reference configs; immutable source commits, retrieval date, platform, and SHA-256 in `tests/fixtures/network/cisco_ios/manifest.json`; integrity test passes |
-| C | Cisco IOS flat-check parser primitive | Complete pending commit/push protocol | `engines/network/run_audit.py`; five manual-oracle checks span all 8 corpus files and each has pass + fail evidence; focused tests pass |
-| D-H | Block parser, sourced Cisco rules/report, ledger proof, optional vendor, pitch | Not started | Phase C adds no CIS control or vendor-compliance claim |
+| B | Genuine Cisco IOS config corpus | Complete | 8 MIT-licensed source-backed IOS reference configs; immutable source commits, retrieval date, platform, and SHA-256 in `tests/fixtures/network/cisco_ios/manifest.json`; integrity test passes |
+| C | Cisco IOS flat-check parser primitive | Complete | `engines/network/run_audit.py`; five manual-oracle checks span all 8 corpus files and each has pass + fail evidence; focused tests pass |
+| D | Cisco IOS block-aware VTY/interface parser primitive | Complete | `engines/network/run_audit.py`; interface oracle has pass/fail coverage across all 8 source-backed configs; 21-test suite and rule validator pass |
+| E-H | Sourced Cisco rules/report, ledger proof, optional vendor, pitch | Not started | Phase D adds no CIS control or vendor-compliance claim; VTY failure/ACL coverage and unused-interface shutdown remain corpus-incomplete |
 
-The verified Phase C parser primitive is limited to source-backed Cisco IOS
+The verified Phase C/D parser primitives are limited to source-backed Cisco IOS
 lab/reference configurations, not production backups or live sandbox captures.
-It adds no production compliance rule and therefore no claim of completed
-vendor-compliance coverage. Cisco IOS is the planned first target; other vendors
-are roadmap only.
+Phase D adds no production compliance rule and therefore no claim of completed
+vendor-compliance coverage. Cisco IOS is the only built network target; other
+vendors are roadmap only.
 
 ### CLI Usage
 

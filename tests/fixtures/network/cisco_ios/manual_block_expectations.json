@@ -1,0 +1,61 @@
+{
+  "reviewed_at": "2026-08-24",
+  "review_method": "Manual inspection of the unmodified raw fixture text; each selected stanza was checked independently and exact header line numbers are recorded.",
+  "checks": [
+    {
+      "name": "all_interfaces_explicitly_enabled",
+      "context_type": "interface",
+      "header_pattern": "^interface\\s+\\S+",
+      "required_patterns": ["^no shutdown$"],
+      "forbidden_patterns": [],
+      "pass": {
+        "c4geeks_base_router_iosv.txt": [18],
+        "c4geeks_base_switch_iosvl2.txt": [18, 21],
+        "c4geeks_dhcp_router_ios152.txt": [14, 18],
+        "c4geeks_hsrp_router_iosv.txt": [13],
+        "c4geeks_ntp_router_ios152.txt": [16]
+      },
+      "fail": {
+        "c4geeks_cdp_lldp_switch_iosvl2.txt": [14, 18],
+        "c4geeks_ospf_router_iosv.txt": [7, 12],
+        "c4geeks_vlan_trunk_switch_iosvl2.txt": [20, 27]
+      }
+    },
+    {
+      "name": "interfaces_do_not_enable_access_switching",
+      "context_type": "interface",
+      "header_pattern": "^interface\\s+\\S+",
+      "required_patterns": [],
+      "forbidden_patterns": ["^switchport mode access$"],
+      "pass": {
+        "c4geeks_base_router_iosv.txt": [18],
+        "c4geeks_base_switch_iosvl2.txt": [18, 21],
+        "c4geeks_dhcp_router_ios152.txt": [14, 18],
+        "c4geeks_hsrp_router_iosv.txt": [13],
+        "c4geeks_ntp_router_ios152.txt": [16],
+        "c4geeks_ospf_router_iosv.txt": [7, 12]
+      },
+      "fail": {
+        "c4geeks_cdp_lldp_switch_iosvl2.txt": [14, 18],
+        "c4geeks_vlan_trunk_switch_iosvl2.txt": [20, 27]
+      }
+    }
+  ],
+  "corpus_incomplete_checks": {
+    "vty_ssh_only": {
+      "pass": ["c4geeks_base_router_iosv.txt", "c4geeks_base_switch_iosvl2.txt"],
+      "fail": [],
+      "reason": "No source-backed VTY block contains a failing transport command."
+    },
+    "vty_acl_and_ssh": {
+      "pass": [],
+      "fail": ["c4geeks_base_router_iosv.txt", "c4geeks_base_switch_iosvl2.txt"],
+      "reason": "No source-backed VTY block contains a passing access-class plus SSH combination."
+    },
+    "unused_interface_shutdown": {
+      "pass": [],
+      "fail": [],
+      "reason": "The reference corpus does not identify unused interfaces authoritatively."
+    }
+  }
+}

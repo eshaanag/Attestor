@@ -238,14 +238,17 @@ The Phase A `config_block` check contract reserves these fields:
   "type": "config_block",
   "context_type": "line_vty",        // initially line_vty or interface
   "header_pattern": "^line vty ",    // selects candidate block headers
-  "required_patterns": ["^ transport input ssh$"],
-  "forbidden_patterns": ["^ transport input telnet"]
+  "required_patterns": ["^transport input ssh$"],
+  "forbidden_patterns": ["^transport input telnet"]
 }
 ```
 
-Exact evaluation semantics are implemented only after the AGENTS.md brainstorm
-protocol and genuine-config corpus phases. Validating this shape does not make
-a network control verified.
+Phase D evaluates these patterns against normalized, indented child commands
+inside each selected `line vty` or `interface` block. Zero matching blocks is
+an `error`, a present block missing a required pattern is `fail`, and a block
+containing a forbidden pattern is `fail`. Full semantics and corpus evidence
+are recorded in `PROGRESS.md`; this contract does not itself establish a CIS
+control.
 
 ---
 

@@ -1,0 +1,21 @@
+# FIXTURE — invalid: config_block context_type is outside the supported contract.
+id: "1.4"
+title: "EXAMPLE NETWORK RULE — invalid block context"
+benchmark: "EXAMPLE Cisco IOS Benchmark — fixture only"
+benchmark_version: "fixture-0.0.0"
+level: 1
+profile:
+  - network_device
+device:
+  vendor: Cisco
+  platform: IOS
+automated: true
+severity: medium
+checks:
+  - type: config_block
+    context_type: line_console
+    header_pattern: "^line console\\s+"
+    required_patterns: []
+    forbidden_patterns: []
+remediation: "Fixture remediation text."
+source: "CIS Cisco IOS Benchmark, fixture shape only"
