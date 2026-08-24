@@ -16,7 +16,9 @@
         "c4geeks_hsrp_router_iosv.txt",
         "c4geeks_ntp_router_ios152.txt",
         "c4geeks_ospf_router_iosv.txt",
-        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+        "c4geeks_vlan_trunk_switch_iosvl2.txt",
+        "c4geeks_ntp_client_ios152.txt",
+        "c4geeks_snmp_syslog_router_ios152.txt"
       ]
     },
     {
@@ -33,7 +35,9 @@
         "c4geeks_hsrp_router_iosv.txt",
         "c4geeks_ntp_router_ios152.txt",
         "c4geeks_ospf_router_iosv.txt",
-        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+        "c4geeks_vlan_trunk_switch_iosvl2.txt",
+        "c4geeks_ntp_client_ios152.txt",
+        "c4geeks_snmp_syslog_router_ios152.txt"
       ]
     },
     {
@@ -50,7 +54,9 @@
         "c4geeks_hsrp_router_iosv.txt",
         "c4geeks_ntp_router_ios152.txt",
         "c4geeks_ospf_router_iosv.txt",
-        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+        "c4geeks_vlan_trunk_switch_iosvl2.txt",
+        "c4geeks_ntp_client_ios152.txt",
+        "c4geeks_snmp_syslog_router_ios152.txt"
       ]
     },
     {
@@ -67,7 +73,9 @@
         "c4geeks_hsrp_router_iosv.txt",
         "c4geeks_ntp_router_ios152.txt",
         "c4geeks_ospf_router_iosv.txt",
-        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+        "c4geeks_vlan_trunk_switch_iosvl2.txt",
+        "c4geeks_ntp_client_ios152.txt",
+        "c4geeks_snmp_syslog_router_ios152.txt"
       ]
     },
     {
@@ -75,7 +83,8 @@
       "pattern": "^ntp authenticate$",
       "op": "matches",
       "pass": {
-        "c4geeks_ntp_router_ios152.txt": 23
+        "c4geeks_ntp_router_ios152.txt": 23,
+        "c4geeks_ntp_client_ios152.txt": 22
       },
       "fail": [
         "c4geeks_base_router_iosv.txt",
@@ -84,7 +93,8 @@
         "c4geeks_dhcp_router_ios152.txt",
         "c4geeks_hsrp_router_iosv.txt",
         "c4geeks_ospf_router_iosv.txt",
-        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+        "c4geeks_vlan_trunk_switch_iosvl2.txt",
+        "c4geeks_snmp_syslog_router_ios152.txt"
       ]
     }
   ]

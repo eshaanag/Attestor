@@ -64,10 +64,10 @@ Evidence = file path and/or commit that proves the claim.
 | Phase | Deliverable | Status | Evidence |
 |---|---|---|---|
 | A | Backward-compatible network rule/results contracts | done | `schema/rule_schema.json`; 200 legacy rules pass validation; 6 fixtures resolve as expected; pytest passes |
-| B | 5-8 genuine Cisco IOS/IOS-XE configs with provenance | done | 8 MIT-licensed, source-backed IOS lab/reference configs; immutable commit URLs, retrieval date, platform, and SHA-256 are pinned in `tests/fixtures/network/cisco_ios/manifest.json` and tested |
-| C | Cisco flat-check engine | done | `engines/network/run_audit.py`; manual oracle records exact raw-text lines and complementary absences for five checks across all eight source-backed configs; `tests/test_network_flat_engine.py` and full pytest pass |
-| D | Block-aware VTY/interface checks | done (scoped) | `engines/network/run_audit.py`; `tests/test_network_flat_engine.py`; two interface relationships manually verified with both pass/fail states across all eight source-backed configs; VTY failure/ACL and unused-interface coverage explicitly incomplete |
-| E | 10-15 sourced Cisco rules + dual-framework report | not started | No production Cisco rules exist |
+| B | 5-8 genuine Cisco IOS/IOS-XE configs with provenance | done | 10 MIT-licensed, source-backed IOS lab/reference configs; immutable commit URLs, retrieval date, platform, and SHA-256 are pinned in `tests/fixtures/network/cisco_ios/manifest.json` and tested |
+| C | Cisco flat-check engine | done | `engines/network/run_audit.py`; manual oracle records exact raw-text lines and complementary absences for five checks across all ten source-backed configs; `tests/test_network_flat_engine.py` and full pytest pass |
+| D | Block-aware VTY/interface checks | done (scoped) | `engines/network/run_audit.py`; `tests/test_network_flat_engine.py`; two interface relationships manually verified with both pass/fail states across all ten source-backed configs; VTY failure/ACL and unused-interface coverage explicitly incomplete |
+| E | 10-15 sourced Cisco rules + dual-framework report | done (scoped) | 14 rules in `rules/cisco_ios/`; public CIS control sources and NIST mappings recorded per rule; `manual_rule_expectations.json` proves pass/fail states for every rule; `report/generate_report.py` renders device metadata and mappings offline; 23 pytest tests pass |
 | F | Network-report ledger + real Sepolia transaction | not started | Existing OS anchoring does not count as network proof |
 | G | Optional additional vendor | deferred by default | Roadmap only |
 | H | Honest pitch/documentation pass | not started | Must reflect actual delivered coverage |

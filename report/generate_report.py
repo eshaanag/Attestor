@@ -26,7 +26,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Attestor CIS Audit Report — {{ host.hostname }} ({{ run.finished_at }})</title>
+<title>Attestor Compliance Report — {{ (device.hostname if device else host.hostname) }} ({{ run.finished_at }})</title>
 <style>
 :root {
   --pass: #1a7f37; --fail: #cf222e; --error: #9a6700;
@@ -82,11 +82,17 @@ footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border
 </style>
 </head>
 <body>
-<h1>Attestor CIS Compliance Report</h1>
+<h1>Attestor Compliance Report</h1>
 
 <div class="header">
   <strong>{{ benchmark }}</strong> {{ benchmark_version }}
   <dl class="header-grid">
+    {% if device %}
+    <dt>Audited device</dt><dd>{{ device.device_id }}{% if device.hostname %} ({{ device.hostname }}){% endif %}</dd>
+    <dt>Vendor / platform</dt><dd>{{ device.vendor }} / {{ device.platform }}</dd>
+    <dt>Device roles</dt><dd>{{ (device.roles | join(", ")) if device.roles else "not recorded" }}</dd>
+    <dt>Config source</dt><dd>{{ device.config_source }}{% if device.config_sha256 %} (SHA-256 {{ device.config_sha256 }}){% endif %}</dd>
+    {% endif %}
     <dt>Host</dt><dd>{{ host.hostname }}</dd>
     <dt>OS</dt><dd>{{ host.os_name }} {{ host.os_version }}</dd>
     <dt>Kernel / Build</dt><dd>{{ host.kernel }}</dd>
@@ -136,6 +142,16 @@ footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border
     {% endif %}
     <dt>Source</dt>
     <dd>{{ control.source }}</dd>
+    {% if control.framework_mappings %}
+    <dt>Framework mappings</dt>
+    <dd>
+      <div class="framework-list">
+      {% for mapping in control.framework_mappings %}
+        <div><strong>{{ mapping.framework }}</strong>{% if mapping.version %} {{ mapping.version }}{% endif %}: <code>{{ mapping.control_id }}</code>{% if mapping.relationship %} ({{ mapping.relationship }}){% endif %}<br><span class="mapping-source">{{ mapping.source }}</span></div>
+      {% endfor %}
+      </div>
+    </dd>
+    {% endif %}
   </dl>
 </div>
 {% endfor %}
@@ -170,6 +186,7 @@ def render(results: dict) -> str:
     return template.render(
         benchmark=results["benchmark"],
         benchmark_version=results["benchmark_version"],
+        device=results.get("device"),
         host=results["host"],
         run=results["run"],
         summary=results["summary"],

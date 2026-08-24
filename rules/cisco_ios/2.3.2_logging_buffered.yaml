@@ -1,0 +1,17 @@
+id: "2.3.2"
+title: "Ensure logging buffered is configured"
+description: "Checks for a local buffered logging destination."
+rationale: "A local buffer provides a configuration-visible audit record for troubleshooting and incident review."
+benchmark: "CIS Cisco IOS Benchmark v4.1.0 (public transcription)"
+benchmark_version: "v4.1.0"
+level: 1
+profile: [network_device]
+device: {vendor: Cisco, platform: IOS, config_format: running-config-or-reference-config}
+automated: true
+severity: medium
+checks:
+  - {type: config_grep, pattern: "^logging buffered\\s+\\S+", op: matches}
+remediation: "Configure a sized local buffer, for example: logging buffered <bytes> informational, according to the device capacity and retention requirement."
+source: "CIS Cisco IOS Benchmark v4.1.0 public transcription, control 2.3.2; https://github.com/ynotbhatc/rego_policy_libraries/blob/50b502c7e5044b2568394527940298bef518347f/benchmarks/cis/network/cisco/cisco_security.rego; corpus oracle tests/fixtures/network/cisco_ios/manual_rule_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "AU-2", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

@@ -7,7 +7,9 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
+from tests.validate_rules import format_errors, load_validator
 from engines.network.run_audit import (
     ConfigInputError,
     check_config_grep,
@@ -28,7 +30,7 @@ def test_flat_engine_matches_manual_oracle_for_every_fixture():
         for path in CORPUS_DIR.glob("*.txt")
     }
 
-    assert len(configs) == 8
+    assert len(configs) == 10
     for check_index, expected in enumerate(oracle["checks"]):
         pass_files = set(expected["pass"])
         fail_files = set(expected["fail"])
@@ -212,3 +214,27 @@ def test_vty_block_parsing_passes_present_ssh_block_and_errors_when_absent():
     )
     assert absent["status"] == "error"
     assert "cannot be inferred" in absent["error"]
+
+
+def test_cisco_rule_pack_matches_manual_oracle_with_both_states():
+    oracle = json.loads((CORPUS_DIR / "manual_rule_expectations.json").read_text())
+    configs = {path.name: load_config(path) for path in CORPUS_DIR.glob("*.txt")}
+    rule_files = sorted((CORPUS_DIR.parents[3] / "rules" / "cisco_ios").glob("*.yaml"))
+    assert len(rule_files) == len(oracle["rules"]) == 14
+
+    oracle_by_id = {entry["rule_id"]: entry for entry in oracle["rules"]}
+    validator = load_validator()
+    for path in rule_files:
+        rule = yaml.safe_load(path.read_text(encoding="utf-8"))
+        assert not format_errors(validator, rule), path.name
+        entry = oracle_by_id[rule["id"]]
+        assert entry["pass"] and entry["fail"], rule["id"]
+        assert set(entry["pass"]) | set(entry["fail"]) == set(configs)
+        assert set(entry["pass"]) & set(entry["fail"]) == set()
+        check = rule["checks"][0]
+        for filename, config in configs.items():
+            result = check_config_grep(rule["id"], 0, check, config)
+            expected = "pass" if filename in entry["pass"] else "fail"
+            assert result["status"] == expected, (rule["id"], filename)
+            if expected == "pass":
+                assert f"line {entry['pass'][filename]}:" in result["evidence"]

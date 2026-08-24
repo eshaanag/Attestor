@@ -33,7 +33,7 @@ from tests.validate_rules import format_errors, load_validator  # noqa: E402
 
 
 ENGINE_NAME = "network"
-ENGINE_VERSION = "0.2.0"
+ENGINE_VERSION = "0.3.0"
 ATTESTOR_FORMAT_VERSION = "1.0"
 VALID_STATUSES = {"pass", "fail", "error", "manual", "not_applicable"}
 WRAPPER_COMMANDS = {"enable", "configure terminal", "end", "write memory"}

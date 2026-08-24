@@ -16,7 +16,7 @@ def test_cisco_reference_corpus_manifest_is_complete_and_unchanged():
     assert len(manifest["commit"]) == 40
     assert manifest["retrieved_at"] == "2026-08-24"
     assert manifest["status"] == "reference_configs"
-    assert len(manifest["entries"]) == 8
+    assert len(manifest["entries"]) == 10
 
     seen = set()
     for entry in manifest["entries"]:

@@ -1,0 +1,17 @@
+id: "1.5.9"
+title: "Ensure SNMPv3 groups use privacy"
+description: "Checks for SNMPv3 groups configured with the priv security level."
+rationale: "SNMPv3 privacy protects management traffic in transit; this check only observes configured group lines."
+benchmark: "CIS Cisco IOS XE 17.x Benchmark v2.1.0"
+benchmark_version: "v2.1.0"
+level: 1
+profile: [network_device]
+device: {vendor: Cisco, platform: IOS, config_format: running-config-or-reference-config}
+automated: true
+severity: high
+checks:
+  - {type: config_grep, pattern: "^snmp-server group\\s+\\S+\\s+v3\\s+priv$", op: matches}
+remediation: "Configure each SNMPv3 group with privacy: snmp-server group <group> v3 priv. Review SNMP users and remove legacy v1/v2c communities where not required."
+source: "CIS Cisco IOS XE 17.x Benchmark v2.1.0, control 1.5.9; https://github.com/assaabriiii/CIS-benchmark-PDFs-converted-to-JSON/blob/70a84675496fb6689adf5b053ad5c11b2de63061/Cisco/CIS_Cisco_IOS_XE_17.x_v2.1.0_L2.json; corpus oracle tests/fixtures/network/cisco_ios/manual_rule_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "SC-8(1)", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

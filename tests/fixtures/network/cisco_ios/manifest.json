@@ -70,6 +70,22 @@
       "article_url": "https://computingforgeeks.com/cisco-trunking-802-1q-configuration/",
       "platform": "Cisco IOSvL2",
       "sha256": "6c4e39e75d89f3c8692bb46bd44f5010778e2e54ee70c9fb3c301275a955226c"
+    },
+    {
+      "file": "c4geeks_ntp_client_ios152.txt",
+      "source_path": "ntp/configs/R2-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/ntp/configs/R2-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-ntp-configuration/",
+      "platform": "Cisco IOS 15.2 / c7200",
+      "sha256": "fb4961296a855a6b79c1f53f78678bcaf52b49816da9a29d3d68c815a757a16b"
+    },
+    {
+      "file": "c4geeks_snmp_syslog_router_ios152.txt",
+      "source_path": "snmp-syslog/configs/R1-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/snmp-syslog/configs/R1-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-snmp-syslog-configuration/",
+      "platform": "Cisco IOS 15.2 / c7200",
+      "sha256": "1d57188426379b8428e632398644270499a28c395157d8a48f660e17c9a4320f"
     }
   ]
 }

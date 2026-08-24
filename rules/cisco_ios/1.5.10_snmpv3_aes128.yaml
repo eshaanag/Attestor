@@ -1,0 +1,17 @@
+id: "1.5.10"
+title: "Ensure SNMPv3 users use AES-128 privacy"
+description: "Checks for SNMPv3 user lines using an AES-128 privacy protocol."
+rationale: "Encrypted SNMPv3 management traffic protects credentials and management data in transit."
+benchmark: "CIS Cisco IOS XE 17.x Benchmark v2.1.0"
+benchmark_version: "v2.1.0"
+level: 1
+profile: [network_device]
+device: {vendor: Cisco, platform: IOS, config_format: running-config-or-reference-config}
+automated: true
+severity: high
+checks:
+  - {type: config_grep, pattern: "^snmp-server user\\s+\\S+\\s+\\S+\\s+v3\\s+auth\\s+\\S+\\s+\\S+\\s+priv\\s+aes\\s+128\\b", op: matches}
+remediation: "Configure SNMPv3 users with authentication and AES privacy; use site-approved secrets and protect the configuration file."
+source: "CIS Cisco IOS XE 17.x Benchmark v2.1.0, control 1.5.10; https://github.com/assaabriiii/CIS-benchmark-PDFs-converted-to-JSON/blob/70a84675496fb6689adf5b053ad5c11b2de63061/Cisco/CIS_Cisco_IOS_XE_17.x_v2.1.0_L2.json; corpus oracle tests/fixtures/network/cisco_ios/manual_rule_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "SC-8(1)", relationship: "direct", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

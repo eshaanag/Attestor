@@ -1,6 +1,6 @@
 # Cisco IOS reference corpus
 
-This corpus contains eight unmodified, source-backed Cisco IOS lab/reference
+This corpus contains ten unmodified, source-backed Cisco IOS lab/reference
 configurations from the MIT-licensed `c4geeks/ccna-labs` repository at commit
 [`9cadb5c`](https://github.com/c4geeks/ccna-labs/commit/9cadb5c162a2bf231493a51b5337ab385c5a5962).
 The upstream README states that the configurations were built and tested on

@@ -1,0 +1,17 @@
+id: "2.4.2"
+title: "Ensure NTP authentication-key is configured"
+description: "Checks for an NTP authentication key declaration."
+rationale: "A key declaration is required for IOS NTP peers to authenticate time updates."
+benchmark: "CIS Cisco IOS Benchmark v4.1.0 (public transcription)"
+benchmark_version: "v4.1.0"
+level: 1
+profile: [network_device]
+device: {vendor: Cisco, platform: IOS, config_format: running-config-or-reference-config}
+automated: true
+severity: high
+checks:
+  - {type: config_grep, pattern: "^ntp authentication-key\\s+\\S+\\s+md5\\s+\\S+", op: matches}
+remediation: "Configure an approved NTP authentication key and protect the configuration containing the key material."
+source: "CIS Cisco IOS Benchmark v4.1.0 public transcription, control 2.4.2; https://raw.githubusercontent.com/ynotbhatc/rego_policy_libraries/50b502c7e5044b2568394527940298bef518347f/benchmarks/cis/network/cisco/cisco_security.rego; corpus oracle tests/fixtures/network/cisco_ios/manual_rule_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "AU-8", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

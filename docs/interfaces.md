@@ -248,7 +248,10 @@ inside each selected `line vty` or `interface` block. Zero matching blocks is
 an `error`, a present block missing a required pattern is `fail`, and a block
 containing a forbidden pattern is `fail`. Full semantics and corpus evidence
 are recorded in `PROGRESS.md`; this contract does not itself establish a CIS
-control.
+control. Phase E network controls preserve optional `framework_mappings` in
+the v1.0 control object; the offline report displays each mapping's framework,
+control ID, relationship, and source without changing the canonical hash
+contract.
 
 ---
 

@@ -1,0 +1,17 @@
+id: "1.4.1"
+title: "Ensure a banner motd is configured"
+description: "Checks for a Cisco IOS message-of-the-day banner command."
+rationale: "A configured use-notification banner provides an access warning; its legal sufficiency requires human review."
+benchmark: "CIS Cisco IOS Benchmark v4.1.0 (public transcription)"
+benchmark_version: "v4.1.0"
+level: 1
+profile: [network_device]
+device: {vendor: Cisco, platform: IOS, config_format: running-config-or-reference-config}
+automated: true
+severity: low
+checks:
+  - {type: config_grep, pattern: "^banner motd(?:\\s|$)", op: matches}
+remediation: "Configure an organization-approved banner motd and have the exact wording reviewed by the system owner/legal team."
+source: "CIS Cisco IOS Benchmark v4.1.0 public transcription, control 1.4.1; https://github.com/ynotbhatc/rego_policy_libraries/blob/50b502c7e5044b2568394527940298bef518347f/benchmarks/cis/network/cisco/cis_security.rego; corpus oracle tests/fixtures/network/cisco_ios/manual_rule_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "AC-8", relationship: "direct", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

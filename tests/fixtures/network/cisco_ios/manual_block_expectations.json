@@ -13,7 +13,9 @@
         "c4geeks_base_switch_iosvl2.txt": [18, 21],
         "c4geeks_dhcp_router_ios152.txt": [14, 18],
         "c4geeks_hsrp_router_iosv.txt": [13],
-        "c4geeks_ntp_router_ios152.txt": [16]
+        "c4geeks_ntp_router_ios152.txt": [16],
+        "c4geeks_ntp_client_ios152.txt": [15],
+        "c4geeks_snmp_syslog_router_ios152.txt": [17]
       },
       "fail": {
         "c4geeks_cdp_lldp_switch_iosvl2.txt": [14, 18],
@@ -33,6 +35,8 @@
         "c4geeks_dhcp_router_ios152.txt": [14, 18],
         "c4geeks_hsrp_router_iosv.txt": [13],
         "c4geeks_ntp_router_ios152.txt": [16],
+        "c4geeks_ntp_client_ios152.txt": [15],
+        "c4geeks_snmp_syslog_router_ios152.txt": [17],
         "c4geeks_ospf_router_iosv.txt": [7, 12]
       },
       "fail": {
