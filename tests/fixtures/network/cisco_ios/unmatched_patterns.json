@@ -1,0 +1,1063 @@
+{
+  "schema_version": "f1",
+  "review_method": "Derived from byte-preserved Phase B corpus; values redacted before persistence.",
+  "summary": {
+    "corpus_status": "reference_configs",
+    "config_count": 10,
+    "active_line_count": 157,
+    "deterministic_config_grep_pattern_count": 14,
+    "unmatched_occurrence_count": 135,
+    "unique_unmatched_pattern_count": 63,
+    "structural_unmatched_occurrence_count": 43,
+    "structural_unique_pattern_count": 12,
+    "candidate_occurrence_count": 92,
+    "candidate_unique_pattern_count": 51,
+    "normalization_version": "ios-line-v1"
+  },
+  "patterns": [
+    {
+      "pattern_hash": "77f8d7bd703f6fe44cdbbc54b5f240433378da3aa866a86f9df57d3736ec4d94",
+      "pattern": "exit",
+      "structural": true,
+      "occurrence_count": 19,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 21
+        },
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 25
+        },
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 29
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 20
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 24
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 28
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 17
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 21
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 17
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 21
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 31
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 37
+        },
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 20
+        },
+        {
+          "file": "c4geeks_ntp_client_ios152.txt",
+          "line": 18
+        },
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 20
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 26
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "pattern_hash": "a4942d638320902de823b8b50549b9f6c23560e30ad6c37023075161ade7aa28",
+      "pattern": "interface <INTERFACE>",
+      "structural": true,
+      "occurrence_count": 12,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 18
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 18
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 18
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 14
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 18
+        },
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 13
+        },
+        {
+          "file": "c4geeks_ntp_client_ios152.txt",
+          "line": 15
+        },
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 16
+        },
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 12
+        },
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 17
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 20
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "pattern_hash": "afdc3909d3ff7fdd18e9f348f6e5af864ff24cfbca582e5cd792b58aea8d3a6a",
+      "pattern": "ip address <IP> <IP>",
+      "structural": false,
+      "occurrence_count": 11,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 22
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 15
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 15
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 14
+        },
+        {
+          "file": "c4geeks_ntp_client_ios152.txt",
+          "line": 16
+        },
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 17
+        },
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 9
+        },
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 14
+        },
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "pattern_hash": "285f4489c655c0ffba016b4150ec0a2bcd3f0dc2fff934931c0d5a990d3fc340",
+      "pattern": "no shutdown",
+      "structural": false,
+      "occurrence_count": 11,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 20
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 23
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 16
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 16
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 20
+        },
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_ntp_client_ios152.txt",
+          "line": 17
+        },
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 18
+        },
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 15
+        },
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "pattern_hash": "8dba8f131e2d04f711673bbbf9d3b650e0ab6388737d5b6c6ee1ebd205894293",
+      "pattern": "hostname <HOSTNAME>",
+      "structural": false,
+      "occurrence_count": 10,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 11
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 11
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 12
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 13
+        },
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 12
+        },
+        {
+          "file": "c4geeks_ntp_client_ios152.txt",
+          "line": 12
+        },
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 13
+        },
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 5
+        },
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 13
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 12
+        }
+      ]
+    },
+    {
+      "pattern_hash": "c44fccf569b15ac1fad24d06afe8b221861fb368be202e3a84a1fe5ca796b085",
+      "pattern": "clock timezone UTC 0 0",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_ntp_client_ios152.txt",
+          "line": 13
+        },
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "pattern_hash": "e27a8d10807afbfbc5216312410852be8b5fb6be4833d459a4bf4ac35c697bc0",
+      "pattern": "crypto key <REDACTED> rsa modulus 2048",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 16
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "pattern_hash": "04a186fd6d766c71f3a5ef36ec3316fab01b85e56478a597308fd64e8d73b45e",
+      "pattern": "default-router <IP>",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 27
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 34
+        }
+      ]
+    },
+    {
+      "pattern_hash": "09b797eaf716a41924a71ac61285e8e2dd04bd19f3aacf8451cca493ebe7bb0f",
+      "pattern": "dns-server <IP>",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 28
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 35
+        }
+      ]
+    },
+    {
+      "pattern_hash": "9491e65df6818da8d63a53214fe6f993c5feeb0b37b3b910a3c2ad372a2712e8",
+      "pattern": "interface Vlan1",
+      "structural": true,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 21
+        },
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "pattern_hash": "dab67b9d7636ef8837023c9edbf221c34cc5a9eb9e3b1f7632a2204bbe8d0799",
+      "pattern": "ip dhcp excluded-address <IP> <IP>",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 23
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "pattern_hash": "46ed6fdd663a9ca0a27b5793f265f666d755cf925be020c00a048856ae263ce7",
+      "pattern": "ip domain-name lab.example.com",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 14
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "pattern_hash": "d2bfcac24606612c132f6cc5d84d0fc10f995ca20bbdee65ae0557528c8f4225",
+      "pattern": "lease 0 8",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 30
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 36
+        }
+      ]
+    },
+    {
+      "pattern_hash": "484feff0b96789e1bbbd92efdf220fce2f7a01d0309061006febc70ed8e102e1",
+      "pattern": "line vty 0 4",
+      "structural": true,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 26
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "pattern_hash": "708f2e80eeeb505230de4ee7fb0c518b13ffb154522c0597eac42498e64773da",
+      "pattern": "login local",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 27
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 26
+        }
+      ]
+    },
+    {
+      "pattern_hash": "ecae2f1e70895b3e5fb41022d3e8349d5c052d709352f4d8aa6722bec1bb40c2",
+      "pattern": "network <IP> <IP>",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 26
+        },
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 33
+        }
+      ]
+    },
+    {
+      "pattern_hash": "6587035d7e86f5bf58d879a437afe0bcb8b909fc0aa7284cc05bbfb3b29f02da",
+      "pattern": "network <IP> <IP> area 0",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 24
+        },
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "pattern_hash": "72cad8d03059454efb3db74abd076f1602d5978d5571a09d016cdbca54cbe032",
+      "pattern": "switchport mode access",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 19
+        },
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 28
+        }
+      ]
+    },
+    {
+      "pattern_hash": "95596e1e3d693b5a578dafb8ac7d87bfe1a316bcfceba3842ed6b0f13ea3cbf6",
+      "pattern": "transport input ssh",
+      "structural": false,
+      "occurrence_count": 2,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 28
+        },
+        {
+          "file": "c4geeks_base_switch_iosvl2.txt",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "pattern_hash": "6902d18b2eb8ee80ca7230eed2af105cbe5da8826348183b612874012c2c4bca",
+      "pattern": "default-information originate",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 26
+        }
+      ]
+    },
+    {
+      "pattern_hash": "6bd56b8981850d22aa753dd667f8c38e99f163a466a8addcfdd7506916d7e740",
+      "pattern": "description LAN (passive in OSPF)",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 8
+        }
+      ]
+    },
+    {
+      "pattern_hash": "26a67d19d6e4b90c383c4b8edc91e50b223b0b978e79659b9202277c81dc9970",
+      "pattern": "description Link to R2",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "pattern_hash": "482ff97aa1ee355b701dfba8edf65e30ea3d8f5409f2c3127b9356fe2673f2f0",
+      "pattern": "domain-name lab.example.com",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "pattern_hash": "6314ed4840f203343c1d762741cd7113582577b7f15e335ee4d7dc414c9a7517",
+      "pattern": "interface Loopback1",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 7
+        }
+      ]
+    },
+    {
+      "pattern_hash": "6ac0a7d66b561434ffd6215797b2224f4685637c7f306ce533ddd606662dfc96",
+      "pattern": "ip dhcp pool LAN10",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "pattern_hash": "584a3dc3d20f251753be863f5450bd53910c56da4fe3b1773e5f929af8a63d84",
+      "pattern": "ip dhcp pool LAN20",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "pattern_hash": "a96cdd179479f3e3cd134f7b1a7f7e179ea034088e727c3932091cc4dc079b24",
+      "pattern": "ip ospf network point-to-point",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 10
+        }
+      ]
+    },
+    {
+      "pattern_hash": "d4633ed946e3e9f7b46f16d10f4c61d6cc4b78d551bd901109a5b58e07c72853",
+      "pattern": "ip route <IP> <IP> <IP>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_dhcp_router_ios152.txt",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pattern_hash": "e38e686021607ab3b3839ed24c473e68e8d3f4f8f1a650b635e222f570a99209",
+      "pattern": "ip route <IP> <IP> Null0",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "pattern_hash": "1cb59a6f71420c627993bd7a40b60cbcf76f99e955f7e1482b93d44e4b54f037",
+      "pattern": "line console 0",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pattern_hash": "b17988c196b324c8583178214b4f0c5d48447032c5ae0367b56a499acd89d3c9",
+      "pattern": "lldp run",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "pattern_hash": "454accdbdf3ca30f619501942e49762947e683cd6879417400aa578f45d08949",
+      "pattern": "logging source-interface <INTERFACE>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 26
+        }
+      ]
+    },
+    {
+      "pattern_hash": "6e422b60f6cea6ca3ad8d3d7f24ad07b03333d61e09fc0e7d473c9a4120908a7",
+      "pattern": "login",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "pattern_hash": "da5ef68dd7b43601b548513d1c62c878939b928fc5e36d853ce801c44d2af163",
+      "pattern": "name ENGINEERING",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "pattern_hash": "3b0194839e09ecba154080155421f0db7ebc2a5ab2f798bb6dd55bb2a8ad7cdb",
+      "pattern": "name NATIVE",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "pattern_hash": "ead002658b401d435c1262e750ec84518481e49c39f50134462d9f9a03a303a9",
+      "pattern": "name SALES",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "pattern_hash": "aa7d24098ece17b51358a77131f7b65771d236cf0a7ddc9daf7712d4345624b1",
+      "pattern": "ntp master 3",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ntp_router_ios152.txt",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "pattern_hash": "75018b1cd54c0a1388a20208fedf38d63d4b0fe2aa51df24f7c6b31183589190",
+      "pattern": "passive-interface Loopback1",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "pattern_hash": "8e2c1b4d8f459c20455a7cdc587ecff99b2fda5235819e4ecb84d965c186e032",
+      "pattern": "password <REDACTED>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_base_router_iosv.txt",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "pattern_hash": "41cb9ac52125cc65ee3db4eafe0a8608b32f5ce78e14f030034d5c8eb541dacd",
+      "pattern": "router ospf 1",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pattern_hash": "1e7993fdc7790aefb43be6f70641dd77d1bdcb94e3cd9e81153c203a50348c2e",
+      "pattern": "router-id <IP>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_ospf_router_iosv.txt",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pattern_hash": "9f52bfb62fe4d0c5c190a55306cea6e7fd969bd8fa91b43acb7991da7f5b8519",
+      "pattern": "service timestamps debug datetime msec",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "pattern_hash": "758af76db76f17da4f14646bbb3583c3d356c0dedc45ac4aa3bbcdf3562ee3dc",
+      "pattern": "service timestamps log datetime msec",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "pattern_hash": "29d259854d80ea372e8a40fb88e9581eb9f7434a526d0738054801367fa36ed0",
+      "pattern": "snmp-server community <REDACTED> ro",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "pattern_hash": "746c772f578bd8fa4b1d54b3d879c52a8db1f75a80ebd30862e86ddb7a2e8428",
+      "pattern": "snmp-server contact <EMAIL>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 30
+        }
+      ]
+    },
+    {
+      "pattern_hash": "8ffe06a5ac6c941f3bdf283705d6155392daf6f8c459aae2fdecd67468e27e65",
+      "pattern": "snmp-server enable traps snmp linkdown linkup",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 38
+        }
+      ]
+    },
+    {
+      "pattern_hash": "b6fcd5073127c678e64533e20f10053198e2dac7015344cfde8c454f1b7441df",
+      "pattern": "snmp-server host <IP> version 2c <REDACTED>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "pattern_hash": "3ac2b632926e46209e759907bc58efaa3c175b852b9e4ad884b4f33f1c7d0ff5",
+      "pattern": "snmp-server host <IP> version 3 priv cfgmon",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "pattern_hash": "120501b4d5a0b3ce51bafc0d58d0e458693b3875ee109301fcec49dfe7d08b7d",
+      "pattern": "snmp-server location DC1-Rack4",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_snmp_syslog_router_ios152.txt",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "pattern_hash": "9c95ce64e23885cb5a361c2be4068422c83b0be9c3aac92a436e445c1688e290",
+      "pattern": "standby 1 ip <IP>",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 16
+        }
+      ]
+    },
+    {
+      "pattern_hash": "48433153d675ec93b7b12707a66f12363e699e658ac9d4f1ef7a607a3d247787",
+      "pattern": "standby 1 preempt",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 18
+        }
+      ]
+    },
+    {
+      "pattern_hash": "9d52ee74bed5a0122ffbd67911315e03d69fa95b23da6a73de6be61db6d9de0e",
+      "pattern": "standby 1 priority 110",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 17
+        }
+      ]
+    },
+    {
+      "pattern_hash": "cc99c43b767fb1afe364296876f8ebd68e080b4827fd165bbe72f09b50f71002",
+      "pattern": "standby version 2",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_hsrp_router_iosv.txt",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "pattern_hash": "57ddc6febd20f84cfaddb474fe3b0f6556dd05c2151b02875a6e9b13f1740b27",
+      "pattern": "switchport access vlan 1",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+          "line": 20
+        }
+      ]
+    },
+    {
+      "pattern_hash": "9d9c8c20d09f3e36bb331764bbfe1e1418623d298eca2d7e0c2bd7348b77f18c",
+      "pattern": "switchport access vlan 10",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 29
+        }
+      ]
+    },
+    {
+      "pattern_hash": "d54f2a91b446e448ad01b931c942e10b69f3af3788942f20c742689ff4c16adc",
+      "pattern": "switchport mode trunk",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "pattern_hash": "b9942e7a19c30006befcb898efcf5cfef2fbe0191bc07269abc83a2ec8dc2f5b",
+      "pattern": "switchport nonegotiate",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 25
+        }
+      ]
+    },
+    {
+      "pattern_hash": "cfd05ad180bdee3144791793e12cb91a9b20dc08e1c60e6d578834b683065c72",
+      "pattern": "switchport trunk allowed vlan 10,20,99",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 24
+        }
+      ]
+    },
+    {
+      "pattern_hash": "73e7a4ba55cc559a112d7112e4a00f9167d52dc4e267a17f5364df09e8da4f5f",
+      "pattern": "switchport trunk encapsulation dot1q",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 21
+        }
+      ]
+    },
+    {
+      "pattern_hash": "332a928faf02383816a5897ece1f1edbee86e085b9d7c6c516b8cafe2a257f60",
+      "pattern": "switchport trunk native vlan 99",
+      "structural": false,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "pattern_hash": "df58b754a2f066a1fc238e583cf975e506ffb42c5d3e44ab20f8abd985b55dc9",
+      "pattern": "vlan 10",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "pattern_hash": "b66ced2664cc95748c3795157e46d4b78f6e9f483df974c345a98ed93b23a22b",
+      "pattern": "vlan 20",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 15
+        }
+      ]
+    },
+    {
+      "pattern_hash": "53bb694e285c346da7f8cd4da0bc06837a5d11aca98b711840862a426028d19f",
+      "pattern": "vlan 99",
+      "structural": true,
+      "occurrence_count": 1,
+      "occurrences": [
+        {
+          "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+          "line": 17
+        }
+      ]
+    }
+  ]
+}

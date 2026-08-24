@@ -69,6 +69,7 @@ Evidence = file path and/or commit that proves the claim.
 | D | Block-aware VTY/interface checks | done (scoped) | `engines/network/run_audit.py`; `tests/test_network_flat_engine.py`; two interface relationships manually verified with both pass/fail states across all ten source-backed configs; VTY failure/ACL and unused-interface coverage explicitly incomplete |
 | E | 10-15 sourced Cisco rules + dual-framework report | done (scoped) | 14 rules in `rules/cisco_ios/`; public CIS control sources and NIST mappings recorded per rule; `manual_rule_expectations.json` proves pass/fail states for every rule; `report/generate_report.py` renders device metadata and mappings offline; 23 pytest tests pass |
 | F | Network-report ledger + real Sepolia transaction | done (Cisco IOS scope) | `tests/test_network_ledger.py`; unchanged canonical/chain contracts proved against a real network report; Sepolia tx `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`, root `6d9319f05742791af8798a288e72e530a0d563a3037f7a5ddecb3d68d843239a`, `verifyRoot=true` |
+| F' | AI-assisted syntax discovery/training loop | done (dry-run only) | `ai/network_discovery.py`; 10-config inventory: 135 unmatched occurrences, 63 unique redacted patterns, 51 non-structural candidates; dry-run provider `none`; `tests/test_ai_discovery.py` (5 passed) |
 | G | Optional additional vendor | deferred by default | Roadmap only |
 | H | Honest pitch/documentation pass | not started | Must reflect actual delivered coverage |
 

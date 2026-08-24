@@ -11,6 +11,7 @@ __pycache__/
 venv/
 node_modules/
 reference/
+ai/state/
 reports/*.html
 !reports/sample-report.html
 .DS_Store

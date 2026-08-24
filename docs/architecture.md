@@ -63,6 +63,7 @@ grows into the fleet dashboard (stretch).
 | `engines/linux/` | `run_audit.py` — loads + validates rules for a Linux target, dispatches each `check_type`, emits results. | Python 3 |
 | `engines/windows/` | `run_audit.ps1` — same role on Windows; native registry / `secedit` / `auditpol` access. | PowerShell |
 | `report/` | Consumes `results.json`, renders a **self-contained, offline** HTML report (inline CSS/JS, no network). | Python (Jinja2) |
+| `ai/` | Measures deterministic-rule misses, redacts sensitive values, and stores cached/provider or human-confirmed discovery metadata. It never determines compliance status. | Python |
 | `ledger/` | SHA-256 hash-chain over canonical `results.json` per host; append + verify; break detection. | Python |
 | `backend/` | *[Stretch]* FastAPI fleet collector — receives host submissions, stores, exposes API. | Python (FastAPI) |
 | `dashboard/` | **Round-1 (in scope):** minimal local web GUI — FastAPI + Jinja2 + htmx; a "Run audit" button that invokes the engine, streams live per-check results from the engine's NDJSON output, and links the generated report. **Stretch:** same stack grows into the multi-host fleet dashboard over `backend/`. | Python (FastAPI) + Jinja2 + htmx |
@@ -91,6 +92,10 @@ grows into the fleet dashboard (stretch).
 6. **results.json → rendered HTML.** The report generator renders the same
    `results.json` into an offline HTML file, showing per-control
    pass/fail/error/manual/NA, remediation, CIS ID, level, and the ledger hash.
+7. **Unmatched syntax → discovery metadata.** After deterministic checks, F'
+   inventories active lines that matched no production rule. Structural context
+   lines are excluded from provider candidates. Any future AI classification is
+   redacted, cached, capped, dry-run by default, and never overrides a rule.
 
 **Control-status roll-up rules (the accuracy-critical part):**
 - All checks `pass` → control **PASS**
@@ -139,6 +144,14 @@ one-time install; a divergent second hasher is a permanent liability.
 Per AGENTS.md Rule C7, the exact `results.json` shape lives in
 `docs/interfaces.md` and is agreed before the report generator or ledger is
 built. Both engines build *to* that contract.
+
+### 4e. Public-chain privacy boundary
+
+The optional Sepolia anchor publishes only SHA-256 root material (the current
+report hash and its predecessor). Report contents, configuration text, device
+metadata, and AI classifications remain off-chain in local report/ledger files.
+The transaction is a tamper-evidence proof, not a public copy of the audited
+configuration.
 
 ---
 
