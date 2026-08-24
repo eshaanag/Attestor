@@ -23,7 +23,8 @@ the same fix is not regenerated per device. The provider receives rule metadata
 only; raw config evidence is not sent.
 
 For the Phase E Cisco reference report, 9 controls fail and therefore represent
-9 unique remediation keys. A first real remediation run is estimated at about
-2,250 input + 1,440 output tokens, approximately `$0.00945` at the published
-Haiku 4.5 `$1/$5` per-million-token rates. No real remediation calls have been
-approved or made in G'.
+9 unique remediation keys. The approved first real Haiku 4.5 batch used 1,527
+input + 1,269 output tokens, costing `$0.007872` at the published `$1/$5`
+per-million-token rates. Provider output is prominently labelled AI-generated
+advisory material and still requires operator review; it is not a deterministic
+compliance result or a human-verified remediation procedure.

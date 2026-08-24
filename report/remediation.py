@@ -66,6 +66,7 @@ def dry_run_remediation(control: dict[str, Any]) -> dict[str, Any]:
     return {
         "cache_key": remediation_key(control),
         "text": "DRY-RUN: no provider call made; operator review required for device-specific CLI remediation.",
+        "reasoning": "DRY-RUN: no provider reasoning generated.",
         "mode": "dry-run",
         "provider": "none",
         "source": "dry_run_placeholder",
@@ -94,7 +95,8 @@ def _provider_remediation(control: dict[str, Any], api_key: str, model: str) -> 
     context = _redact_remediation_context(control)
     prompt = (
         "Generate a concise Cisco IOS CLI remediation for this failed compliance "
-        "control. Return JSON only with key remediation. Include configuration "
+        "control. Return JSON only with string keys remediation and reasoning. "
+        "Keep reasoning under 30 words and explain why the commands address the control. Include configuration "
         "mode commands where safe, and a brief verification command. Do not invent "
         "device-specific values or credentials. Mark assumptions. This is advisory "
         "AI-generated text, not a compliance result.\n\nControl: " + context
@@ -125,19 +127,23 @@ def _provider_remediation(control: dict[str, Any], api_key: str, model: str) -> 
     try:
         parsed = json.loads(text)
     except json.JSONDecodeError:
-        match = re.search(r"\{\s*\"remediation\"\s*:\s*\".*?\"\s*\}", text, re.DOTALL)
+        match = re.search(r"\{.*\}", text, re.DOTALL)
         if not match:
             raise ProviderError("remediation provider response was not JSON")
         parsed = json.loads(match.group(0))
     remediation = parsed.get("remediation")
     if not isinstance(remediation, str) or not remediation.strip():
         raise ProviderError("remediation provider returned no remediation text")
+    reasoning = parsed.get("reasoning")
+    if not isinstance(reasoning, str) or not reasoning.strip():
+        raise ProviderError("remediation provider returned no reasoning text")
     usage = body.get("usage") or {}
     input_tokens = int(usage.get("input_tokens", 0))
     output_tokens = int(usage.get("output_tokens", 0))
     return {
         "cache_key": remediation_key(control),
         "text": remediation.strip(),
+        "reasoning": reasoning.strip(),
         "mode": "real-api",
         "provider": "anthropic",
         "model": model,
@@ -176,10 +182,11 @@ def remediation_for_failed_controls(
             value["mode"] = "cache"
         elif real_api:
             value = _provider_remediation(control, api_key or "", model)
-            store.put(key, value)
         else:
             value = dry_run_remediation(control)
         value["rule_id"] = control["rule_id"]
         value["title"] = control.get("title")
+        if real_api and cached is None:
+            store.put(key, value)
         results.append(value)
     return results

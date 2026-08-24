@@ -55,8 +55,16 @@ def build_pdf(
     styles.add(ParagraphStyle(name="CenterTitle", parent=styles["Title"], alignment=TA_CENTER, spaceAfter=12))
     styles.add(ParagraphStyle(name="Small", parent=styles["BodyText"], fontSize=8, leading=10))
     styles.add(ParagraphStyle(name="Failed", parent=styles["BodyText"], textColor=colors.HexColor("#b42318")))
+    styles.add(ParagraphStyle(name="AIWarning", parent=styles["BodyText"], fontSize=8, leading=10, textColor=colors.HexColor("#7a2e0b"), backColor=colors.HexColor("#fff4e5"), borderPadding=6, spaceAfter=10))
     doc = SimpleDocTemplate(str(output), pagesize=letter, rightMargin=.55*inch, leftMargin=.55*inch, topMargin=.5*inch, bottomMargin=.5*inch)
-    story = [Paragraph("Attestor Network Compliance Report", styles["CenterTitle"])]
+    story = [
+        Paragraph("Attestor Network Compliance Report", styles["CenterTitle"]),
+        Paragraph(
+            "<b>AI advisory notice:</b> AI-generated remediation and reasoning require operator review. "
+            "They never alter the deterministic pass/fail compliance result.",
+            styles["AIWarning"],
+        ),
+    ]
     device = results.get("device") or {}
     host = results.get("host") or {}
     device_id = escape(str(device.get("device_id", "not recorded")))
@@ -77,7 +85,8 @@ def build_pdf(
         story.append(Paragraph(f"<b>Evidence:</b> {escape(str(control.get('evidence_summary', '')))}", styles["Small"]))
         if control.get("status") == "fail":
             item = remediation_by_rule.get(control["rule_id"], {})
-            story.append(Paragraph(f"<b>AI-generated remediation ({escape(str(item.get('mode', 'unknown')))}):</b> {escape(str(item.get('text', 'unavailable')))}", styles["Small"]))
+            story.append(Paragraph(f"<b>AI-GENERATED ADVISORY REMEDIATION ({escape(str(item.get('mode', 'unknown')))}):</b> {escape(str(item.get('text', 'unavailable')))}", styles["Small"]))
+            story.append(Paragraph(f"<b>AI reasoning:</b> {escape(str(item.get('reasoning', 'unavailable')))}", styles["Small"]))
         mappings = control.get("framework_mappings") or []
         if mappings:
             mapping_text = "; ".join(
