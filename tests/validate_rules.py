@@ -35,8 +35,11 @@ FIXTURES_DIR = REPO_ROOT / "tests" / "fixtures"
 # Expected fixture outcomes: filename -> should_be_valid
 FIXTURE_EXPECTATIONS = {
     "valid_example.yaml": True,
+    "valid_network_example.yaml": True,
     "invalid_missing_field.yaml": False,
     "invalid_bad_id.yaml": False,
+    "invalid_network_missing_device.yaml": False,
+    "invalid_framework_mapping.yaml": False,
 }
 
 

@@ -1,0 +1,21 @@
+# FIXTURE — invalid: framework mapping source is required.
+id: "1.3"
+title: "EXAMPLE NETWORK RULE — incomplete mapping"
+benchmark: "EXAMPLE Cisco IOS Benchmark — fixture only"
+benchmark_version: "fixture-0.0.0"
+level: 1
+profile:
+  - network_device
+device:
+  vendor: Cisco
+  platform: IOS
+automated: true
+severity: medium
+checks:
+  - type: config_block
+    context: line vty
+framework_mappings:
+  - framework: NIST SP 800-53
+    control_id: AC-4
+remediation: "Fixture remediation text."
+source: "CIS Cisco IOS Benchmark, fixture shape only"

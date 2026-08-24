@@ -12,10 +12,10 @@ report generator, and ledger cannot drift apart.
 - Control-level roll-up follows `docs/architecture.md` §3 (elaborated to a strict
   precedence ladder in §2 below).
 - Rule fields (`id`, `title`, `level`, `profile`, `severity`, `automated`,
-  `remediation`, `source`, …) are defined by `schema/rule_schema.json` /
+  `remediation`, `source`, optional `device`, optional `framework_mappings`, …) are defined by `schema/rule_schema.json` /
   `docs/rule-schema.md`. This doc carries them through unchanged.
-- `check_type` values are the ten in the schema enum. This doc introduces **no**
-  new check types and **no** new status values.
+- `check_type` values are schema-enumerated. Phase A adds the `config_block`
+  contract for the future network engine; it adds **no** new status values.
 
 Contract version: `attestor_format_version = "1.0"`. Any breaking change to a
 shape below bumps this string.
@@ -104,6 +104,14 @@ unchanged and adds the rolled-up `status`, nested check results, and a summary.
   "title":       "Ensure address space layout randomization (ASLR) is enabled",
   "level":       1,             // integer 1|2 (from rule)
   "profile":     ["server","workstation"],  // array<string> (from rule)
+  "device":      {                 // optional; present for network-device rules
+    "vendor": "Cisco", "platform": "IOS", "roles": ["router"],
+    "config_format": "running-config"
+  },
+  "framework_mappings": [          // optional secondary mappings; source required
+    {"framework": "NIST SP 800-53", "version": "Rev. 5", "control_id": "IA-5",
+     "relationship": "supports", "source": "traceable mapping source"}
+  ],
   "severity":    "medium",      // string low|medium|high (from rule)
   "automated":   true,          // boolean (from rule)
   "status":      "pass",        // ROLLED UP, enum: pass|fail|error|manual|not_applicable
@@ -148,6 +156,12 @@ hash — the ledger stores that separately (§4).
   "target": "ubuntu2204_desktop",       // string; rule-pack target evaluated
   "benchmark": "CIS Ubuntu Linux 22.04 LTS Benchmark",   // string (from rules)
   "benchmark_version": "v2.0.0",        // string (from rules)
+  "device": {                             // absent for legacy OS target reports
+    "device_id": "edge-01", "hostname": "edge-01",
+    "vendor": "Cisco", "platform": "IOS", "model": null,
+    "roles": ["router"], "config_source": "file",
+    "config_sha256": "64 lowercase hexadecimal characters"
+  },
 
   "host": {
     "hostname":    "demo-ubuntu",       // string
@@ -187,6 +201,7 @@ hash — the ledger stores that separately (§4).
 | `report_id` | string | UUIDv4. |
 | `target` | string | Rule-pack folder name. |
 | `benchmark` / `benchmark_version` | string | From the rules evaluated. |
+| `device` | object, optional | Audited network device identity and input provenance; absent for legacy OS reports. |
 | `host.hostname/os_name/os_version/os_id/kernel/arch/user` | string | See mapping for Windows in comments. |
 | `host.environment` | string enum | `native \| wsl \| container`. |
 | `host.elevated` | boolean | Privilege at run time. |
@@ -196,6 +211,41 @@ hash — the ledger stores that separately (§4).
 | `run.engine/engine_version` | string | |
 | `summary.{pass,fail,error,manual,not_applicable}` | integer | Sum == `len(controls)`. |
 | `controls` | array\<control roll-up\> | §2 objects. |
+
+### 3.1 Additive network-report contract
+
+The network engine must preserve every required v1.0 field above. Optional
+network fields are additive, so `attestor_format_version` remains `"1.0"`.
+
+- `host` identifies the workstation/server that executed Attestor. It is not
+  the network device being assessed.
+- top-level `device` identifies the audited device and is required for a network
+  target. `device.device_id` is the stable identifier used as the ledger
+  `host_id`; a parsed IOS hostname is the default, otherwise the CLI must require
+  an explicit device ID.
+- `device.config_sha256` is SHA-256 over the exact input configuration bytes.
+  This proves which saved configuration was assessed without embedding the
+  configuration itself in the report.
+- control-level `device` describes rule applicability (vendor/platform/roles),
+  while top-level `device` describes the concrete audited device.
+- `framework_mappings` remains attached to each control. The dotted numeric CIS
+  ID remains `rule_id`; secondary IDs such as `IA-5` never replace it.
+
+The Phase A `config_block` check contract reserves these fields:
+
+```jsonc
+{
+  "type": "config_block",
+  "context_type": "line_vty",        // initially line_vty or interface
+  "header_pattern": "^line vty ",    // selects candidate block headers
+  "required_patterns": ["^ transport input ssh$"],
+  "forbidden_patterns": ["^ transport input telnet"]
+}
+```
+
+Exact evaluation semantics are implemented only after the AGENTS.md brainstorm
+protocol and genuine-config corpus phases. Validating this shape does not make
+a network control verified.
 
 ---
 
@@ -391,5 +441,6 @@ Flagged so they can be trimmed if you disagree — none add a check_type or stat
   the report prioritizes by severity and must show manual controls distinctly.
 - **Roll-up precedence ladder (§2)** makes check-level `manual`/`not_applicable`
   precedence explicit; architecture §3 only covered pass/fail/error/automated.
-- **No new check types or status values were introduced.** The existing ten check
-  types and five statuses were sufficient.
+- **No new status values were introduced.** Phase A adds the additive
+  `config_block` check contract for network-device parsing; the five-status
+  fail-closed contract remains unchanged.

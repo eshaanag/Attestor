@@ -1,0 +1,16 @@
+# FIXTURE — invalid: network_device profile requires device metadata.
+id: "1.2"
+title: "EXAMPLE NETWORK RULE — missing device"
+benchmark: "EXAMPLE Cisco IOS Benchmark — fixture only"
+benchmark_version: "fixture-0.0.0"
+level: 1
+profile:
+  - network_device
+automated: true
+severity: medium
+checks:
+  - type: config_grep
+    path: /tmp/config.txt
+    pattern: "^banner"
+remediation: "Fixture remediation text."
+source: "CIS Cisco IOS Benchmark, fixture shape only"

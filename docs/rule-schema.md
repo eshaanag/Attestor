@@ -6,9 +6,9 @@ authoritative for exact types, patterns, and constraints. The validator
 [`tests/validate_rules.py`](../tests/validate_rules.py) enforces it against every
 `rules/**/*.yaml`.
 
-Scope: MVP targets only — **Windows 11 Standalone** and **Ubuntu 22.04 Desktop,
-Level 1**. Check types are enum-constrained to these targets; adding a new one is a
-deliberate schema change, not a rule-authoring decision.
+Scope: Existing Windows/Linux CIS targets remain supported. The additive network
+track uses `profile: [network_device]`, device metadata, and optional secondary
+framework mappings without changing existing rule files.
 
 ## Top-level fields
 
@@ -21,7 +21,9 @@ deliberate schema change, not a rule-authoring decision.
 | `benchmark` | yes | Name of the source CIS benchmark (e.g. `CIS Ubuntu Linux 22.04 LTS Benchmark`). |
 | `benchmark_version` | yes | Version of that benchmark (e.g. `v2.0.0`). |
 | `level` | yes | CIS profile level — integer `1` or `2`. |
-| `profile` | yes | Non-empty array of applicable profiles. Allowed values: `server`, `workstation`, `standalone`, `enterprise`. |
+| `profile` | yes | Non-empty array of applicable profiles. Allowed values: `server`, `workstation`, `standalone`, `enterprise`, `network_device`. |
+| `device` | conditional | Required when `profile` contains `network_device`; identifies the vendor/platform and optional device role/config format. |
+| `framework_mappings` | no | Secondary framework references, each with `framework`, `control_id`, and a traceable `source`. The primary CIS identity remains in `benchmark`/`benchmark_version`/`id`. |
 | `automated` | yes | `true` if programmatically checkable; `false` for manual-review-only controls. |
 | `severity` | yes | `low` / `medium` / `high` — report prioritization (borrowed from ComplianceAsCode). |
 | `checks` | yes | Ordered array of checks. The control passes only if **all** checks pass. May be empty **only** when `automated: false`. |
@@ -48,6 +50,8 @@ is `true` inside a check.
   `config_grep`, `service_state`
 - **Windows 11 Standalone**: `registry`, `account_policy`, `secpol`, `audit_policy`,
   `service_state`
+- **Network track (contract only in Phase A)**: existing `config_grep` for flat
+  text checks and `config_block` for block-aware checks.
 
 `service_state` is shared across both engines.
 
@@ -68,3 +72,23 @@ The research doc's draft field list was adjusted to the explicit task requiremen
   `references` object; the `section` sub-field was dropped (redundant with `id`).
 - `profile` (array) was added as required.
 - `description` and `rationale` were kept as optional recommended fields.
+
+## Network rule example (shape only)
+
+The following illustrates the additive fields; it is not a shipped control or
+evidence for any benchmark claim:
+
+```yaml
+profile: [network_device]
+device:
+  vendor: Cisco
+  platform: IOS
+  roles: [router]
+  config_format: running-config
+framework_mappings:
+  - framework: NIST SP 800-53
+    version: Rev. 5
+    control_id: IA-5
+    relationship: supports
+    source: "NIST SP 800-53 Rev. 5, IA-5, official publication"
+```

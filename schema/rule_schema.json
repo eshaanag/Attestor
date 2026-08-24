@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://attestor.local/schema/rule_schema.json",
-  "title": "Attestor CIS Rule",
-  "description": "Schema for a single Attestor CIS benchmark control (rule YAML). MVP scope: Windows 11 Standalone + Ubuntu 22.04 Desktop, Level 1. See docs/rule-schema.md for field intent.",
+  "title": "Attestor Compliance Rule",
+  "description": "Schema for a single Attestor compliance rule. Existing Windows/Linux CIS rules remain valid; network-device rules add device metadata and optional secondary-framework mappings.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -58,9 +58,81 @@
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "enum": ["server", "workstation", "standalone", "enterprise"]
+        "enum": ["server", "workstation", "standalone", "enterprise", "network_device"]
       },
       "description": "Applicable CIS profiles for this control."
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["vendor", "platform"],
+      "properties": {
+        "vendor": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Network-device vendor, e.g. Cisco."
+        },
+        "platform": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Vendor platform/OS, e.g. IOS or IOS-XE."
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional device model."
+        },
+        "roles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Optional device roles, e.g. router or switch."
+        },
+        "config_format": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Input configuration format, e.g. running-config."
+        }
+      },
+      "description": "Optional device dimension for network-device rules; required when profile includes network_device."
+    },
+    "framework_mappings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["framework", "control_id", "source"],
+        "properties": {
+          "framework": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Secondary framework name, e.g. NIST SP 800-53."
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional framework revision/version."
+          },
+          "control_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Framework control identifier, e.g. AC-4 or IA-5."
+          },
+          "relationship": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Optional relationship description; do not imply equivalence without source evidence."
+          },
+          "source": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Traceable source for this specific framework mapping."
+          }
+        }
+      },
+      "description": "Optional secondary-framework mappings carried alongside the primary CIS benchmark identity."
     },
     "automated": {
       "type": "boolean",
@@ -92,7 +164,8 @@
               "registry",
               "account_policy",
               "secpol",
-              "audit_policy"
+              "audit_policy",
+              "config_block"
             ]
           },
           "op": {
@@ -122,6 +195,19 @@
       },
       "then": {
         "properties": { "checks": { "minItems": 1 } }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "profile": {
+            "contains": { "const": "network_device" }
+          }
+        },
+        "required": ["profile"]
+      },
+      "then": {
+        "required": ["device"]
       }
     }
   ]

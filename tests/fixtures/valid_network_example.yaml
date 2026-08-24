@@ -1,0 +1,28 @@
+# FIXTURE — schema shape only; not a real CIS control.
+id: "1.1"
+title: "EXAMPLE NETWORK RULE — valid shape fixture"
+benchmark: "EXAMPLE Cisco IOS Benchmark — fixture only"
+benchmark_version: "fixture-0.0.0"
+level: 1
+profile:
+  - network_device
+device:
+  vendor: Cisco
+  platform: IOS
+  roles:
+    - router
+  config_format: running-config
+automated: true
+severity: high
+checks:
+  - type: config_grep
+    pattern: "^service password-encryption$"
+    op: matches
+framework_mappings:
+  - framework: NIST SP 800-53
+    version: Rev. 5
+    control_id: IA-5
+    relationship: supports
+    source: "NIST SP 800-53 Rev. 5, IA-5, fixture shape only"
+remediation: "Fixture remediation text."
+source: "CIS Cisco IOS Benchmark, fixture shape only"
