@@ -78,9 +78,27 @@ attestor/
 **Phase 0** (schema + validator), **Phase 1** (Linux engine), **Phase 2** (Windows engine), **Phase 3** (report generation), **Phase 4** (tamper-evident ledger), **Phase 5** (rule pack expansion), **Phase 6** (CLI polish), **Phase 7** (local web GUI), and **Phase 9** (testnet anchoring) complete.
 Stretch goal remaining: Phase 8 (fleet backend/dashboard).
 
-**Blockchain proof:** Contract [`0x5630C39abe14B8a4A23d696961Fc9067C7a6C129`](https://amoy.polygonscan.com/address/0x5630C39abe14B8a4A23d696961Fc9067C7a6C129) on Polygon Amoy — [anchor transaction](https://amoy.polygonscan.com/tx/cb7157d36a6f9657f3efd4a82f378ef0088c9db03f78a6b685e21e9a2412359b).
+**Current blockchain integration:** Ethereum Sepolia contract
+[`0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`](https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41), using
+`anchorReport(currentHash, previousHash)`. The earlier Polygon Amoy deployment is
+legacy and is not the contract used by the current integration.
 
 See [`reports/sample-report.html`](reports/sample-report.html) for an example rendered report (opens offline, no network required).
+
+### PS26155 network-device track
+
+| Phase | Scope | Status | Evidence |
+|---|---|---|---|
+| A | Additive schema + interface contracts | Complete | 200 legacy rules validate unchanged; 6 schema fixtures behave as expected; canonical/ledger/anchor tests pass |
+| B | Genuine Cisco IOS config corpus | Complete pending commit/push protocol | 8 MIT-licensed source-backed IOS reference configs; immutable source commits, retrieval date, platform, and SHA-256 in `tests/fixtures/network/cisco_ios/manifest.json`; integrity test passes |
+| C | Cisco IOS flat-check parser primitive | Complete pending commit/push protocol | `engines/network/run_audit.py`; five manual-oracle checks span all 8 corpus files and each has pass + fail evidence; focused tests pass |
+| D-H | Block parser, sourced Cisco rules/report, ledger proof, optional vendor, pitch | Not started | Phase C adds no CIS control or vendor-compliance claim |
+
+The verified Phase C parser primitive is limited to source-backed Cisco IOS
+lab/reference configurations, not production backups or live sandbox captures.
+It adds no production compliance rule and therefore no claim of completed
+vendor-compliance coverage. Cisco IOS is the planned first target; other vendors
+are roadmap only.
 
 ### CLI Usage
 

@@ -31,7 +31,7 @@ Evidence = file path and/or commit that proves the claim.
 | Item | How Attestor addresses it | Status | Evidence |
 |---|---|---|---|
 | Real, explainable blockchain mechanism | SHA-256 hash-chained report ledger, per host, with break detection | done | `ledger/chain.py` (062fe39); `tests/test_ledger_chain.py` (8299c2b); 3-report chain proven intact, tamper at link 1 correctly detected |
-| Publicly verifiable, not just internal | Anchor chain root hash to Polygon Amoy testnet | done | Contract `0x5630C39abe14B8a4A23d696961Fc9067C7a6C129` deployed; [tx proof](https://amoy.polygonscan.com/tx/cb7157d36a6f9657f3efd4a82f378ef0088c9db03f78a6b685e21e9a2412359b) |
+| Publicly verifiable, not just internal | Anchor each report hash and previous hash to Ethereum Sepolia | done for existing OS track | Current contract `0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`; current ABI exposes `anchorReport(root, previousRoot)` |
 | Tamper-evidence is honest | Canonical serialization so hashes are reproducible (no false "tamper" alarms); distinct failure modes (report-tampered vs chain-corrupted) | done | `ledger/canonical.py` (a7bd5a1); `tests/test_canonical_hash.py` + `test_reserialization_no_false_break` (8299c2b) |
 
 ## C. Judging lenses → how we score
@@ -58,6 +58,19 @@ Evidence = file path and/or commit that proves the claim.
 | Repo hygiene / professionalism | `.gitignore` excludes secrets/reference/local memory; disciplined commit messages | in progress | `.gitignore`, AGENTS.md §6 |
 | License discipline | Reference repos read for logic only, never copied; project MIT | in progress | `LICENSE`, AGENTS.md §7 |
 | Incomplete-run safety | `results.json` written only on clean completion; report flags partial runs | planned | `docs/architecture.md` Open Risk #7 |
+
+## E. PS26155 network-device track
+
+| Phase | Deliverable | Status | Evidence |
+|---|---|---|---|
+| A | Backward-compatible network rule/results contracts | done | `schema/rule_schema.json`; 200 legacy rules pass validation; 6 fixtures resolve as expected; pytest passes |
+| B | 5-8 genuine Cisco IOS/IOS-XE configs with provenance | done pending commit/push protocol | 8 MIT-licensed, source-backed IOS lab/reference configs; immutable commit URLs, retrieval date, platform, and SHA-256 are pinned in `tests/fixtures/network/cisco_ios/manifest.json` and tested |
+| C | Cisco flat-check engine | done pending commit/push protocol | `engines/network/run_audit.py`; manual oracle records exact raw-text lines and complementary absences for five checks across all eight source-backed configs; `tests/test_network_flat_engine.py` and full pytest pass |
+| D | Block-aware VTY/interface checks | not started | Contract reserved only; no dispatcher exists |
+| E | 10-15 sourced Cisco rules + dual-framework report | not started | No production Cisco rules exist |
+| F | Network-report ledger + real Sepolia transaction | not started | Existing OS anchoring does not count as network proof |
+| G | Optional additional vendor | deferred by default | Roadmap only |
+| H | Honest pitch/documentation pass | not started | Must reflect actual delivered coverage |
 
 ---
 
