@@ -193,6 +193,24 @@ hash — the ledger stores that separately (§4).
 }
 ```
 
+## 3a. Network ingestion dashboard contract (Phase H')
+
+`POST /api/network/audit` accepts multipart form data:
+
+- `files`: one or more saved Cisco IOS/IOS-XE configuration text files.
+- `framework`: `all`, `cis`, or `nist`. This controls report presentation only;
+  the deterministic Cisco rules and their results are unchanged. The `nist`
+  option is explicitly a NIST SP 800-53 *mapped view* of CIS-backed checks, not
+  a separate NIST-native rule pack.
+
+Each file is copied to an isolated temporary directory and passed to the
+unchanged `engines/network/run_audit.py --config <path>` interface. A successful
+item returns links to its JSON, offline HTML, and PDF report. A failed item
+returns an explicit error and no report links. Bulk items are processed
+independently; one invalid file must not create or imply a successful result for
+another. Uploaded configuration files are not retained by the dashboard after
+processing.
+
 **Field types (strict):**
 
 | Path | Type | Notes |

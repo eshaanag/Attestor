@@ -96,7 +96,8 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | E | Cisco IOS rule pack + dual-framework report | Complete (scoped) | 14 source-backed CIS rules under `rules/cisco_ios/`, each with NIST SP 800-53 mapping; 10-config per-rule oracle has pass/fail evidence; 23 tests pass; report renders device identity and mappings offline |
 | F | Network-report ledger + real Sepolia transaction | Complete (Cisco IOS scope) | Stable device chain verified; root `6d9319f05742791af8798a288e72e530a0d563a3037f7a5ddecb3d68d843239a` anchored in tx `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`; `verifyRoot` returned found=true |
 | F' | AI-assisted syntax discovery/training loop | Complete (real batch; deterministic compliance unchanged) | 51 redacted candidates classified with available Haiku model; 32 tests pass; provider-reported usage 3,408 input + 3,268 output tokens, measured cost `$0.019748`; no pre-redaction cache |
-| G' | Offline PDF report + cached AI remediation | Complete (AI advisory scope) | ReportLab PDF renders the genuine Cisco report offline; 9 failed controls received clearly labelled Haiku-generated advisory remediation and reasoning using 1,527 input + 1,269 output tokens (`$0.007872` measured); cache is keyed by vendor/platform/rule; human review remains required |
+| G' | Offline PDF report + cached AI remediation | Complete (AI advisory scope) | ReportLab PDF renders the genuine Cisco report offline; 9 failed controls received clearly labelled Haiku-generated advisory remediation and reasoning; initial batch + one targeted retry used `$0.008774`; retry reproduced the known invalid `SHA-500` phrase, proving why human review remains required |
+| H' | Minimal network ingestion dashboard | Complete (Cisco IOS scope) | Existing FastAPI dashboard accepts single/bulk genuine config uploads, offers CIS/NIST-mapped/combined report views, and returns JSON + offline HTML + PDF; 4 genuine-corpus integration tests and full 40-test suite pass |
 | G | Optional additional vendor | Deferred | Cisco IOS is the only built vendor; other vendors remain roadmap |
 | H | Honest pitch/documentation pass | Not started | Must reflect actual delivered coverage and live DevNet pull as a presentation-day step |
 
@@ -140,7 +141,13 @@ python3 dashboard/app.py
 # Watch live pass/fail results stream in, then click the report link
 ```
 
-Requires: `pip install fastapi uvicorn` (in addition to base requirements).
+The same page also accepts one or more saved Cisco IOS/IOS-XE configs. Choose a
+CIS, NIST-mapped, or combined report view, upload the files, then download JSON,
+offline HTML, or PDF per device. The NIST choice is a mapped view of the
+CIS-backed checks, not a separate NIST-native rule pack. Uploaded configs are
+processed locally and discarded.
+
+Requires the dependencies pinned in `requirements.txt`.
 
 ---
 

@@ -219,6 +219,13 @@ a browser on the local host, clicking "Run audit" runs the real engine, shows
 live pass/fail/error results as checks complete, and links to a generated report
 that opens offline.
 
+For the additive PS26155 track, the same local dashboard provides a bounded
+multipart ingestion adapter for saved Cisco IOS configurations. It writes each
+upload only to a temporary directory, invokes the unchanged file-based network
+engine, and returns JSON plus offline HTML/PDF. Framework selection is a report
+view over the same deterministic results; NIST is explicitly a mapped view of
+CIS-backed controls. No sandbox/SSH connector is simulated.
+
 **Explicitly out of MVP scope (stretch / later):** RHEL 8/9, Windows 11
 Enterprise, Ubuntu 20.04 / Server, all Level 2 controls, the fleet
 backend/dashboard (Phase 8), and testnet anchoring (Phase 9). All reachable

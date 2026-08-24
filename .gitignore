@@ -14,6 +14,8 @@ reference/
 ai/state/
 reports/*.html
 !reports/sample-report.html
+reports/*.json
+reports/*.pdf
 .DS_Store
 .vscode/
 

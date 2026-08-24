@@ -9,3 +9,18 @@ build step).
 - **Stretch (Phase 8) — fleet dashboard:** the same stack grows into a multi-host
   view over the `backend/` collector API. Only started after Phases 0–7 are
   complete and the backend API contract is defined.
+
+## PS26155 network ingestion (Phase H')
+
+The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE config
+files and returns JSON, standalone HTML, and PDF reports for each file. Uploads
+are processed in an isolated temporary directory and are not retained.
+
+The framework selector offers CIS, NIST SP 800-53 mapped, or combined display.
+It changes presentation only: the existing deterministic CIS-backed checks are
+authoritative, and the NIST option does not claim a separate native NIST rule
+pack. Cisco IOS is the only implemented network vendor.
+
+PDF remediation remains dry-run by default from the dashboard, clearly labelled,
+and makes no provider call. The F' human-confirmation training loop remains a
+CLI workflow in this round.

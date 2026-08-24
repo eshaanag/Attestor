@@ -157,15 +157,20 @@ http://localhost:8000
 ```
 
 ### Use it:
-1. Select target: **Ubuntu 22.04 Desktop** or **Windows 11 Standalone**
-2. Select level: **Level 1** or **Level 2**
-3. Click **"▶ Run Audit"**
-4. Watch live results stream in (pass/fail counters update in real-time)
-5. When done → click **"📄 View Full Report"** link
+1. For a local OS audit, select the OS target and level, then click **Run Audit**.
+2. For a network audit, choose one or more genuine saved Cisco IOS config files.
+3. Select CIS, NIST-mapped, or combined report presentation.
+4. Click **Upload and audit**.
+5. Download the JSON, offline HTML, or PDF output for each uploaded device.
+
+The NIST option shows documented mappings attached to the CIS-backed checks; it
+does not claim a separate NIST-native rule pack. Uploaded configurations are
+processed locally and discarded. The dashboard does not simulate SSH or DevNet
+collection.
 
 ### ⚠️ GUI requirements:
 - Both VMs must be running and SSH accessible
-- `pip install fastapi uvicorn` must be done on your Mac
+- `python3 -m pip install -r requirements.txt` must be completed
 - Ubuntu GUI works directly (engine runs as subprocess via SSH)
 - Windows GUI works via SSH to the Windows VM
 

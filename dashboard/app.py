@@ -17,22 +17,34 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import copy
+import html
 import json
+import re
 import subprocess
 import sys
+import tempfile
 import uuid
 from pathlib import Path
 from typing import AsyncGenerator
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, StreamingResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from report.generate_pdf import build_pdf  # noqa: E402
+from report.generate_report import render  # noqa: E402
+
 RESULTS_DIR = REPO_ROOT / "reports"
 RESULTS_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Attestor Local GUI", version="0.1.0")
+MAX_NETWORK_FILES = 20
+MAX_NETWORK_CONFIG_BYTES = 2 * 1024 * 1024
+FRAMEWORK_VIEWS = {"all", "cis", "nist"}
 
 # ─────────────────────── HTML Template (inline, self-contained) ───────────────
 
@@ -73,7 +85,25 @@ button:disabled { background: #8c959f; cursor: not-allowed; }
 <body>
 <h1>🛡️ Attestor CIS Benchmark Audit</h1>
 
+<div class="card">
+  <h2 style="margin-bottom:0.75rem">Cisco IOS configuration ingestion</h2>
+  <p style="margin-bottom:1rem">Upload one or more genuine saved configurations. Cisco IOS is the only built network vendor; other vendors remain roadmap.</p>
+  <form action="/api/network/audit" method="post" enctype="multipart/form-data">
+    <label for="network-files">Configuration files</label>
+    <input id="network-files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required>
+    <label for="framework">Report framework view</label>
+    <select id="framework" name="framework">
+      <option value="all">CIS with NIST SP 800-53 mappings</option>
+      <option value="cis">CIS Cisco IOS only</option>
+      <option value="nist">NIST SP 800-53 mapped view</option>
+    </select>
+    <button type="submit">Upload and audit</button>
+  </form>
+  <p style="font-size:0.82rem;color:#656d76;margin-top:0.75rem">Uploads are processed locally and discarded after auditing. PDF AI remediation is dry-run by default; no provider call is made.</p>
+</div>
+
 <div class="card" id="run-panel">
+  <h2 style="margin-bottom:0.75rem">Local operating-system audit</h2>
   <label for="target">Target</label>
   <select id="target">
     <option value="ubuntu2204_desktop">Ubuntu 22.04 Desktop (Level 1)</option>
@@ -185,6 +215,161 @@ async def index():
     return PAGE_TEMPLATE
 
 
+def _safe_upload_name(filename: str | None) -> str:
+    basename = Path(filename or "network-config.txt").name
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "_", basename).strip("._")
+    return sanitized or "network-config.txt"
+
+
+def _apply_framework_view(results: dict, framework: str) -> dict:
+    """Create a presentation-only framework view without changing check results."""
+    viewed = copy.deepcopy(results)
+    viewed["selected_framework"] = framework
+    if framework == "all":
+        return viewed
+    if framework == "cis":
+        for control in viewed.get("controls", []):
+            control.pop("framework_mappings", None)
+        return viewed
+
+    controls = []
+    for control in viewed.get("controls", []):
+        mappings = [
+            mapping for mapping in control.get("framework_mappings", [])
+            if str(mapping.get("framework", "")).casefold().startswith("nist")
+        ]
+        if mappings:
+            control["framework_mappings"] = mappings
+            controls.append(control)
+    viewed["controls"] = controls
+    viewed["benchmark"] = "NIST SP 800-53 mapped view (CIS-backed checks)"
+    viewed["benchmark_version"] = "Rev. 5 mappings"
+    viewed["summary"] = {key: 0 for key in ("pass", "fail", "error", "manual", "not_applicable")}
+    for control in controls:
+        viewed["summary"][control["status"]] += 1
+    viewed["run"]["total_controls"] = len(controls)
+    viewed["run"]["evaluated"] = len(controls)
+    return viewed
+
+
+async def _audit_network_upload(upload: UploadFile, framework: str, work_dir: Path) -> dict:
+    display_name = _safe_upload_name(upload.filename)
+    content = await upload.read(MAX_NETWORK_CONFIG_BYTES + 1)
+    if not content:
+        return {"filename": display_name, "status": "error", "error": "uploaded file is empty"}
+    if len(content) > MAX_NETWORK_CONFIG_BYTES:
+        return {
+            "filename": display_name,
+            "status": "error",
+            "error": f"file exceeds {MAX_NETWORK_CONFIG_BYTES // (1024 * 1024)} MiB limit",
+        }
+
+    item_id = uuid.uuid4().hex[:10]
+    input_path = work_dir / f"{item_id}_{display_name}"
+    input_path.write_bytes(content)
+    results_path = RESULTS_DIR / f"network_{item_id}.json"
+    html_path = RESULTS_DIR / f"network_{item_id}.html"
+    pdf_path = RESULTS_DIR / f"network_{item_id}.pdf"
+    device_id = Path(display_name).stem or f"uploaded-device-{item_id}"
+    cmd = [
+        sys.executable,
+        str(REPO_ROOT / "engines" / "network" / "run_audit.py"),
+        "--config", str(input_path),
+        "--device-id", device_id,
+        "--output", str(results_path),
+        "--format", "json",
+    ]
+    process = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await process.communicate()
+    if process.returncode != 0 or not results_path.exists():
+        detail = stderr.decode("utf-8", errors="replace").strip()
+        return {
+            "filename": display_name,
+            "status": "error",
+            "error": detail[-800:] or f"network engine exited {process.returncode}",
+        }
+
+    try:
+        results = json.loads(results_path.read_text(encoding="utf-8"))
+        viewed = _apply_framework_view(results, framework)
+        results_path.write_text(json.dumps(viewed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        html_path.write_text(render(viewed), encoding="utf-8")
+        build_pdf(viewed, pdf_path, state_dir=work_dir / f"state_{item_id}")
+    except Exception as exc:
+        for artifact in (results_path, html_path, pdf_path):
+            try:
+                artifact.unlink(missing_ok=True)
+            except OSError:
+                pass
+        return {
+            "filename": display_name,
+            "status": "error",
+            "error": f"report generation failed: {type(exc).__name__}: {exc}",
+        }
+
+    return {
+        "filename": display_name,
+        "status": "complete",
+        "device": viewed.get("device", {}),
+        "summary": viewed.get("summary", {}),
+        "framework": framework,
+        "json_url": f"/reports/{results_path.name}",
+        "html_url": f"/reports/{html_path.name}",
+        "pdf_url": f"/reports/{pdf_path.name}",
+        "engine_output_lines": len(stdout.decode("utf-8", errors="replace").splitlines()),
+    }
+
+
+def _network_results_page(items: list[dict], framework: str) -> str:
+    blocks = []
+    for item in items:
+        name = html.escape(item["filename"])
+        if item["status"] != "complete":
+            blocks.append(
+                f'<div class="card"><h2>{name}</h2><p class="badge badge-error">ERROR</p>'
+                f'<p style="margin-top:0.75rem;white-space:pre-wrap">{html.escape(item["error"])}</p></div>'
+            )
+            continue
+        summary = item["summary"]
+        device = item.get("device") or {}
+        blocks.append(
+            f'<div class="card"><h2>{name}</h2>'
+            f'<p><b>Device:</b> {html.escape(str(device.get("device_id", "unknown")))}'
+            f' ({html.escape(str(device.get("hostname") or "hostname unavailable"))})</p>'
+            f'<p><b>Results:</b> pass={summary.get("pass", 0)}, fail={summary.get("fail", 0)}, '
+            f'error={summary.get("error", 0)}, manual={summary.get("manual", 0)}</p>'
+            f'<a class="report-link" href="{item["html_url"]}" target="_blank">HTML report</a> '
+            f'<a class="report-link" href="{item["pdf_url"]}" target="_blank">PDF report</a> '
+            f'<a class="report-link" href="{item["json_url"]}" target="_blank">JSON results</a></div>'
+        )
+    return PAGE_TEMPLATE.split("<body>", 1)[0] + "<body>" + (
+        '<h1>Attestor network ingestion results</h1>'
+        f'<p style="margin-bottom:1rem">Framework view: <b>{html.escape(framework)}</b>. '
+        'NIST is a mapped view of the CIS-backed deterministic checks.</p>'
+        + "".join(blocks)
+        + '<p><a href="/">← Audit more configurations</a></p></body></html>'
+    )
+
+
+@app.post("/api/network/audit", response_class=HTMLResponse)
+async def audit_network_configs(
+    files: list[UploadFile] = File(...),
+    framework: str = Form("all"),
+):
+    if framework not in FRAMEWORK_VIEWS:
+        return HTMLResponse("Invalid framework view", status_code=400)
+    if not files or len(files) > MAX_NETWORK_FILES:
+        return HTMLResponse(
+            f"Upload between 1 and {MAX_NETWORK_FILES} configuration files", status_code=400
+        )
+    with tempfile.TemporaryDirectory(prefix="attestor-network-upload-") as temp_name:
+        work_dir = Path(temp_name)
+        items = [await _audit_network_upload(upload, framework, work_dir) for upload in files]
+    return HTMLResponse(_network_results_page(items, framework))
+
+
 @app.get("/api/run")
 async def run_audit(target: str = "ubuntu2204_desktop", level: int = 1):
     """Run the audit engine and stream results as SSE events."""
@@ -255,10 +440,18 @@ async def run_audit(target: str = "ubuntu2204_desktop", level: int = 1):
 
 @app.get("/reports/{filename}")
 async def serve_report(filename: str):
-    """Serve generated HTML reports."""
-    file_path = RESULTS_DIR / filename
-    if file_path.exists() and file_path.suffix == ".html":
-        return FileResponse(file_path, media_type="text/html")
+    """Serve generated reports without allowing paths outside reports/."""
+    file_path = (RESULTS_DIR / Path(filename).name).resolve()
+    if file_path.parent != RESULTS_DIR.resolve() or not file_path.exists():
+        return HTMLResponse("Report not found", status_code=404)
+    media_types = {
+        ".html": "text/html",
+        ".pdf": "application/pdf",
+        ".json": "application/json",
+    }
+    media_type = media_types.get(file_path.suffix.lower())
+    if media_type:
+        return FileResponse(file_path, media_type=media_type, filename=file_path.name)
     return HTMLResponse("Report not found", status_code=404)
 
 

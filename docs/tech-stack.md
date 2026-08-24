@@ -121,6 +121,12 @@ deferred to the fleet dashboard.
   the real engine, shows live pass/fail/error results as checks complete, and
   links to a generated report that opens offline.
 
+For PS26155 Phase H', FastAPI's multipart support (`python-multipart`) is used
+for bounded single/bulk Cisco config uploads. Files remain temporary; the
+existing network engine still consumes a normal filesystem path. Report output
+is JSON + standalone HTML + ReportLab PDF, with provider calls disabled by
+default.
+
 ## 9. Deployment
 
 - **Standalone (MVP):** `git clone` + `pip install -r requirements.txt`; run the
