@@ -1,0 +1,34 @@
+# Parser verification fixture only. This is not a CIS control or production rule.
+id: "99.0.1"
+title: "Phase C flat config_grep verification fixture"
+benchmark: "Attestor Phase C parser verification"
+benchmark_version: "2026-08-24"
+level: 1
+profile:
+  - network_device
+device:
+  vendor: Cisco
+  platform: IOS
+  roles:
+    - router
+  config_format: reference-config
+automated: true
+severity: low
+checks:
+  - type: config_grep
+    pattern: "^service password-encryption$"
+    op: matches
+  - type: config_grep
+    pattern: "^ip ssh version 2$"
+    op: matches
+  - type: config_grep
+    pattern: "^banner motd(?:\\s|$)"
+    op: matches
+  - type: config_grep
+    pattern: "^lldp run$"
+    op: matches
+  - type: config_grep
+    pattern: "^ntp authenticate$"
+    op: matches
+remediation: "Fixture only; no remediation claim."
+source: "Attestor Phase C parser verification fixture; manually reviewed 2026-08-24"

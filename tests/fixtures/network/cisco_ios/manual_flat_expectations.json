@@ -1,0 +1,91 @@
+{
+  "reviewed_at": "2026-08-24",
+  "review_method": "Manual inspection of the unmodified raw fixture text; pass evidence records exact source line numbers and every unlisted fixture was checked for absence.",
+  "checks": [
+    {
+      "name": "service_password_encryption",
+      "pattern": "^service password-encryption$",
+      "op": "matches",
+      "pass": {
+        "c4geeks_base_router_iosv.txt": 13,
+        "c4geeks_base_switch_iosvl2.txt": 13
+      },
+      "fail": [
+        "c4geeks_cdp_lldp_switch_iosvl2.txt",
+        "c4geeks_dhcp_router_ios152.txt",
+        "c4geeks_hsrp_router_iosv.txt",
+        "c4geeks_ntp_router_ios152.txt",
+        "c4geeks_ospf_router_iosv.txt",
+        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+      ]
+    },
+    {
+      "name": "ssh_version_2",
+      "pattern": "^ip ssh version 2$",
+      "op": "matches",
+      "pass": {
+        "c4geeks_base_router_iosv.txt": 17,
+        "c4geeks_base_switch_iosvl2.txt": 17
+      },
+      "fail": [
+        "c4geeks_cdp_lldp_switch_iosvl2.txt",
+        "c4geeks_dhcp_router_ios152.txt",
+        "c4geeks_hsrp_router_iosv.txt",
+        "c4geeks_ntp_router_ios152.txt",
+        "c4geeks_ospf_router_iosv.txt",
+        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+      ]
+    },
+    {
+      "name": "motd_banner_command",
+      "pattern": "^banner motd(?:\\s|$)",
+      "op": "matches",
+      "pass": {
+        "c4geeks_base_router_iosv.txt": 30,
+        "c4geeks_base_switch_iosvl2.txt": 29
+      },
+      "fail": [
+        "c4geeks_cdp_lldp_switch_iosvl2.txt",
+        "c4geeks_dhcp_router_ios152.txt",
+        "c4geeks_hsrp_router_iosv.txt",
+        "c4geeks_ntp_router_ios152.txt",
+        "c4geeks_ospf_router_iosv.txt",
+        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+      ]
+    },
+    {
+      "name": "lldp_enabled",
+      "pattern": "^lldp run$",
+      "op": "matches",
+      "pass": {
+        "c4geeks_cdp_lldp_switch_iosvl2.txt": 13
+      },
+      "fail": [
+        "c4geeks_base_router_iosv.txt",
+        "c4geeks_base_switch_iosvl2.txt",
+        "c4geeks_dhcp_router_ios152.txt",
+        "c4geeks_hsrp_router_iosv.txt",
+        "c4geeks_ntp_router_ios152.txt",
+        "c4geeks_ospf_router_iosv.txt",
+        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+      ]
+    },
+    {
+      "name": "ntp_authentication",
+      "pattern": "^ntp authenticate$",
+      "op": "matches",
+      "pass": {
+        "c4geeks_ntp_router_ios152.txt": 23
+      },
+      "fail": [
+        "c4geeks_base_router_iosv.txt",
+        "c4geeks_base_switch_iosvl2.txt",
+        "c4geeks_cdp_lldp_switch_iosvl2.txt",
+        "c4geeks_dhcp_router_ios152.txt",
+        "c4geeks_hsrp_router_iosv.txt",
+        "c4geeks_ospf_router_iosv.txt",
+        "c4geeks_vlan_trunk_switch_iosvl2.txt"
+      ]
+    }
+  ]
+}
