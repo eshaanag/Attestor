@@ -94,7 +94,9 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | C | Cisco IOS flat-check parser primitive | Complete | `engines/network/run_audit.py`; five manual-oracle checks span all 10 corpus files and each has pass + fail evidence; focused tests pass |
 | D | Cisco IOS block-aware VTY/interface parser primitive | Complete | `engines/network/run_audit.py`; interface oracle has pass/fail coverage across all 10 source-backed configs; 21-test suite and rule validator pass |
 | E | Cisco IOS rule pack + dual-framework report | Complete (scoped) | 14 source-backed CIS rules under `rules/cisco_ios/`, each with NIST SP 800-53 mapping; 10-config per-rule oracle has pass/fail evidence; 23 tests pass; report renders device identity and mappings offline |
-| F-H | Network ledger proof, optional vendor, pitch | Not started | VTY SSH-only, VTY ACL+SSH, and unused-interface shutdown remain explicitly excluded for incomplete or insufficient running-config evidence |
+| F | Network-report ledger + real Sepolia transaction | Complete (Cisco IOS scope) | Stable device chain verified; root `6d9319f05742791af8798a288e72e530a0d563a3037f7a5ddecb3d68d843239a` anchored in tx `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`; `verifyRoot` returned found=true |
+| G | Optional additional vendor | Deferred | Cisco IOS is the only built vendor; other vendors remain roadmap |
+| H | Honest pitch/documentation pass | Not started | Must reflect actual delivered coverage and live DevNet pull as a presentation-day step |
 
 The verified Phase C/D/E network track is limited to source-backed Cisco IOS
 lab/reference configurations, not production backups or live sandbox captures.
