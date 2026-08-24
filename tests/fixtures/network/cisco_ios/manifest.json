@@ -1,0 +1,75 @@
+{
+  "corpus_version": "2026-08-24",
+  "license": "MIT",
+  "license_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/LICENSE",
+  "repository": "https://github.com/c4geeks/ccna-labs",
+  "commit": "9cadb5c162a2bf231493a51b5337ab385c5a5962",
+  "retrieved_at": "2026-08-24",
+  "status": "reference_configs",
+  "entries": [
+    {
+      "file": "c4geeks_base_router_iosv.txt",
+      "source_path": "base-device/configs/R1-base-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/base-device/configs/R1-base-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-device-base-configuration/",
+      "platform": "Cisco IOSv / c7200",
+      "sha256": "dc73e36cd45d53f4c5e9e5e5fc4b134e0854f170fa729e10290285c94ee60895"
+    },
+    {
+      "file": "c4geeks_base_switch_iosvl2.txt",
+      "source_path": "base-device/configs/SW1-base-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/base-device/configs/SW1-base-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-device-base-configuration/",
+      "platform": "Cisco IOSvL2",
+      "sha256": "511392b6dd2c1375eeb13301d1f4e5ce1e7593cd70d4d1e5cf9e7b4044d7ce74"
+    },
+    {
+      "file": "c4geeks_cdp_lldp_switch_iosvl2.txt",
+      "source_path": "cdp-lldp/configs/SW1-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/cdp-lldp/configs/SW1-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-cdp-lldp-network-discovery/",
+      "platform": "Cisco IOSvL2",
+      "sha256": "49d7697235dbfab66d2bf7088ff24e7e809c21c8705684adde1a79316ea1fc1c"
+    },
+    {
+      "file": "c4geeks_dhcp_router_ios152.txt",
+      "source_path": "dhcp-server-relay/configs/R1-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/dhcp-server-relay/configs/R1-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-dhcp-server-relay-configuration/",
+      "platform": "Cisco IOS 15.2 / c7200",
+      "sha256": "3289b14c26b2f8cfa5155322a11e1a09631c399cf83f8e0a2c5e84040f6bf59b"
+    },
+    {
+      "file": "c4geeks_hsrp_router_iosv.txt",
+      "source_path": "hsrp/configs/R1-hsrp.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/hsrp/configs/R1-hsrp.txt",
+      "article_url": "https://computingforgeeks.com/ccna-labs-hsrp-configuration-on-gns3-and-packet-tracer/",
+      "platform": "Cisco IOSv / c7200",
+      "sha256": "a32e5e145e90e6f9fb8b1a6acf3a130e65b0eb9044f4c561d869bfa85e03d300"
+    },
+    {
+      "file": "c4geeks_ntp_router_ios152.txt",
+      "source_path": "ntp/configs/R1-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/ntp/configs/R1-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-ntp-configuration/",
+      "platform": "Cisco IOS 15.2 / c7200",
+      "sha256": "8831716d7caa775e2f369244378280a7a35163707a73be6bd560e61a20ba8354"
+    },
+    {
+      "file": "c4geeks_ospf_router_iosv.txt",
+      "source_path": "ospf-single-area/configs/R1-config.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/ospf-single-area/configs/R1-config.txt",
+      "article_url": "https://computingforgeeks.com/cisco-ospf-single-area-configuration/",
+      "platform": "Cisco IOSv",
+      "sha256": "e2063156d06c23c4d7db4f459f4540b9065311f7ea51364c5f59b51785074da1"
+    },
+    {
+      "file": "c4geeks_vlan_trunk_switch_iosvl2.txt",
+      "source_path": "vlan-trunk/configs/SW1-trunk-hardened.txt",
+      "source_url": "https://github.com/c4geeks/ccna-labs/blob/9cadb5c162a2bf231493a51b5337ab385c5a5962/vlan-trunk/configs/SW1-trunk-hardened.txt",
+      "article_url": "https://computingforgeeks.com/cisco-trunking-802-1q-configuration/",
+      "platform": "Cisco IOSvL2",
+      "sha256": "6c4e39e75d89f3c8692bb46bd44f5010778e2e54ee70c9fb3c301275a955226c"
+    }
+  ]
+}
