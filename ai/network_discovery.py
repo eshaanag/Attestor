@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import urllib.error
+import ssl
 import urllib.request
 from collections import defaultdict
 from dataclasses import dataclass
@@ -28,8 +29,13 @@ DEFAULT_CORPUS = REPO_ROOT / "tests" / "fixtures" / "network" / "cisco_ios"
 DEFAULT_RULES = REPO_ROOT / "rules" / "cisco_ios"
 DEFAULT_STATE = REPO_ROOT / "ai" / "state"
 NORMALIZATION_VERSION = "ios-line-v1"
-MODEL_DEFAULT = "claude-3-5-haiku-latest"
+MODEL_DEFAULT = "claude-haiku-4-5-20251001"
 ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages"
+# Anthropic Haiku-tier list pricing used for transparent post-run accounting.
+# Keep this alongside the recorded response usage; do not call a response an
+# exact cost if the provider changes pricing without updating this constant.
+INPUT_USD_PER_MILLION = 1.00
+OUTPUT_USD_PER_MILLION = 5.00
 CATEGORIES = ("authentication", "logging", "access-control", "encryption", "unknown")
 
 # These are syntax delimiters or context headers, not useful security-category
@@ -191,8 +197,8 @@ def estimate_cost(
     unique_candidate_patterns: int,
     input_tokens_per_call: int = 180,
     output_tokens_per_call: int = 96,
-    input_usd_per_million: float = 0.80,
-    output_usd_per_million: float = 4.00,
+    input_usd_per_million: float = INPUT_USD_PER_MILLION,
+    output_usd_per_million: float = OUTPUT_USD_PER_MILLION,
 ) -> dict[str, Any]:
     input_tokens = unique_candidate_patterns * input_tokens_per_call
     output_tokens = unique_candidate_patterns * output_tokens_per_call
@@ -272,11 +278,12 @@ def _provider_classify(pattern: str, api_key: str, model: str) -> dict[str, Any]
     prompt = (
         "Classify this redacted Cisco IOS configuration line into exactly one "
         "category: authentication, logging, access-control, encryption, or unknown. "
-        "Return JSON only with keys category and reasoning. This is discovery metadata, "
+        "Return JSON only with keys category and reasoning. Keep reasoning under 15 words. "
+        "This is discovery metadata, "
         "not a compliance result.\n\nLine: " + pattern
     )
     payload = json.dumps(
-        {"model": model, "max_tokens": 96, "temperature": 0, "messages": [{"role": "user", "content": prompt}]}
+        {"model": model, "max_tokens": 160, "temperature": 0, "messages": [{"role": "user", "content": prompt}]}
     ).encode("utf-8")
     request = urllib.request.Request(
         ANTHROPIC_ENDPOINT,
@@ -289,18 +296,45 @@ def _provider_classify(pattern: str, api_key: str, model: str) -> dict[str, Any]
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
+        try:
+            import certifi
+            ssl_context = ssl.create_default_context(cafile=certifi.where())
+        except ImportError:
+            ssl_context = ssl.create_default_context()
+        with urllib.request.urlopen(request, timeout=30, context=ssl_context) as response:
             body = json.loads(response.read().decode("utf-8"))
-    except (OSError, urllib.error.HTTPError, json.JSONDecodeError) as exc:
+    except urllib.error.HTTPError as exc:
+        try:
+            detail = exc.read().decode("utf-8", errors="replace")[:500]
+        except OSError:
+            detail = "<no response body>"
+        raise ProviderError(f"Anthropic request failed: HTTP {exc.code}: {detail}") from exc
+    except (OSError, json.JSONDecodeError) as exc:
         raise ProviderError(f"Anthropic request failed: {exc}") from exc
     text = body.get("content", [{}])[0].get("text", "")
     try:
         parsed = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise ProviderError("Anthropic response was not JSON") from exc
+    except json.JSONDecodeError:
+        fenced = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL | re.IGNORECASE)
+        if not fenced:
+            embedded = re.search(r"(\{\s*\"category\"\s*:.*?\})", text, re.DOTALL)
+            fenced = embedded
+        if not fenced:
+            raise ProviderError(f"Anthropic response was not JSON: {text[:500]}")
+        try:
+            parsed = json.loads(fenced.group(1))
+        except json.JSONDecodeError as exc:
+            raise ProviderError("Anthropic response contained malformed JSON") from exc
     category = parsed.get("category")
     if category not in CATEGORIES:
         raise ProviderError(f"Anthropic returned invalid category: {category!r}")
+    usage = body.get("usage") or {}
+    input_tokens = int(usage.get("input_tokens", 0))
+    output_tokens = int(usage.get("output_tokens", 0))
+    usage_cost = (
+        input_tokens / 1_000_000 * INPUT_USD_PER_MILLION
+        + output_tokens / 1_000_000 * OUTPUT_USD_PER_MILLION
+    )
     return {
         "category": category,
         "reasoning": str(parsed.get("reasoning", "")),
@@ -308,6 +342,11 @@ def _provider_classify(pattern: str, api_key: str, model: str) -> dict[str, Any]
         "provider": "anthropic",
         "source": "provider",
         "model": model,
+        "usage": {
+            "input_tokens": input_tokens,
+            "output_tokens": output_tokens,
+            "cost_usd": round(usage_cost, 8),
+        },
         "normalization_version": NORMALIZATION_VERSION,
     }
 
@@ -351,12 +390,13 @@ def classify_candidates(
             result["pattern_hash"] = digest
             result["pattern"] = item["pattern"]
             store.cache[digest] = result
+            # Persist after every successful response so an interrupted batch
+            # never loses its usage/accounting evidence or repeats completed calls.
+            store._save(store.cache_path, store.cache)
             calls += 1
         result["occurrence_count"] = item["occurrence_count"]
         result["occurrences"] = item["occurrences"]
         results.append(result)
-    if real_api and calls:
-        store._save(store.cache_path, store.cache)
     return results
 
 

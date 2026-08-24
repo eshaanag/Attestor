@@ -95,7 +95,7 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | D | Cisco IOS block-aware VTY/interface parser primitive | Complete | `engines/network/run_audit.py`; interface oracle has pass/fail coverage across all 10 source-backed configs; 21-test suite and rule validator pass |
 | E | Cisco IOS rule pack + dual-framework report | Complete (scoped) | 14 source-backed CIS rules under `rules/cisco_ios/`, each with NIST SP 800-53 mapping; 10-config per-rule oracle has pass/fail evidence; 23 tests pass; report renders device identity and mappings offline |
 | F | Network-report ledger + real Sepolia transaction | Complete (Cisco IOS scope) | Stable device chain verified; root `6d9319f05742791af8798a288e72e530a0d563a3037f7a5ddecb3d68d843239a` anchored in tx `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`; `verifyRoot` returned found=true |
-| F' | AI-assisted syntax discovery/training loop | Complete (dry-run; real API pending approval) | 10 genuine configs measured: 135 unmatched occurrences, 63 unique redacted patterns, 51 non-structural candidates; 5 safety tests pass; no provider calls |
+| F' | AI-assisted syntax discovery/training loop | Complete (real batch; deterministic compliance unchanged) | 51 redacted candidates classified with available Haiku model; 32 tests pass; provider-reported usage 3,408 input + 3,268 output tokens, measured cost `$0.019748`; no pre-redaction cache |
 | G | Optional additional vendor | Deferred | Cisco IOS is the only built vendor; other vendors remain roadmap |
 | H | Honest pitch/documentation pass | Not started | Must reflect actual delivered coverage and live DevNet pull as a presentation-day step |
 
@@ -106,7 +106,7 @@ fail states. VTY/unused-interface checks are not claimed as verified. Cisco IOS
 is the only built network target; other vendors are roadmap only. F' AI
 classification is discovery metadata only: deterministic compliance results
 remain authoritative, credentials are redacted before provider use, and dry-run
-is the default. Real API use is pending an explicit cost approval.
+remains the default. The first real batch ran only after explicit approval.
 
 ### CLI Usage
 

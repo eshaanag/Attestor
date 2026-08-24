@@ -102,3 +102,46 @@ def test_real_mode_refuses_to_exceed_call_cap_before_any_request(tmp_path):
             max_calls=0,
             api_key="test-only-not-used",
         )
+
+
+def test_real_provider_usage_is_recorded_and_costed(monkeypatch):
+    from ai import network_discovery as module
+
+    response = {
+        "content": [{"text": '{"category":"logging","reasoning":"timestamped log output"}'}],
+        "usage": {"input_tokens": 100, "output_tokens": 20},
+    }
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return json.dumps(response).encode()
+
+    monkeypatch.setattr(module.urllib.request, "urlopen", lambda *args, **kwargs: FakeResponse())
+    result = module._provider_classify("service timestamps log datetime msec", "test", "test-model")
+    assert result["usage"] == {"input_tokens": 100, "output_tokens": 20, "cost_usd": 0.0002}
+
+
+def test_real_provider_accepts_fenced_json(monkeypatch):
+    from ai import network_discovery as module
+
+    class FakeResponse:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return json.dumps({
+                "content": [{"text": '```json\\n{"category":"logging","reasoning":"logs"}\\n```'}],
+                "usage": {"input_tokens": 1, "output_tokens": 1},
+            }).encode()
+
+    monkeypatch.setattr(module.urllib.request, "urlopen", lambda *args, **kwargs: FakeResponse())
+    assert module._provider_classify("logging buffered 4096", "test", "test-model")["category"] == "logging"

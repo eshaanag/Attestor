@@ -32,3 +32,11 @@ python3 -m ai.network_discovery confirm \
 
 The cache and confirmed mappings are local state and are ignored by git. A
 confirmed mapping is training-loop state, not a compliance pass/fail claim.
+
+The first approved real batch used `claude-haiku-4-5-20251001`. Fifty-one
+successful redacted responses were checkpointed individually. Their provider-
+reported usage totaled 3,408 input tokens and 3,268 output tokens, measured at
+`$0.019748` using Anthropic's published `$1/$5` per-million input/output token
+prices for Haiku 4.5. An earlier interrupted
+attempt produced no durable usage record; its billing cannot be reconstructed and
+is intentionally excluded from that exact total.

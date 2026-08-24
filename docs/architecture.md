@@ -96,6 +96,8 @@ grows into the fleet dashboard (stretch).
    inventories active lines that matched no production rule. Structural context
    lines are excluded from provider candidates. Any future AI classification is
    redacted, cached, capped, dry-run by default, and never overrides a rule.
+   The first approved real batch used an available Haiku-tier model only after
+   explicit approval; provider usage is checkpointed after each response.
 
 **Control-status roll-up rules (the accuracy-critical part):**
 - All checks `pass` → control **PASS**
