@@ -42,7 +42,7 @@ inline and in **Open Risks**.
         │  backend/ (FastAPI collector) ◄── hosts POST signed results.json  [PHASE 8]       │
         │            │                                                                      │
         │            ▼                                                                      │
-        │  dashboard/ (fleet view, same htmx stack)   [PHASE 9] anchor root hash → Polygon  │
+        │  dashboard/ (fleet view, same htmx stack)   [PHASE 9] report links → Sepolia     │
         └────────────────────────────────────────────────────────────────────────────────┘
 ```
 

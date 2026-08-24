@@ -214,9 +214,12 @@ print(f'Links: {result[\"links\"]}')
 "
 ```
 
-### Show the Polygonscan proof (just open this URL)
+### Show the Ethereum Sepolia proof (just open the current contract/transaction URL)
 ```
-https://amoy.polygonscan.com/tx/cb7157d36a6f9657f3efd4a82f378ef0088c9db03f78a6b685e21e9a2412359b
+Current deployed contract: https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41
+
+The earlier Polygon Amoy transaction is retained as legacy history only; the
+current code path uses Ethereum Sepolia and `anchorReport(root, previousRoot)`.
 ```
 
 ### Anchor a new root (if you want to show live)
@@ -266,7 +269,8 @@ python3 engines/linux/run_audit.py --help
 3. **Show the HTML report** — click report link
 4. **Run Windows audit via CLI** — SSH to Windows, run the command
 5. **Show filtering** — `--include 1.5.1 3.3.1.1` (only 2 run)
-6. **Tamper evidence** — open the Polygonscan link
+6. **Tamper evidence** — open the Ethereum Sepolia contract or the transaction
+   URL printed by the current `--blockchain` flow
 7. **Schema validation** — `python3 tests/validate_rules.py` (200 rules pass)
 
 ---

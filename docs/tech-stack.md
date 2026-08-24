@@ -127,7 +127,7 @@ deferred to the fleet dashboard.
   engine for your OS. No server required. This is the primary demo path.
 - **Fleet [Phase 2]:** backend on a small VM or free-tier PaaS (Railway/Fly);
   hosts POST signed `results.json`.
-- **Testnet anchoring [Phase 9]:** Polygon Amoy + a minimal Solidity contract,
+- **Testnet anchoring [Phase 9]:** Ethereum Sepolia + a minimal Solidity contract,
   called via `web3.py`. Private key / RPC URL live only in `.env` (gitignored,
   AGENTS.md §6) — never committed.
 - *Revisit if:* institutional deployment needs packaging (a signed installer or
