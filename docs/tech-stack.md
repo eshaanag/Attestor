@@ -122,10 +122,11 @@ deferred to the fleet dashboard.
   links to a generated report that opens offline.
 
 For PS26155 Phase H', FastAPI's multipart support (`python-multipart`) is used
-for bounded single/bulk Cisco config uploads. Files remain temporary; the
-existing network engine still consumes a normal filesystem path. Report output
-is JSON + standalone HTML + ReportLab PDF, with provider calls disabled by
-default.
+for bounded single/bulk Cisco IOS/IOS-XE and Juniper Junos config uploads.
+Files remain temporary; each vendor adapter consumes a normal filesystem path.
+Report output is JSON + standalone HTML + ReportLab PDF, with provider calls
+disabled by default. The Junos adapter is intentionally a four-control,
+vendor-documentation-backed subset; broader vendor support remains roadmap.
 
 ## 9. Deployment
 
@@ -133,9 +134,10 @@ default.
   engine for your OS. No server required. This is the primary demo path.
 - **Fleet [Phase 2]:** backend on a small VM or free-tier PaaS (Railway/Fly);
   hosts POST signed `results.json`.
-- **Testnet anchoring [Phase 9]:** Ethereum Sepolia + a minimal Solidity contract,
-  called via `web3.py`. Private key / RPC URL live only in `.env` (gitignored,
-  AGENTS.md §6) — never committed.
+- **Testnet anchoring:** Ethereum Sepolia + the deployed Solidity contract,
+  called via `web3.py`. A real Cisco network-report transaction has been
+  verified; only SHA-256 roots are published. Private key / RPC URL live only
+  in `.env` (gitignored, AGENTS.md §6) — never committed.
 - *Revisit if:* institutional deployment needs packaging (a signed installer or
   container) — add later; out of MVP scope.
 

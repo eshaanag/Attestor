@@ -45,7 +45,7 @@ ssh ubuntu@192.168.64.6
 # password: ubuntu
 ```
 
-### Run full audit (100 controls, with HTML report)
+### Run full audit (35 verified Level 1 controls, with HTML report)
 ```bash
 cd ~/attestor_run
 sudo python3 engines/linux/run_audit.py --level 1 --format html --output results.json
@@ -95,7 +95,7 @@ ssh lab@192.168.64.4
 # password: lab
 ```
 
-### Run full audit (100 controls)
+### Run full audit (30 verified Level 1 controls)
 ```powershell
 cd C:\attestor
 .\engines\windows\run_audit.ps1 -RulesDir "C:\attestor\rules\windows11_standalone" -Level 1 -Format json -Output "C:\attestor\results.json"
@@ -158,15 +158,17 @@ http://localhost:8000
 
 ### Use it:
 1. For a local OS audit, select the OS target and level, then click **Run Audit**.
-2. For a network audit, choose one or more genuine saved Cisco IOS config files.
-3. Select CIS, NIST-mapped, or combined report presentation.
+2. For a network audit, choose `Cisco IOS / IOS-XE` or `Juniper Junos`, then
+   select one or more genuine saved configuration files.
+3. Select source-backed, NIST-mapped, or combined report presentation.
 4. Click **Upload and audit**.
 5. Download the JSON, offline HTML, or PDF output for each uploaded device.
 
-The NIST option shows documented mappings attached to the CIS-backed checks; it
+The NIST option shows documented mappings attached to source-backed checks; it
 does not claim a separate NIST-native rule pack. Uploaded configurations are
 processed locally and discarded. The dashboard does not simulate SSH or DevNet
-collection.
+collection. Cisco IOS provides 14 CIS-backed controls; Junos provides four
+vendor-documentation-backed controls. Other vendors remain roadmap.
 
 ### ⚠️ GUI requirements:
 - Both VMs must be running and SSH accessible

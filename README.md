@@ -1,6 +1,7 @@
 # Attestor
 
-**CIS Benchmark audit tool for Windows 11 and Linux with a tamper-evident report ledger.**
+**Source-backed compliance auditing for Windows, Linux, Cisco IOS, and a scoped
+Juniper Junos baseline, with offline reports and optional tamper evidence.**
 
 ---
 
@@ -10,6 +11,11 @@
 **Theme: Blockchain & Cybersecurity**
 
 > Design and develop a tool to automatically assess the security configurations of desktops/laptops against the CIS Benchmark. The tool should scan the system, identify deviations from the benchmark, and generate a compliance report highlighting areas of non-compliance with actionable recommendations for remediation.
+
+The current PS26155 track extends the proven OS foundation into an AI-assisted
+network configuration auditor. See the concise
+[`PS26155 architecture brief`](docs/ps26155-architecture.md) for the exact
+delivered scope, privacy boundary, and roadmap.
 
 ---
 
@@ -72,11 +78,13 @@ attestor/
 
 | Target | Engine | Controls verified | Status |
 |--------|--------|-------------------|--------|
-| Ubuntu 22.04 Desktop (Level 1+2) | `engines/linux/run_audit.py` | 50 (sysctl + file_permission + kernel_module + config_grep + service_state + package_installed) | ✅ In progress — engine + 50 controls pass/fail verified on real VM |
-| Windows 11 Standalone (Level 1+2) | `engines/windows/run_audit.ps1` | 50 (registry + secpol + account_policy + audit_policy + service_state) | ✅ In progress — engine + 50 controls pass/fail verified on real VM |
+| Ubuntu 22.04 Desktop (Level 1) | `engines/linux/run_audit.py` | 35 (sysctl + file_permission + kernel_module + config_grep + service_state + package_installed) | Verified on real VM |
+| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 30 (registry + secpol + account_policy + audit_policy + service_state) | Verified on real VM |
 
-**Phase 0** (schema + validator), **Phase 1** (Linux engine), **Phase 2** (Windows engine), **Phase 3** (report generation), **Phase 4** (tamper-evident ledger), **Phase 5** (rule pack expansion), **Phase 6** (CLI polish), **Phase 7** (local web GUI), and **Phase 9** (testnet anchoring) complete.
-Stretch goal remaining: Phase 8 (fleet backend/dashboard).
+**Phase 0** through **Phase 7** and **Phase 9** are complete for the OS track.
+For PS26155, Cisco IOS, scoped Junos, AI discovery, PDF reporting, and the
+local ingestion dashboard are complete. The fleet backend/dashboard remains
+stretch work.
 
 **Current blockchain integration:** Ethereum Sepolia contract
 [`0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`](https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41), using
@@ -99,7 +107,7 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | G' | Offline PDF report + cached AI remediation | Complete (AI advisory scope) | ReportLab PDF renders the genuine Cisco report offline; 9 failed controls received clearly labelled Haiku-generated advisory remediation and reasoning; initial batch + one targeted retry used `$0.008774`; retry reproduced the known invalid `SHA-500` phrase, proving why human review remains required |
 | H' | Minimal network ingestion dashboard | Complete (Cisco IOS scope) | FastAPI console now separates network ingestion from the established VM workflow; single/bulk genuine config uploads, CIS/NIST-mapped/combined views, JSON/HTML/PDF links; 5 dashboard tests and full 41-test suite pass |
 | G | Optional additional vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos and other vendors remain roadmap |
-| H | Honest pitch/documentation pass | Not started | Must reflect actual delivered coverage and live DevNet pull as a presentation-day step |
+| H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos scope and roadmap honestly |
 
 The verified Phase C/D/E network track is limited to source-backed Cisco IOS
 lab/reference configurations, not production backups or live sandbox captures.

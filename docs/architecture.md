@@ -1,7 +1,7 @@
 # Attestor — Architecture
 
 Status: design doc for the MVP (Windows 11 Standalone + Ubuntu 22.04 Desktop,
-CIS Level 1). Written to be improved, not rubber-stamped — where the obvious
+plus scoped PS26155 Cisco IOS and Juniper Junos adapters). Written to be improved, not rubber-stamped — where the obvious
 design isn't the best one, the better option and the reasoning are called out
 inline and in **Open Risks**.
 
@@ -17,9 +17,11 @@ inline and in **Open Risks**.
                                    │
                                    ▼
         ┌─────────────────────────────────────────────────┐
-        │                 ENGINE (per OS)                    │
+        │               ENGINE (per target)                  │
         │   engines/linux/run_audit.py  (Python 3)           │
         │   engines/windows/run_audit.ps1 (PowerShell)       │
+        │   engines/network/run_audit.py (Cisco IOS)         │
+        │   engines/network/run_junos_audit.py (Junos)       │
         │                                                    │
         │   loads rules ─► DISPATCHER ─► one check fn per     │
         │                   check_type   (kernel_module,      │
@@ -46,8 +48,9 @@ inline and in **Open Risks**.
         └────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Two engines, one downstream. Both engines emit the **same** `results.json`
-schema, so the ledger and report generator are OS-agnostic and written once.
+Multiple target adapters, one downstream. All engines emit the **same**
+`results.json` schema, so the ledger and report generator are target-agnostic
+and written once.
 The **local web GUI (`dashboard/`, round-1 scope)** consumes the engine's live
 NDJSON stream for progress and links the generated report; the *same* htmx stack
 grows into the fleet dashboard (stretch).
@@ -58,10 +61,11 @@ grows into the fleet dashboard (stretch).
 
 | Folder | Responsibility | Owner language |
 |--------|----------------|----------------|
-| `rules/<target>/` | Rule packs — one YAML file per CIS control. Pure data. `<target>` ∈ `ubuntu2204_desktop`, `windows11_standalone`, … Adding coverage = adding files here. | YAML |
+| `rules/<target>/` | Rule packs — one YAML file per control. Pure data. Targets include OS packs, `cisco_ios`, and the scoped `juniper_junos` baseline. | YAML |
 | `schema/` | `rule_schema.json` — the single contract every rule file must satisfy. Fail-closed: a malformed rule never reaches an engine. | JSON Schema |
 | `engines/linux/` | `run_audit.py` — loads + validates rules for a Linux target, dispatches each `check_type`, emits results. | Python 3 |
 | `engines/windows/` | `run_audit.ps1` — same role on Windows; native registry / `secedit` / `auditpol` access. | PowerShell |
+| `engines/network/` | Cisco IOS flat/block adapter and scoped Junos brace-aware adapter; file input only, no simulated SSH. | Python 3 |
 | `report/` | Consumes `results.json`, renders a **self-contained, offline** HTML report (inline CSS/JS, no network). | Python (Jinja2) |
 | `ai/` | Measures deterministic-rule misses, redacts sensitive values, and stores cached/provider or human-confirmed discovery metadata. It never determines compliance status. | Python |
 | `ledger/` | SHA-256 hash-chain over canonical `results.json` per host; append + verify; break detection. | Python |
@@ -213,22 +217,31 @@ mitigation stance; unmitigated ones are flagged.
 
 ## 6. Scope boundaries
 
-**In round-1 scope:** the two MVP targets, the engines, ledger, report, and the
-**local web GUI** (Phase 7 — `dashboard/` run locally). GUI exit condition: from
+**In round-1 scope:** the two OS MVP targets, the engines, ledger, report, and the
+**local web GUI** (Phase 7 — `dashboard/` run locally). The PS26155 network
+track adds file-based Cisco IOS and scoped Junos adapters to the same GUI. GUI
+exit condition: from
 a browser on the local host, clicking "Run audit" runs the real engine, shows
 live pass/fail/error results as checks complete, and links to a generated report
 that opens offline.
 
 For the additive PS26155 track, the same local dashboard provides a bounded
-multipart ingestion adapter for saved Cisco IOS configurations. It writes each
-upload only to a temporary directory, invokes the unchanged file-based network
-engine, and returns JSON plus offline HTML/PDF. Framework selection is a report
-view over the same deterministic results; NIST is explicitly a mapped view of
-CIS-backed controls. No sandbox/SSH connector is simulated.
+multipart ingestion adapter for saved Cisco IOS/IOS-XE or Juniper Junos
+configurations. It writes each upload only to a temporary directory, invokes the
+selected file-based adapter, and returns JSON plus offline HTML/PDF. Cisco has
+14 CIS-backed controls; Junos has four source-backed vendor-baseline controls.
+Framework selection is a report view over deterministic results; NIST is a
+mapped view, not a native second rule engine. No sandbox/SSH connector is
+simulated.
 
-**Explicitly out of MVP scope (stretch / later):** RHEL 8/9, Windows 11
-Enterprise, Ubuntu 20.04 / Server, all Level 2 controls, the fleet
-backend/dashboard (Phase 8), and testnet anchoring (Phase 9). All reachable
-additively on this architecture (new rule packs / new check functions / the
-Phase 8–9 stretch work) without redesign — see `PROJECT_CONTEXT.md` for the
-deferral rationale.
+The AI layer is advisory discovery only. It classifies genuinely unmatched,
+redacted syntax and generates cached remediation text for failed controls; it
+cannot change a deterministic pass/fail result. Dry-run is the dashboard
+default. The optional Sepolia anchor publishes only report hashes, never
+configuration content or report metadata.
+
+**Explicitly out of current scope:** RHEL 8/9, Windows 11 Enterprise, Ubuntu
+20.04 / Server, all Level 2 controls, broader Junos controls, and all other
+network vendors. The fleet backend/dashboard remains stretch work. Sepolia
+anchoring is already proven for a Cisco network report and remains an optional
+hash-only differentiator, not the compliance engine's authority.

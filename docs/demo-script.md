@@ -17,9 +17,9 @@ Target time: 5-7 minutes. Fallback: 90-second pre-recorded video if live demo fa
 ## Live Demo Sequence
 
 ### 1. Hook (30 seconds)
-"We built Attestor — a CIS Benchmark audit tool that checks whether your 
-Windows or Linux machine meets security standards, and proves the report 
-hasn't been tampered with using a blockchain-style hash chain."
+"We built Attestor — a compliance auditor for Windows, Linux, and selected
+network devices. It evaluates real configurations against source-backed rules,
+then produces evidence an auditor can inspect offline."
 
 ### 2. Show the rule pack (30 seconds)
 ```bash
@@ -36,7 +36,14 @@ Adding a new benchmark version = adding new YAML files, not rewriting code."
 - Click the report link when it appears
 - Show the offline HTML report (no internet needed)
 
-### 4. Run Windows audit via CLI (60 seconds)
+### 4. Audit network configurations (60 seconds)
+- In the network panel choose Cisco IOS / IOS-XE and upload a genuine corpus
+  file, then repeat with Juniper Junos and `junos_fabric01.conf`.
+- Show the per-device pass/fail summary and open the generated PDF.
+- Point out that Junos is explicitly a four-control source-backed subset; other
+  vendors are roadmap, and NIST is a mapping view.
+
+### 5. Run Windows audit via CLI (60 seconds)
 ```powershell
 # On the Windows VM
 .\engines\windows\run_audit.ps1 -Level 1 -Format json -Output C:\attestor\results.json
@@ -44,7 +51,7 @@ Adding a new benchmark version = adding new YAML files, not rewriting code."
 Show the summary: "30 controls, 12 pass, 18 fail, 0 errors. This is a 
 default Windows 11 — most security policies aren't configured yet."
 
-### 5. Show filtering (30 seconds)
+### 6. Show filtering (30 seconds)
 ```bash
 # Run only 3 specific controls
 python3 engines/linux/run_audit.py --include 1.5.1 3.3.1.1 5.1.20
@@ -53,7 +60,7 @@ python3 engines/linux/run_audit.py --exclude 1.1.1.1 1.1.1.2
 ```
 "Customizable per organizational needs — run only what matters to you."
 
-### 6. Tamper-evidence demo (60 seconds) — THE DIFFERENTIATOR
+### 7. Tamper-evidence demo (60 seconds) — BONUS DIFFERENTIATOR
 ```python
 # Append report to the hash chain
 from ledger.chain import append, verify
@@ -73,10 +80,12 @@ the hash chain breaks and we detect exactly which report was altered.
 This is the blockchain component: every report is cryptographically 
 linked to the one before it."
 
-### 7. Summary (30 seconds)
-"65 verified controls across both platforms. Schema-validated rule packs.
-Tamper-evident hash chain. One command to audit, one HTML report. 
-Free, open-source, and self-hostable."
+### 8. Summary (30 seconds)
+"Attestor combines native Windows/Linux checks with verified Cisco IOS and
+scoped Junos configuration auditing. Rules are schema-validated, reports are
+offline, and AI suggestions are advisory and redacted. The optional blockchain
+anchor publishes only a report hash, proving tamper-evidence without exposing
+configuration data."
 
 ---
 
@@ -93,9 +102,9 @@ Free, open-source, and self-hostable."
 
 ### Pre-recorded video contents (record NOW):
 1. GUI "Run Audit" → live streaming → report link (Ubuntu)
-2. Windows CLI run → summary
-3. Tamper detection demo
-4. Report opening offline
+2. Cisco and Junos uploads → PDF reports
+3. Windows CLI run → summary
+4. Tamper detection demo
 
 ---
 
@@ -113,7 +122,8 @@ Free, open-source, and self-hostable."
 
 ## Numbers to cite
 
-- 65 verified CIS controls (35 Ubuntu 22.04 + 30 Windows 11)
+- 65 verified OS CIS controls (35 Ubuntu 22.04 + 30 Windows 11)
+- 14 Cisco IOS CIS controls + 4 Junos vendor-baseline controls
 - 10 check types implemented (sysctl, registry, kernel_module, etc.)
 - 0 errors across full-pack runs on both real VMs
 - Tamper detection proven: exact link identification when a report is altered
