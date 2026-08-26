@@ -21,11 +21,12 @@ def _client(tmp_path, monkeypatch) -> TestClient:
 def test_dashboard_home_explains_both_audit_tracks():
     response = TestClient(dashboard.app).get("/")
     assert response.status_code == 200
-    assert "Audit a network configuration" in response.text
-    assert "Audit a local VM" in response.text
-    assert "Primary workflow" in response.text
-    assert response.text.count('id="level"') == 1
-    assert "Juniper Junos (4-control verified subset)" in response.text
+    assert "Turn device state into evidence" in response.text
+    assert "Open audit console" in response.text
+    assert "Windows 11 Standalone" in response.text
+    assert "Cisco IOS / IOS-XE" in response.text
+    assert "Juniper Junos" in response.text
+    assert "Hash-only proof" in response.text
 
 
 def test_network_single_upload_generates_json_html_and_pdf(tmp_path, monkeypatch):
@@ -113,3 +114,51 @@ def test_junos_upload_uses_verified_engine_and_shared_reports(tmp_path, monkeypa
     results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
     assert results["device"]["vendor"] == "Juniper"
     assert results["target"] == "juniper_junos"
+
+
+def test_console_inventory_and_device_detail_after_bulk_upload(tmp_path, monkeypatch):
+    dashboard.DEVICE_RECORDS.clear()
+    client = _client(tmp_path, monkeypatch)
+    sources = [
+        Path("tests/fixtures/network/cisco_ios/c4geeks_snmp_syslog_router_ios152.txt"),
+        Path("tests/fixtures/network/junos/junos_fabric01.conf"),
+    ]
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files=[("files", (sources[0].name, sources[0].read_bytes(), "text/plain"))],
+    )
+    assert response.status_code == 200
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "juniper_junos"},
+        files=[("files", (sources[1].name, sources[1].read_bytes(), "text/plain"))],
+    )
+    assert response.status_code == 200
+    console = client.get("/console")
+    assert console.status_code == 200
+    assert "Devices tracked" in console.text
+    assert "2" in console.text
+    assert "Completed" in console.text
+    junos = next(record for record in dashboard.DEVICE_RECORDS.values() if record["vendor"] == "Juniper")
+    detail = client.get(f"/console/devices/{junos['record_id']}")
+    assert detail.status_code == 200
+    assert "Findings and evidence" in detail.text
+    assert "4" in detail.text
+    assert "Not chained (local report only)" in detail.text
+
+
+def test_console_filters_and_missing_device_are_explicit(tmp_path, monkeypatch):
+    dashboard.DEVICE_RECORDS.clear()
+    client = _client(tmp_path, monkeypatch)
+    source = Path("tests/fixtures/network/junos/junos_example.conf")
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "juniper_junos"},
+        files={"files": (source.name, source.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+    filtered = client.get("/console?vendor=juniper_junos&status=complete&search=junos_example")
+    assert filtered.status_code == 200
+    assert "junos_example" in filtered.text
+    assert client.get("/console/devices/missing").status_code == 404

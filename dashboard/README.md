@@ -32,3 +32,17 @@ vendors and broader Junos coverage remain roadmap.
 PDF remediation remains dry-run by default from the dashboard, clearly labelled,
 and makes no provider call. The F' human-confirmation training loop remains a
 CLI workflow in this round.
+
+## Organizational console
+
+Open `http://localhost:8000` for the product overview, then choose **Open audit
+console**. The console is a local organization workspace for the current
+session: upload one or more genuine configurations, filter the inventory by
+vendor/status/search, and open any device for its compliance score, severity-
+sorted findings, evidence, remediation, scan history, and JSON/HTML/PDF links.
+
+Inventory state is intentionally local and in-memory in this release. It is not
+a fleet database or multi-user service. A failed file is recorded independently
+as failed and cannot imply a successful result for another upload. Persistent
+organizations, authentication, background jobs, and cross-session history are
+future fleet-backend work.

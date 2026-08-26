@@ -25,6 +25,7 @@ import subprocess
 import sys
 import tempfile
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -45,6 +46,7 @@ app = FastAPI(title="Attestor Local GUI", version="0.2.0")
 MAX_NETWORK_FILES = 20
 MAX_NETWORK_CONFIG_BYTES = 2 * 1024 * 1024
 FRAMEWORK_VIEWS = {"all", "cis", "nist"}
+DEVICE_RECORDS: dict[str, dict] = {}
 
 # ─────────────────────── HTML Template (inline, self-contained) ───────────────
 
@@ -252,12 +254,86 @@ function escapeHtml(str) {
 </body>
 </html>"""
 
+LANDING_TEMPLATE = """<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attestor | Security compliance operations</title>
+<style>
+:root{--ink:#10212b;--muted:#60727d;--line:#dce5e9;--canvas:#f5f8fa;--surface:#fff;--blue:#1266a8;--blue2:#e8f2fa;--green:#18794e}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--canvas);color:var(--ink);line-height:1.5}.wrap{max-width:1180px;margin:auto;padding:26px 28px 64px}.nav{display:flex;justify-content:space-between;align-items:center}.brand{display:flex;align-items:center;gap:11px}.mark{width:38px;height:38px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800}.brand strong{font-size:17px}.brand small{display:block;color:var(--muted);font-size:11px}.navlinks{display:flex;gap:18px;align-items:center}.navlinks a{color:var(--muted);font-size:13px;text-decoration:none}.navlinks a:hover{color:var(--blue)}.navbtn{background:var(--ink)!important;color:#fff!important;padding:10px 14px;border-radius:8px;font-weight:700}.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:48px;align-items:center;padding:86px 0 74px}.eyebrow{color:var(--blue);font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.11em;margin-bottom:16px}.hero h1{font-size:clamp(38px,5vw,65px);line-height:1.02;letter-spacing:-.02em;max-width:680px}.hero p{color:var(--muted);font-size:17px;max-width:610px;margin-top:20px}.actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border-radius:8px;padding:12px 17px;font-size:13px;font-weight:750}.primary{background:var(--ink);color:#fff}.secondary{background:var(--surface);border:1px solid var(--line);color:var(--ink)}.trust{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:23px}.trust h2{font-size:16px;margin-bottom:15px}.trustrow{display:flex;gap:12px;padding:13px 0;border-top:1px solid #edf1f3}.trustrow:first-of-type{border-top:0}.icon{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:var(--blue2);color:var(--blue);font-weight:800;flex:none}.trustrow strong{display:block;font-size:13px}.trustrow span{display:block;color:var(--muted);font-size:12px;margin-top:2px}.band{border-top:1px solid var(--line);padding-top:27px}.bandhead{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:17px}.band h2{font-size:20px}.band p{color:var(--muted);font-size:13px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}.card strong{font-size:14px}.card p{color:var(--muted);font-size:12px;margin-top:6px}.pill{display:inline-block;margin-top:14px;border-radius:999px;padding:5px 8px;background:var(--blue2);color:var(--blue);font-size:10px;font-weight:800;text-transform:uppercase}@media(max-width:800px){.hero{grid-template-columns:1fr;padding:58px 0}.cards{grid-template-columns:1fr}.navlinks a:not(.navbtn){display:none}}
+</style></head><body><div class="wrap"><nav class="nav"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><div class="navlinks"><a href="#coverage">Coverage</a><a href="#trust">Trust model</a><a class="navbtn" href="/console">Open console</a></div></nav>
+<main><section class="hero"><div><div class="eyebrow">Configuration assurance</div><h1>Turn device state into evidence your organization can trust.</h1><p>Attestor evaluates real Windows, Linux, Cisco IOS, and scoped Juniper Junos configurations against source-backed controls, then gives security teams a reviewable trail from finding to remediation.</p><div class="actions"><a class="btn primary" href="/console">Open audit console</a><a class="btn secondary" href="#coverage">View supported scope</a></div></div><aside class="trust" id="trust"><h2>Built for accountable decisions</h2><div class="trustrow"><div class="icon">✓</div><div><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trustrow"><div class="icon">◎</div><div><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trustrow"><div class="icon">↗</div><div><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trustrow"><div class="icon">#</div><div><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></aside></section>
+<section class="band" id="coverage"><div class="bandhead"><div><h2>Verified coverage</h2><p>Start with the controls that have real corpus or VM evidence behind them.</p></div><a class="btn secondary" href="/console">Start a scan</a></div><div class="cards"><div class="card"><strong>Windows 11 Standalone</strong><p>Native PowerShell checks against the verified Level 1 rule pack.</p><span class="pill">30 controls</span></div><div class="card"><strong>Ubuntu 22.04 Desktop</strong><p>Python checks for kernel, sysctl, services, packages, and permissions.</p><span class="pill">35 controls</span></div><div class="card"><strong>Cisco IOS / IOS-XE</strong><p>Flat and block-aware configuration checks with CIS and NIST mappings.</p><span class="pill">14 controls</span></div><div class="card"><strong>Juniper Junos</strong><p>Source-backed vendor baseline for common service and logging controls.</p><span class="pill">4 controls</span></div><div class="card"><strong>Reports</strong><p>Per-device JSON, standalone HTML, and PDF outputs for review and handoff.</p><span class="pill">Offline-ready</span></div><div class="card"><strong>Roadmap</strong><p>Other vendors, broader Junos coverage, live collection, and fleet storage.</p><span class="pill">Clearly scoped</span></div></div></section></main></div></body></html>"""
+
 
 # ─────────────────────── Routes ───────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return PAGE_TEMPLATE
+    return LANDING_TEMPLATE
+
+
+def _format_time(value: str | None) -> str:
+    if not value:
+        return "Not scanned"
+    return value.replace("T", " ").replace("Z", " UTC")
+
+
+def _console_page(search: str = "", vendor: str = "all", status: str = "all") -> str:
+    records = list(DEVICE_RECORDS.values())
+    if search:
+        needle = search.casefold()
+        records = [r for r in records if needle in str(r.get("device_id", "")).casefold() or needle in str(r.get("filename", "")).casefold()]
+    if vendor != "all":
+        records = [r for r in records if r.get("vendor_key") == vendor]
+    if status != "all":
+        records = [r for r in records if r.get("status") == status]
+    counts = {"total": len(DEVICE_RECORDS), "complete": 0, "fail": 0, "error": 0}
+    aggregate = {key: 0 for key in ("pass", "fail", "error", "manual", "not_applicable")}
+    for record in DEVICE_RECORDS.values():
+        if record.get("status") == "complete":
+            counts["complete"] += 1
+            for key, value in (record.get("summary") or {}).items():
+                aggregate[key] = aggregate.get(key, 0) + value
+        elif record.get("status") == "failed":
+            counts["fail"] += 1
+        elif record.get("status") == "error":
+            counts["error"] += 1
+    rows = []
+    for record in records:
+        summary = record.get("summary") or {}
+        status_name = record.get("status", "queued")
+        badge_class = "good" if status_name == "complete" else "bad" if status_name in {"failed", "error"} else "pending"
+        score_total = sum(summary.values())
+        score = round(summary.get("pass", 0) * 100 / score_total) if score_total else 0
+        rows.append(
+            f'<a class="device-row" href="/console/devices/{html.escape(record["record_id"])}">'
+            f'<div><strong>{html.escape(str(record.get("device_id", "Unknown device")))}</strong><span>{html.escape(str(record.get("vendor", "Unknown")))} · {html.escape(str(record.get("platform", "")))}</span></div>'
+            f'<div class="row-score">{score}%<span>compliance</span></div>'
+            f'<div class="row-summary"><span class="mini-pass">{summary.get("pass", 0)} pass</span><span class="mini-fail">{summary.get("fail", 0)} fail</span><span>{summary.get("error", 0)} error</span></div>'
+            f'<div><span class="state {badge_class}">{html.escape(status_name)}</span><span class="last-scan">{html.escape(_format_time(record.get("last_scan")))}</span></div></a>'
+        )
+    device_rows = "".join(rows) or '<div class="empty">No devices match this view. Upload a genuine configuration to begin.</div>'
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | Audit console</title>
+<style>
+:root{{--ink:#10212b;--muted:#657782;--line:#dce5e9;--canvas:#f5f8fa;--surface:#fff;--blue:#1266a8;--blue2:#e8f2fa;--green:#18794e;--red:#b42318;--amber:#976c00}}*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--canvas)}}.shell{{max-width:1280px;margin:auto;padding:25px 28px 60px}}.topbar{{display:flex;justify-content:space-between;align-items:center;padding-bottom:28px}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{width:38px;height:38px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800}}.brand strong{{display:block;font-size:17px}}.brand small{{display:block;color:var(--muted);font-size:11px}}.nav{{display:flex;gap:16px;align-items:center}}.nav a{{color:var(--muted);font-size:13px;text-decoration:none}}.nav .active{{color:var(--ink);font-weight:750}}.button{{border:0;border-radius:8px;background:var(--ink);color:#fff;padding:11px 14px;font:inherit;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer}}.button.alt{{background:var(--surface);border:1px solid var(--line);color:var(--ink)}}.eyebrow{{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;margin-bottom:10px}}h1{{font-size:32px;line-height:1.1}}.sub{{color:var(--muted);font-size:13px;margin-top:8px}}.top-actions{{display:flex;gap:9px;margin-top:22px;flex-wrap:wrap}}.metrics{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:25px 0}}.metric{{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}}.metric strong{{font-size:27px;display:block;font-variant-numeric:tabular-nums}}.metric span{{display:block;color:var(--muted);font-size:11px;margin-top:3px;text-transform:uppercase;letter-spacing:.06em}}.metric.good strong{{color:var(--green)}}.metric.bad strong{{color:var(--red)}}.upload{{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:13px}}.upload h2{{font-size:16px}}.upload p{{color:var(--muted);font-size:12px;margin-top:4px}}.upload-grid{{display:grid;grid-template-columns:180px 220px minmax(240px,1fr) auto;gap:10px;align-items:end;margin-top:14px}}label{{display:block;font-size:11px;font-weight:750;margin-bottom:6px}}.upload input,.upload select,.filters input,.filters select{{width:100%;border:1px solid var(--line);border-radius:7px;padding:10px 11px;font:inherit;font-size:12px;background:#fbfcfd;color:var(--ink)}}.upload input[type=file]{{padding:8px}}.filters{{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);padding:13px;border-radius:10px;margin-bottom:12px}}.filters input{{flex:1;min-width:180px}}.device-list{{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}}.device-row{{display:grid;grid-template-columns:minmax(220px,1.4fr) 100px minmax(190px,1fr) minmax(150px,.8fr);gap:18px;align-items:center;padding:16px 18px;border-bottom:1px solid #edf1f3;text-decoration:none;color:inherit}}.device-row:last-child{{border-bottom:0}}.device-row:hover{{background:#f8fbfd}}.device-row strong{{font-size:13px;display:block}}.device-row span{{color:var(--muted);font-size:11px;display:block;margin-top:4px}}.row-score{{font-size:20px;font-weight:800}}.row-score span{{font-size:10px;font-weight:500;text-transform:uppercase}}.row-summary{{display:flex;gap:9px;flex-wrap:wrap}}.row-summary span{{display:inline-block!important;margin:0!important}}.mini-pass{{color:var(--green)!important}}.mini-fail{{color:var(--red)!important}}.state{{display:inline-block!important;width:max-content;border-radius:999px;padding:5px 8px;font-size:10px!important;font-weight:800;text-transform:uppercase;margin:0!important}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.bad{{background:#fdecea;color:var(--red)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.last-scan{{font-size:10px!important}}.empty{{padding:34px;text-align:center;color:var(--muted);font-size:13px}}@media(max-width:900px){{.upload-grid{{grid-template-columns:1fr 1fr}}}}@media(max-width:800px){{.metrics{{grid-template-columns:repeat(2,1fr)}}.device-row{{grid-template-columns:1fr 80px;gap:10px}}.row-summary{{grid-column:1/-1}}.device-row>div:last-child{{text-align:right}}}}@media(max-width:520px){{.shell{{padding:20px 16px 45px}}.filters,.upload-grid{{display:flex;align-items:stretch;flex-direction:column}}.filters input{{width:100%}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><nav class="nav"><a class="active" href="/console">Console</a><a href="/">Overview</a></nav></header><main><div class="eyebrow">Organization workspace</div><h1>Audit operations</h1><p class="sub">Monitor configuration posture across the devices in this local workspace.</p><div class="top-actions"><a class="button" href="/#coverage">Supported scope</a><a class="button alt" href="/console#upload">Add configuration</a></div><section class="metrics"><div class="metric"><strong>{counts["total"]}</strong><span>Devices tracked</span></div><div class="metric good"><strong>{counts["complete"]}</strong><span>Completed scans</span></div><div class="metric bad"><strong>{aggregate["fail"]}</strong><span>Failed controls</span></div><div class="metric"><strong>{aggregate["error"]}</strong><span>Errors requiring review</span></div></section><section class="upload" id="upload"><h2>Add configurations</h2><p>Upload one or more genuine saved configurations. Every file is evaluated independently and discarded after processing.</p><form class="upload-grid" action="/api/network/audit" method="post" enctype="multipart/form-data"><div><label for="vendor">Vendor adapter</label><select id="vendor" name="vendor"><option value="cisco_ios">Cisco IOS / IOS-XE</option><option value="juniper_junos">Juniper Junos</option></select></div><div><label for="framework">Framework view</label><select id="framework" name="framework"><option value="all">Source-backed + NIST mappings</option><option value="cis">Source-backed controls</option><option value="nist">NIST mapped view</option></select></div><div><label for="files">Configuration files</label><input id="files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div><button class="button" type="submit">Queue scans</button></form></section><form class="filters" method="get" action="/console"><input name="search" value="{html.escape(search)}" placeholder="Search device or file"><select name="vendor"><option value="all">All vendors</option><option value="cisco_ios" {"selected" if vendor == "cisco_ios" else ""}>Cisco IOS / IOS-XE</option><option value="juniper_junos" {"selected" if vendor == "juniper_junos" else ""}>Juniper Junos</option></select><select name="status"><option value="all">All statuses</option><option value="queued" {"selected" if status == "queued" else ""}>Queued</option><option value="running" {"selected" if status == "running" else ""}>Running</option><option value="complete" {"selected" if status == "complete" else ""}>Completed</option><option value="failed" {"selected" if status == "failed" else ""}>Failed</option><option value="error" {"selected" if status == "error" else ""}>Error</option></select><button class="button" type="submit">Filter</button></form><section class="device-list">{device_rows}</section></main></div></body></html>"""
+
+
+def _device_detail_page(record: dict) -> str:
+    summary = record.get("summary") or {}
+    total = sum(summary.values())
+    score = round(summary.get("pass", 0) * 100 / total) if total else 0
+    score_color = "var(--green)" if score >= 80 else "var(--amber)" if score >= 50 else "var(--red)"
+    controls = sorted(record.get("controls", []), key=lambda item: (item.get("status") != "fail", item.get("severity") != "high", str(item.get("rule_id", ""))))
+    controls_html = "".join(
+        f'<div class="control"><div><strong>{html.escape(str(c.get("rule_id", "unknown")))}</strong><span>{html.escape(str(c.get("title", "")))} · {html.escape(str(c.get("severity", "unknown")))} severity</span></div><span class="control-status {c.get("status", "error")}">{html.escape(str(c.get("status", "error")))}</span><p>{html.escape(str(c.get("evidence_summary", "Evidence unavailable")))}</p><details><summary>Remediation and source</summary><p>{html.escape(str(c.get("remediation", "Manual review required")))}</p><p class="source">{html.escape(str(c.get("source", "Source unavailable")))}</p></details></div>'
+        for c in controls
+    ) or '<div class="empty">No control results available.</div>'
+    history = "".join(f'<li><strong>{html.escape(_format_time(item.get("timestamp")))}</strong><span>pass {item.get("pass", 0)} · fail {item.get("fail", 0)} · error {item.get("error", 0)}</span></li>' for item in record.get("history", [])) or "<li>No previous scans</li>"
+    urls = record.get("urls", {})
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | {html.escape(str(record.get('device_id','Device')))}</title><style>
+:root{{--ink:#10212b;--muted:#657782;--line:#dce5e9;--canvas:#f5f8fa;--surface:#fff;--blue:#1266a8;--green:#18794e;--red:#b42318;--amber:#976c00}}*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--canvas);color:var(--ink)}}.shell{{max-width:1180px;margin:auto;padding:25px 28px 60px}}.topbar,.head,.identity,.summary,.columns,.control-head{{display:flex;justify-content:space-between;gap:18px}}.topbar{{align-items:center;padding-bottom:28px}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{width:38px;height:38px;border-radius:10px;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:800}}.brand strong{{display:block;font-size:17px}}.brand small,.muted,.identity span,.history span,.control span,.control p,.source{{color:var(--muted);font-size:12px}}.nav a,.link{{color:var(--blue);font-size:12px;font-weight:750;text-decoration:none}}.eyebrow{{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}}h1{{font-size:32px;line-height:1.1}}.head{{align-items:end;margin-bottom:22px}}.actions{{display:flex;gap:8px;flex-wrap:wrap}}.button{{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;border-radius:8px;padding:10px 12px;font-size:12px;font-weight:750}}.button.alt{{background:var(--surface);border:1px solid var(--line);color:var(--ink)}}.identity,.panel{{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}}.identity{{align-items:center;margin-bottom:14px}}.identity strong{{font-size:16px;display:block}}.identity span{{display:block;margin-top:4px}}.score{{font-size:34px;font-weight:850;color:{score_color};text-align:right}}.score small{{display:block;color:var(--muted);font-size:10px;text-transform:uppercase}}.summary{{margin-bottom:14px}}.sum{{flex:1;border:1px solid var(--line);border-radius:9px;padding:13px;background:var(--surface)}}.sum strong{{font-size:23px;display:block}}.sum span{{font-size:10px;color:var(--muted);text-transform:uppercase}}.pass strong{{color:var(--green)}}.fail strong{{color:var(--red)}}.error strong{{color:var(--amber)}}.columns{{align-items:start}}.main{{flex:1;min-width:0}}.side{{width:280px;display:grid;gap:14px}}.panel h2{{font-size:16px;margin-bottom:13px}}.control{{padding:15px 0;border-top:1px solid #edf1f3}}.control:first-child{{border-top:0;padding-top:0}}.control strong{{font-size:13px;margin-right:7px}}.control-status{{float:right;border-radius:999px;padding:4px 7px!important;text-transform:uppercase;font-size:10px!important;font-weight:800}}.control-status.pass{{background:#e7f6ed;color:var(--green)}}.control-status.fail{{background:#fdecea;color:var(--red)}}.control-status.error{{background:#fff5d7;color:var(--amber)}}.control p{{margin-top:8px;line-height:1.45}}details{{margin-top:9px;color:var(--blue);font-size:12px}}details p{{color:var(--ink);margin-top:6px}}.source{{word-break:break-word}}.history{{list-style:none}}.history li{{padding:10px 0;border-top:1px solid #edf1f3}}.history li:first-child{{border-top:0;padding-top:0}}.history strong,.history span{{display:block}}.hash{{font-family:ui-monospace,monospace;word-break:break-all;background:#f5f8fa;padding:9px;border-radius:7px;font-size:10px;color:var(--muted);margin-top:8px}}.empty{{padding:20px;color:var(--muted);font-size:13px}}@media(max-width:820px){{.columns{{display:block}}.side{{width:auto;margin-top:14px}}.head{{display:block}}.actions{{margin-top:15px}}.identity{{align-items:flex-start;display:block}}.score{{text-align:left;margin-top:13px}}.summary{{display:grid;grid-template-columns:repeat(2,1fr)}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><a class="nav" href="/console">Back to console</a></header><main><div class="head"><div><div class="eyebrow">Device detail</div><h1>{html.escape(str(record.get("device_id", "Unknown device")))}</h1><p class="muted">{html.escape(str(record.get("filename", "")))}</p></div><div class="actions">{''.join(f'<a class="button alt" href="{html.escape(url)}" target="_blank">{label}</a>' for label,url in (("JSON",urls.get("json_url")),("HTML",urls.get("html_url")),("PDF",urls.get("pdf_url"))) if url)}<a class="button" href="/console#upload">New scan</a></div></div><section class="identity"><div><strong>{html.escape(str(record.get("vendor", "Unknown")))} · {html.escape(str(record.get("platform", "")))}</strong><span>Device ID: {html.escape(str(record.get("device_id", "unknown")))}</span><span>Status: {html.escape(str(record.get("status", "unknown")))} · Last scan: {html.escape(_format_time(record.get("last_scan")))}</span></div><div class="score">{score}%<small>current compliance</small></div></section><section class="summary"><div class="sum pass"><strong>{summary.get("pass", 0)}</strong><span>Pass</span></div><div class="sum fail"><strong>{summary.get("fail", 0)}</strong><span>Fail</span></div><div class="sum error"><strong>{summary.get("error", 0)}</strong><span>Error</span></div><div class="sum"><strong>{total}</strong><span>Controls evaluated</span></div></section><div class="columns"><section class="panel main"><h2>Findings and evidence</h2>{controls_html}</section><aside class="side"><section class="panel"><h2>Scan history</h2><ul class="history">{history}</ul></section><section class="panel"><h2>Integrity</h2><p class="muted">Local hash-chain status: <strong>{html.escape(str(record.get("chain_status", "Not chained")))}</strong></p><div class="hash">{html.escape(str(record.get("config_sha256", "Configuration hash unavailable")))}</div></section></aside></div></main></div></body></html>"""
 
 
 def _safe_upload_name(filename: str | None) -> str:
@@ -297,16 +373,19 @@ def _apply_framework_view(results: dict, framework: str) -> dict:
     return viewed
 
 
-async def _audit_network_upload(upload: UploadFile, framework: str, vendor: str, work_dir: Path) -> dict:
+async def _audit_network_upload(upload: UploadFile, framework: str, vendor: str, work_dir: Path, record_id: str | None = None) -> dict:
     display_name = _safe_upload_name(upload.filename)
+    if record_id and record_id in DEVICE_RECORDS:
+        DEVICE_RECORDS[record_id]["status"] = "running"
     content = await upload.read(MAX_NETWORK_CONFIG_BYTES + 1)
     if not content:
-        return {"filename": display_name, "status": "error", "error": "uploaded file is empty"}
+        return {"record_id": record_id, "filename": display_name, "status": "error", "error": "uploaded file is empty", "vendor": vendor}
     if len(content) > MAX_NETWORK_CONFIG_BYTES:
         return {
-            "filename": display_name,
+            "record_id": record_id, "filename": display_name,
             "status": "error",
             "error": f"file exceeds {MAX_NETWORK_CONFIG_BYTES // (1024 * 1024)} MiB limit",
+            "vendor": vendor,
         }
 
     item_id = uuid.uuid4().hex[:10]
@@ -333,9 +412,10 @@ async def _audit_network_upload(upload: UploadFile, framework: str, vendor: str,
     if process.returncode != 0 or not results_path.exists():
         detail = stderr.decode("utf-8", errors="replace").strip()
         return {
-            "filename": display_name,
+            "record_id": record_id, "filename": display_name,
             "status": "error",
             "error": detail[-800:] or f"network engine exited {process.returncode}",
+            "vendor": vendor,
         }
 
     try:
@@ -351,16 +431,19 @@ async def _audit_network_upload(upload: UploadFile, framework: str, vendor: str,
             except OSError:
                 pass
         return {
-            "filename": display_name,
+            "record_id": record_id, "filename": display_name,
             "status": "error",
             "error": f"report generation failed: {type(exc).__name__}: {exc}",
+            "vendor": vendor,
         }
 
     return {
+        "record_id": record_id,
         "filename": display_name,
         "status": "complete",
         "device": viewed.get("device", {}),
         "summary": viewed.get("summary", {}),
+        "controls": viewed.get("controls", []),
         "framework": framework,
         "vendor": vendor,
         "json_url": f"/reports/{results_path.name}",
@@ -418,8 +501,73 @@ async def audit_network_configs(
         return HTMLResponse("Unsupported vendor", status_code=400)
     with tempfile.TemporaryDirectory(prefix="attestor-network-upload-") as temp_name:
         work_dir = Path(temp_name)
-        items = [await _audit_network_upload(upload, framework, vendor, work_dir) for upload in files]
+        queued = []
+        for upload in files:
+            record_id = uuid.uuid4().hex[:12]
+            display_name = _safe_upload_name(upload.filename)
+            DEVICE_RECORDS[record_id] = {
+                "record_id": record_id,
+                "device_id": Path(display_name).stem,
+                "filename": display_name,
+                "vendor_key": vendor,
+                "vendor": "Juniper" if vendor == "juniper_junos" else "Cisco",
+                "platform": "Junos" if vendor == "juniper_junos" else "IOS/IOS-XE",
+                "status": "queued",
+                "summary": {},
+                "controls": [],
+                "history": [],
+                "last_scan": None,
+                "chain_status": "Not chained (local report only)",
+            }
+            queued.append((upload, record_id))
+        items = [await _audit_network_upload(upload, framework, vendor, work_dir, record_id) for upload, record_id in queued]
+    _record_network_items(items)
     return HTMLResponse(_network_results_page(items, framework))
+
+
+def _record_network_items(items: list[dict]) -> None:
+    """Promote completed or failed upload results into the local inventory."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for item in items:
+        device = item.get("device") or {}
+        device_id = str(device.get("device_id") or Path(item.get("filename", "device")).stem)
+        queued_record = DEVICE_RECORDS.get(str(item.get("record_id")))
+        existing = next((record for record in DEVICE_RECORDS.values() if record is not queued_record and record.get("device_id") == device_id), None)
+        record = existing or queued_record or {"record_id": uuid.uuid4().hex[:12], "history": []}
+        record.update({
+            "device_id": device_id,
+            "filename": item.get("filename", "unknown"),
+            "vendor_key": item.get("vendor", "unknown"),
+            "vendor": device.get("vendor") or record.get("vendor") or item.get("vendor", "unknown"),
+            "platform": device.get("platform") or record.get("platform", "unknown"),
+            "status": "complete" if item.get("status") == "complete" else "failed",
+            "summary": item.get("summary", {}),
+            "controls": item.get("controls", []),
+            "urls": {key: item[key] for key in ("json_url", "html_url", "pdf_url") if key in item},
+            "last_scan": now,
+            "config_sha256": device.get("config_sha256"),
+            "chain_status": "Not chained (local report only)",
+        })
+        if item.get("status") != "complete":
+            record["error"] = item.get("error", "scan failed")
+        summary = item.get("summary", {})
+        record.setdefault("history", []).append({"timestamp": now, "pass": summary.get("pass", 0), "fail": summary.get("fail", 0), "error": summary.get("error", 0)})
+        if existing and queued_record:
+            DEVICE_RECORDS.pop(queued_record["record_id"], None)
+        DEVICE_RECORDS[record["record_id"]] = record
+
+
+@app.get("/console", response_class=HTMLResponse)
+async def console(request: Request):
+    return HTMLResponse(_console_page(request.query_params.get("search", ""), request.query_params.get("vendor", "all"), request.query_params.get("status", "all")))
+
+
+@app.get("/console/devices/{record_id}", response_class=HTMLResponse)
+async def device_detail(record_id: str):
+    record = DEVICE_RECORDS.get(record_id)
+    if not record:
+        return HTMLResponse("Device record not found", status_code=404)
+    return HTMLResponse(_device_detail_page(record))
 
 
 @app.get("/api/run")
