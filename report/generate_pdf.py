@@ -78,6 +78,34 @@ def build_pdf(
     summary = results.get("summary", {})
     story.append(Table([["PASS", "FAIL", "ERROR", "MANUAL", "N/A"], [summary.get("pass", 0), summary.get("fail", 0), summary.get("error", 0), summary.get("manual", 0), summary.get("not_applicable", 0)]], style=TableStyle([("GRID", (0,0), (-1,-1), .5, colors.grey), ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#eef2f6")), ("ALIGN", (0,0), (-1,-1), "CENTER")]), colWidths=[1.25*inch]*5))
     story.append(Spacer(1, 12))
+    security_model = results.get("security_model") or {}
+    facts = security_model.get("fields") or {}
+    if facts:
+        story.append(Paragraph("Normalized security model", styles["Heading2"]))
+        story.append(Paragraph(
+            "Vendor-neutral facts extracted from explicit configuration evidence. "
+            "Unknown is not treated as a pass.", styles["Small"]
+        ))
+        rows = [["Fact", "Value", "Evidence"]]
+        for name, fact in facts.items():
+            value = fact.get("value")
+            rendered = "unknown" if value is None else str(value).lower() if isinstance(value, bool) else str(value)
+            evidence = fact.get("evidence") or {}
+            detail = ""
+            if evidence:
+                detail = f"line {evidence.get('line')} — {evidence.get('observation', '')}"
+            rows.append([name.replace("_", " "), rendered, detail])
+        model_table = Table(rows, colWidths=[1.8*inch, .9*inch, 3.55*inch], repeatRows=1)
+        model_table.setStyle(TableStyle([
+            ("GRID", (0, 0), (-1, -1), .35, colors.HexColor("#c9d2da")),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#eef2f6")),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 7),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+        ]))
+        story.extend([model_table, Spacer(1, 12)])
     for control in sorted(controls, key=lambda c: (0 if c.get("status") in {"fail", "error"} else 1, c.get("rule_id", ""))):
         status = control.get("status", "unknown").upper()
         color = "#b42318" if status == "FAIL" else "#1a7f37" if status == "PASS" else "#9a6700"

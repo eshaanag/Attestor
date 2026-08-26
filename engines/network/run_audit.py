@@ -30,6 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from tests.validate_rules import format_errors, load_validator  # noqa: E402
+from engines.network.normalize import normalize_config  # noqa: E402
 
 
 ENGINE_NAME = "network"
@@ -546,6 +547,7 @@ def build_results(
         },
         "summary": summary,
         "controls": controls,
+        "security_model": normalize_config(config),
     }
 
 

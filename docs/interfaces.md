@@ -211,6 +211,34 @@ independently; one invalid file must not create or imply a successful result for
 another. Uploaded configuration files are not retained by the dashboard after
 processing.
 
+### 3b. Additive normalized security model
+
+Network results may include a top-level `security_model` object. This is an
+evidence/discovery view, not a second compliance result and not a replacement
+for the deterministic `controls` array. The current Cisco adapter emits:
+
+```jsonc
+{
+  "schema_version": "1.0",
+  "vendor": "Cisco",
+  "platform": "IOS/IOS-XE",
+  "fields": {
+    "ssh_version": {
+      "value": 2,
+      "evidence": {"line": 17, "observation": "SSH protocol version explicitly configured"}
+    },
+    "logging_host_configured": {"value": true, "evidence": {"line": 24, "observation": "remote logging host configured"}},
+    "password_encryption": {"value": null, "evidence": null}
+  }
+}
+```
+
+`value` is a typed fact, `false` only means an explicit disabling command was
+observed, and `null` means unknown from the supplied configuration. Evidence is
+limited to safe line numbers/descriptions; raw configuration text and secrets
+are never copied into this model. A future vendor adapter must emit the same
+field names only when its own syntax provides equivalent evidence.
+
 **Field types (strict):**
 
 | Path | Type | Notes |

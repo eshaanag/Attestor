@@ -74,6 +74,11 @@ h2 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(-
 .evidence-block { background: #f6f8fa; border: 1px solid var(--border); border-radius: 4px;
                   padding: 0.5rem 0.75rem; font-family: monospace; font-size: 0.8rem;
                   overflow-x: auto; margin-top: 0.25rem; }
+.model-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem; }
+.model-fact { border: 1px solid var(--border); border-radius: 5px; padding: 0.7rem; background: #fbfcfd; }
+.model-fact dt { font-weight: 600; font-size: 0.82rem; }
+.model-fact dd { margin-top: 0.25rem; font-family: monospace; font-size: 0.82rem; }
+.model-evidence { color: #656d76; font-family: inherit; font-size: 0.75rem; }
 footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);
          font-size: 0.8rem; color: #656d76; text-align: center; }
 @media (max-width: 600px) { .header-grid { grid-template-columns: 1fr; } .summary { flex-direction: column; } }
@@ -122,6 +127,20 @@ footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border
   <div class="summary-item s-manual"><div class="count">{{ summary.manual }}</div><div class="label">Manual</div></div>
   <div class="summary-item s-na"><div class="count">{{ summary.not_applicable }}</div><div class="label">N/A</div></div>
 </div>
+
+{% if security_model %}
+<h2>Normalized security model</h2>
+<p style="margin-bottom:0.75rem;color:#656d76">Vendor-neutral facts extracted from explicit configuration evidence. Unknown means the saved configuration could not establish the value; it is never treated as a pass.</p>
+<dl class="model-grid">
+{% for name, fact in security_model.fields.items() %}
+  <div class="model-fact">
+    <dt>{{ name | replace("_", " ") }}</dt>
+    <dd>{% if fact.value is none %}unknown{% elif fact.value is sameas true %}true{% elif fact.value is sameas false %}false{% else %}{{ fact.value }}{% endif %}</dd>
+    {% if fact.evidence %}<dd class="model-evidence">line {{ fact.evidence.line }} — {{ fact.evidence.observation }}</dd>{% endif %}
+  </div>
+{% endfor %}
+</dl>
+{% endif %}
 
 <h2>Controls ({{ controls | length }} total — failures &amp; errors first)</h2>
 {% for control in controls_sorted %}
@@ -187,6 +206,7 @@ def render(results: dict) -> str:
         benchmark=results["benchmark"],
         benchmark_version=results["benchmark_version"],
         device=results.get("device"),
+        security_model=results.get("security_model"),
         host=results["host"],
         run=results["run"],
         summary=results["summary"],
