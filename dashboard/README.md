@@ -16,6 +16,11 @@ The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE config
 files and returns JSON, standalone HTML, and PDF reports for each file. Uploads
 are processed in an isolated temporary directory and are not retained.
 
+The console has two explicit workflows: the primary network configuration audit
+and the established local Windows/Linux VM audit. The network surface exposes
+the verified Cisco IOS scope, framework view, bulk upload, and offline report
+links without implying support for other vendors.
+
 The framework selector offers CIS, NIST SP 800-53 mapped, or combined display.
 It changes presentation only: the existing deterministic CIS-backed checks are
 authoritative, and the NIST option does not claim a separate native NIST rule

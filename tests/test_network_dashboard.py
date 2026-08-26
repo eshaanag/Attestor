@@ -18,6 +18,15 @@ def _client(tmp_path, monkeypatch) -> TestClient:
     return TestClient(dashboard.app)
 
 
+def test_dashboard_home_explains_both_audit_tracks():
+    response = TestClient(dashboard.app).get("/")
+    assert response.status_code == 200
+    assert "Audit a network configuration" in response.text
+    assert "Audit a local VM" in response.text
+    assert "Primary workflow" in response.text
+    assert response.text.count('id="level"') == 1
+
+
 def test_network_single_upload_generates_json_html_and_pdf(tmp_path, monkeypatch):
     client = _client(tmp_path, monkeypatch)
     source = CORPUS / "c4geeks_snmp_syslog_router_ios152.txt"

@@ -41,7 +41,7 @@ from report.generate_report import render  # noqa: E402
 RESULTS_DIR = REPO_ROOT / "reports"
 RESULTS_DIR.mkdir(exist_ok=True)
 
-app = FastAPI(title="Attestor Local GUI", version="0.1.0")
+app = FastAPI(title="Attestor Local GUI", version="0.2.0")
 MAX_NETWORK_FILES = 20
 MAX_NETWORK_CONFIG_BYTES = 2 * 1024 * 1024
 FRAMEWORK_VIEWS = {"all", "cis", "nist"}
@@ -55,66 +55,109 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Attestor — CIS Audit</title>
 <style>
-:root { --pass: #1a7f37; --fail: #cf222e; --error: #9a6700; --bg: #f6f8fa; --fg: #1f2328; --border: #d0d7de; }
+:root { --ink: #142230; --muted: #607080; --line: #d8e0e7; --canvas: #f3f6f8; --surface: #fff; --blue: #1769aa; --blue-soft: #e8f2fb; --pass: #18794e; --fail: #b42318; --error: #9a6700; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--fg); padding: 2rem; max-width: 900px; margin: 0 auto; }
-h1 { font-size: 1.6rem; margin-bottom: 1rem; }
-.card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
-label { font-weight: 600; display: block; margin-bottom: 0.3rem; }
-select, input { padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.95rem; width: 100%; margin-bottom: 1rem; }
-button { background: #0969da; color: #fff; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; font-size: 1rem; cursor: pointer; font-weight: 600; }
-button:hover { background: #0550ae; }
-button:disabled { background: #8c959f; cursor: not-allowed; }
-.summary { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
-.summary-item { padding: 0.5rem 1rem; border-radius: 6px; border: 1px solid var(--border); text-align: center; min-width: 80px; }
-.summary-item .count { font-size: 1.5rem; font-weight: 700; }
-.summary-item .label { font-size: 0.75rem; text-transform: uppercase; }
+body { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--canvas); color: var(--ink); min-height: 100vh; }
+.shell { max-width: 1180px; margin: 0 auto; padding: 28px 28px 56px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 26px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--ink); color: #fff; font-weight: 800; font-size: 17px; }
+.brand-name { font-size: 17px; font-weight: 760; letter-spacing: .01em; }
+.brand-subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.status-pill { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 650; }
+.status-dot { width: 7px; height: 7px; background: var(--pass); border-radius: 50%; }
+.hero { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); gap: 22px; align-items: stretch; margin-bottom: 24px; }
+.hero-copy, .hero-metric, .panel, .result-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+.hero-copy { padding: 30px; }
+.eyebrow { color: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 11px; }
+h1 { font-size: clamp(28px, 4vw, 43px); line-height: 1.07; letter-spacing: 0; max-width: 680px; text-wrap: balance; }
+.hero-copy p { color: var(--muted); line-height: 1.6; max-width: 660px; margin-top: 14px; text-wrap: pretty; }
+.hero-metric { padding: 24px; display: flex; flex-direction: column; justify-content: space-between; background: #e9f2f8; border-color: #c9ddea; }
+.metric-label { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.metric-number { font-size: 44px; line-height: 1; font-weight: 780; margin: 18px 0 8px; font-variant-numeric: tabular-nums; }
+.metric-note { color: var(--muted); font-size: 13px; line-height: 1.45; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 22px; }
+.panel { padding: 22px; }
+.panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 17px; }
+h2 { font-size: 17px; line-height: 1.25; text-wrap: balance; }
+.panel-kicker { color: var(--muted); font-size: 13px; line-height: 1.45; margin-top: 5px; text-wrap: pretty; }
+.field { margin-top: 16px; }
+label { display: block; color: var(--ink); font-size: 12px; font-weight: 760; margin-bottom: 7px; }
+select, input[type=file] { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fbfcfd; color: var(--ink); font: inherit; font-size: 13px; padding: 11px 12px; }
+input[type=file] { padding: 9px; }
+select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px solid rgba(23,105,170,.24); outline-offset: 2px; }
+.button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 8px; background: var(--ink); color: #fff; font: inherit; font-size: 13px; font-weight: 760; padding: 11px 15px; cursor: pointer; }
+.button:hover { background: #263b4c; }
+.button:disabled { opacity: .55; cursor: not-allowed; }
+.button-secondary { background: var(--blue-soft); color: var(--blue); }
+.button-secondary:hover { background: #dbeaf6; }
+.form-actions { display: flex; align-items: center; gap: 10px; margin-top: 18px; }
+.helper { color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 12px; }
+.coverage { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
+.tag { border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #fbfcfd; font-size: 11px; font-weight: 700; padding: 6px 9px; }
+.tag-active { color: var(--blue); background: var(--blue-soft); border-color: #c7deef; }
+.status-bar { padding: 12px 14px; background: var(--blue-soft); border: 1px solid #b9d6eb; border-radius: 8px; margin: 22px 0; color: var(--blue); font-size: 13px; font-weight: 700; }
+.status-bar.complete { background: #e9f7ef; border-color: #b8dec8; color: var(--pass); }
+.summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 16px 0 20px; }
+.summary-item { padding: 14px 10px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); text-align: center; }
+.summary-item .count { font-size: 24px; font-weight: 780; font-variant-numeric: tabular-nums; }
+.summary-item .label { color: var(--muted); font-size: 10px; letter-spacing: .06em; margin: 3px 0 0; text-transform: uppercase; }
 .s-pass .count { color: var(--pass); } .s-fail .count { color: var(--fail); } .s-error .count { color: var(--error); }
-#results { max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; }
-.result-line { padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; display: flex; gap: 0.75rem; align-items: center; }
-.badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
-.badge-pass { background: #dafbe1; color: var(--pass); }
-.badge-fail { background: #ffebe9; color: var(--fail); }
-.badge-error { background: #fff8c5; color: var(--error); }
-.status-bar { padding: 0.75rem; background: #ddf4ff; border: 1px solid #54aeff; border-radius: 6px; margin-bottom: 1rem; font-weight: 500; }
-.status-bar.complete { background: #dafbe1; border-color: var(--pass); }
-.report-link { display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: var(--pass); color: #fff; border-radius: 4px; text-decoration: none; font-weight: 600; }
+#results { max-height: 480px; overflow-y: auto; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); font-size: 12px; }
+.result-line { display: grid; grid-template-columns: 72px 72px minmax(0, 1fr); gap: 10px; align-items: center; padding: 11px 12px; border-bottom: 1px solid #edf1f4; }
+.result-line:last-child { border-bottom: 0; }
+.result-evidence { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { display: inline-flex; width: fit-content; align-items: center; border-radius: 999px; padding: 4px 7px; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.badge-pass { background: #e7f6ed; color: var(--pass); }
+.badge-fail { background: #fdecea; color: var(--fail); }
+.badge-error { background: #fff5d7; color: var(--error); }
+.report-link { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--blue); font-size: 12px; font-weight: 760; margin: 12px 8px 0 0; padding: 8px 10px; text-decoration: none; }
+.report-link:hover { background: var(--blue-soft); }
+.result-card { padding: 20px; margin-bottom: 14px; }
+.result-card p { color: var(--muted); font-size: 13px; line-height: 1.5; margin-top: 7px; }
 .hidden { display: none; }
+@media (max-width: 820px) { .hero, .grid { grid-template-columns: 1fr; } .summary { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 520px) { .shell { padding: 20px 16px 40px; } .topbar { align-items: flex-start; } .status-pill { display: none; } .hero-copy { padding: 23px; } .panel { padding: 18px; } .summary { grid-template-columns: repeat(2, 1fr); } .result-line { grid-template-columns: 62px 58px minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
 </style>
 </head>
 <body>
-<h1>🛡️ Attestor CIS Benchmark Audit</h1>
+<div class="shell">
+<header class="topbar">
+  <div class="brand"><div class="brand-mark">A</div><div><div class="brand-name">Attestor</div><div class="brand-subtitle">Network security compliance</div></div></div>
+  <div class="status-pill"><span class="status-dot"></span>Local workspace</div>
+</header>
 
-<div class="card">
-  <h2 style="margin-bottom:0.75rem">Cisco IOS configuration ingestion</h2>
-  <p style="margin-bottom:1rem">Upload one or more genuine saved configurations. Cisco IOS is the only built network vendor; other vendors remain roadmap.</p>
+<section class="hero">
+  <div class="hero-copy"><div class="eyebrow">Audit console</div><h1>See what is secure before it becomes an incident.</h1><p>Upload a saved device configuration, evaluate the verified Cisco IOS baseline, and leave with evidence your team can inspect offline.</p><div class="coverage"><span class="tag tag-active">Cisco IOS</span><span class="tag">CIS Benchmark</span><span class="tag">NIST mappings</span><span class="tag">Offline reports</span></div></div>
+  <div class="hero-metric"><div class="metric-label">Verified controls</div><div class="metric-number">14</div><div class="metric-note">Source-backed Cisco IOS checks with pass/fail corpus evidence. Additional vendors are roadmap.</div></div>
+</section>
+
+<div class="grid">
+<section class="panel">
+  <div class="panel-header"><div><h2>Audit a network configuration</h2><p class="panel-kicker">Start with a real saved <code>show running-config</code> export. Upload one device or a small batch.</p></div><span class="tag tag-active">Primary workflow</span></div>
   <form action="/api/network/audit" method="post" enctype="multipart/form-data">
-    <label for="network-files">Configuration files</label>
-    <input id="network-files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required>
-    <label for="framework">Report framework view</label>
-    <select id="framework" name="framework">
-      <option value="all">CIS with NIST SP 800-53 mappings</option>
-      <option value="cis">CIS Cisco IOS only</option>
-      <option value="nist">NIST SP 800-53 mapped view</option>
-    </select>
-    <button type="submit">Upload and audit</button>
+    <div class="field"><label for="network-files">Configuration files</label><input id="network-files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div>
+    <div class="field"><label for="framework">Report view</label><select id="framework" name="framework"><option value="all">CIS with NIST SP 800-53 mappings</option><option value="cis">CIS Cisco IOS only</option><option value="nist">NIST SP 800-53 mapped view</option></select></div>
+    <div class="form-actions"><button class="button" type="submit">Upload and audit</button></div>
   </form>
-  <p style="font-size:0.82rem;color:#656d76;margin-top:0.75rem">Uploads are processed locally and discarded after auditing. PDF AI remediation is dry-run by default; no provider call is made.</p>
-</div>
+  <p class="helper">Files are processed locally in a temporary workspace and discarded after the audit. AI remediation stays in dry-run mode here.</p>
+</section>
 
-<div class="card" id="run-panel">
-  <h2 style="margin-bottom:0.75rem">Local operating-system audit</h2>
+<section class="panel" id="run-panel">
+  <div class="panel-header"><div><h2>Audit a local VM</h2><p class="panel-kicker">Run the established Windows or Ubuntu track where the machine itself is the evidence source.</p></div><span class="tag">Existing workflow</span></div>
   <label for="target">Target</label>
   <select id="target">
     <option value="ubuntu2204_desktop">Ubuntu 22.04 Desktop (Level 1)</option>
     <option value="windows11_standalone">Windows 11 Standalone (Level 1)</option>
   </select>
-  <label for="level">Level</label>
+  <div class="field"><label for="level">Level</label>
   <select id="level">
     <option value="1">Level 1</option>
     <option value="2">Level 2</option>
-  </select>
-  <button id="run-btn" onclick="startAudit()">▶ Run Audit</button>
+  </select></div>
+  <div class="form-actions"><button class="button button-secondary" id="run-btn" onclick="startAudit()">Run live audit</button></div>
+</section>
 </div>
 
 <div id="status-bar" class="status-bar hidden"></div>
@@ -162,7 +205,7 @@ function startAudit() {
     const badge = '<span class="badge badge-' + data.status + '">' + data.status.toUpperCase() + '</span>';
     const line = '<div class="result-line">' + badge +
       '<span>' + data.rule_id + '</span>' +
-      '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escapeHtml(data.evidence) + '</span></div>';
+      '<span class="result-evidence">' + escapeHtml(data.evidence) + '</span></div>';
     results.innerHTML += line;
     results.scrollTop = results.scrollHeight;
     if (data.status === 'pass') counts.pass++;
@@ -204,6 +247,7 @@ function escapeHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 </script>
+</div>
 </body>
 </html>"""
 
@@ -344,12 +388,12 @@ def _network_results_page(items: list[dict], framework: str) -> str:
             f'<a class="report-link" href="{item["pdf_url"]}" target="_blank">PDF report</a> '
             f'<a class="report-link" href="{item["json_url"]}" target="_blank">JSON results</a></div>'
         )
-    return PAGE_TEMPLATE.split("<body>", 1)[0] + "<body>" + (
-        '<h1>Attestor network ingestion results</h1>'
-        f'<p style="margin-bottom:1rem">Framework view: <b>{html.escape(framework)}</b>. '
-        'NIST is a mapped view of the CIS-backed deterministic checks.</p>'
+    return PAGE_TEMPLATE.split("<body>", 1)[0] + "<body><div class=\"shell\">" + (
+        '<header class="topbar"><div class="brand"><div class="brand-mark">A</div><div><div class="brand-name">Attestor</div><div class="brand-subtitle">Network security compliance</div></div></div><div class="status-pill"><span class="status-dot"></span>Audit complete</div></header>'
+        '<section class="hero-copy" style="margin-bottom:22px"><div class="eyebrow">Results workspace</div><h1>Configuration findings, ready to review.</h1>'
+        f'<p>Framework view: <b>{html.escape(framework)}</b>. NIST is a mapped view of the CIS-backed deterministic checks.</p></section>'
         + "".join(blocks)
-        + '<p><a href="/">← Audit more configurations</a></p></body></html>'
+        + '<p><a class="report-link" href="/">Back to audit console</a></p></div></body></html>'
     )
 
 
