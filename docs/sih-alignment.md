@@ -72,7 +72,7 @@ Evidence = file path and/or commit that proves the claim.
 | F' | AI-assisted syntax discovery/training loop | done | `ai/network_discovery.py`; 51 redacted candidates classified with `claude-haiku-4-5-20251001`; provider usage 3,408 input + 3,268 output tokens, measured `$0.019748`; 32-test suite passes; deterministic engine remains authoritative |
 | G' | PDF reporting + cached remediation | done (AI advisory scope) | `report/generate_pdf.py`, `report/remediation.py`; genuine Cisco report renders with 9 failed controls and clearly labelled AI remediation/reasoning; initial batch + targeted CIS 1.3.1 retry cost `$0.008774`; retry repeated invalid `SHA-500`, retained as a known example requiring human review |
 | H' | Minimal network ingestion dashboard | done (Cisco IOS scope) | `dashboard/app.py`, `tests/test_network_dashboard.py`; polished console separates network and VM workflows, supports single/bulk genuine corpus uploads, JSON/HTML/PDF, CIS/NIST-mapped views, and fail-closed invalid input; full suite 41 passed |
-| G | Optional additional vendor | deferred by default | Roadmap only |
+| G | Optional additional vendor | done (scoped) | Juniper Junos four-control source-backed subset: `engines/network/run_junos_audit.py`, `rules/juniper_junos/`, six source-derived redacted fixtures, pass/fail oracle, and Junos/dashboard tests |
 | H | Honest pitch/documentation pass | not started | Must reflect actual delivered coverage |
 
 ---

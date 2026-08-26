@@ -1,0 +1,18 @@
+id: "2.1"
+id_namespace: "junos-baseline"
+title: "Configure system syslog"
+description: "A Junos system syslog block should be present for security-relevant event handling."
+rationale: "Administrative and system events need a configured logging destination and policy."
+benchmark: "Juniper Junos Security Baseline (vendor documentation)"
+benchmark_version: "2026-08"
+level: 1
+profile: [network_device]
+device: {vendor: Juniper, platform: Junos, config_format: junos-hierarchical}
+automated: true
+severity: high
+checks:
+  - {type: junos_statement, path_pattern: "system", statement_pattern: "syslog", op: present}
+remediation: "Configure [edit system syslog] with appropriate local and/or remote destinations and event classes; commit after validation."
+source: "Juniper Junos syslog CLI reference: https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/syslog-edit-system.html; corpus oracle tests/fixtures/network/junos/manual_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "AU-2", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

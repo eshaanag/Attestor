@@ -24,6 +24,11 @@
       "description": "CIS control ID in dotted-number form, e.g. \"1.1.1.1\".",
       "pattern": "^[0-9]+(\\.[0-9]+)*$"
     },
+    "id_namespace": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional rule namespace. Omitted for legacy/CIS packs; vendor baselines may use an explicit namespace such as junos-baseline."
+    },
     "title": {
       "type": "string",
       "minLength": 1,
@@ -165,7 +170,8 @@
               "account_policy",
               "secpol",
               "audit_policy",
-              "config_block"
+              "config_block",
+              "junos_statement"
             ]
           },
           "op": {
@@ -204,6 +210,20 @@
                   "type": "array",
                   "items": { "type": "string", "minLength": 1 }
                 }
+              }
+            }
+          }
+          ,{
+            "if": {
+              "properties": { "type": { "const": "junos_statement" } },
+              "required": ["type"]
+            },
+            "then": {
+              "required": ["path_pattern", "statement_pattern", "op"],
+              "properties": {
+                "path_pattern": { "type": "string", "minLength": 1 },
+                "statement_pattern": { "type": "string", "minLength": 1 },
+                "op": { "type": "string", "enum": ["present", "absent", "matches"] }
               }
             }
           }

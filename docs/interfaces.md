@@ -197,14 +197,18 @@ hash — the ledger stores that separately (§4).
 
 `POST /api/network/audit` accepts multipart form data:
 
-- `files`: one or more saved Cisco IOS/IOS-XE configuration text files.
+- `files`: one or more saved Cisco IOS/IOS-XE or Juniper Junos configuration
+  text files.
+- `vendor`: `cisco_ios` or `juniper_junos`; selects the corresponding parser
+  and source-backed rule subset.
 - `framework`: `all`, `cis`, or `nist`. This controls report presentation only;
-  the deterministic Cisco rules and their results are unchanged. The `nist`
-  option is explicitly a NIST SP 800-53 *mapped view* of CIS-backed checks, not
+  deterministic vendor rules and their results are unchanged. The `nist`
+  option is explicitly a NIST SP 800-53 *mapped view* of source-backed checks, not
   a separate NIST-native rule pack.
 
 Each file is copied to an isolated temporary directory and passed to the
-unchanged `engines/network/run_audit.py --config <path>` interface. A successful
+selected vendor adapter (`run_audit.py` for Cisco or `run_junos_audit.py` for
+Junos). A successful
 item returns links to its JSON, offline HTML, and PDF report. A failed item
 returns an explicit error and no report links. Bulk items are processed
 independently; one invalid file must not create or imply a successful result for

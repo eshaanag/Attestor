@@ -1,0 +1,18 @@
+id: "3.1"
+id_namespace: "junos-baseline"
+title: "Do not use the default SNMP public community"
+description: "The default public SNMP community should not be present."
+rationale: "Default community names are widely known and expose management telemetry to unauthorized users."
+benchmark: "Juniper Junos Security Baseline (vendor documentation)"
+benchmark_version: "2026-08"
+level: 1
+profile: [network_device]
+device: {vendor: Juniper, platform: Junos, config_format: junos-hierarchical}
+automated: true
+severity: high
+checks:
+  - {type: junos_statement, path_pattern: "snmp", statement_pattern: "community public", op: absent}
+remediation: "Remove the public SNMP community and configure authenticated SNMPv3 users or a non-default, access-restricted community; commit after validation."
+source: "Juniper Junos SNMP CLI reference: https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/snmp-edit.html; corpus oracle tests/fixtures/network/junos/manual_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "IA-5", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

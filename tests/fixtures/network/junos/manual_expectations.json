@@ -1,0 +1,6 @@
+{
+  "junos_service_telnet_absent": {"pass": ["junos_fabric01.conf", "junos_minimal.conf", "junos_lldp.conf", "junos_vqfx.conf"], "fail": ["junos_example.conf", "junos_wh9999.conf"]},
+  "junos_service_ftp_absent": {"pass": ["junos_fabric01.conf", "junos_vqfx.conf", "junos_wh9999.conf", "junos_minimal.conf", "junos_lldp.conf"], "fail": ["junos_example.conf"]},
+  "junos_syslog_present": {"pass": ["junos_fabric01.conf", "junos_example.conf", "junos_vqfx.conf", "junos_wh9999.conf"], "fail": ["junos_minimal.conf", "junos_lldp.conf"]},
+  "junos_snmp_public_absent": {"pass": ["junos_fabric01.conf", "junos_example.conf", "junos_vqfx.conf", "junos_minimal.conf", "junos_lldp.conf"], "fail": ["junos_wh9999.conf"]}
+}

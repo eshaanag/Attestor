@@ -129,16 +129,17 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 </header>
 
 <section class="hero">
-  <div class="hero-copy"><div class="eyebrow">Audit console</div><h1>See what is secure before it becomes an incident.</h1><p>Upload a saved device configuration, evaluate the verified Cisco IOS baseline, and leave with evidence your team can inspect offline.</p><div class="coverage"><span class="tag tag-active">Cisco IOS</span><span class="tag">CIS Benchmark</span><span class="tag">NIST mappings</span><span class="tag">Offline reports</span></div></div>
-  <div class="hero-metric"><div class="metric-label">Verified controls</div><div class="metric-number">14</div><div class="metric-note">Source-backed Cisco IOS checks with pass/fail corpus evidence. Additional vendors are roadmap.</div></div>
+  <div class="hero-copy"><div class="eyebrow">Audit console</div><h1>See what is secure before it becomes an incident.</h1><p>Upload a saved device configuration, evaluate a verified Cisco IOS or Junos baseline, and leave with evidence your team can inspect offline.</p><div class="coverage"><span class="tag tag-active">Cisco IOS</span><span class="tag">Juniper Junos</span><span class="tag">CIS + NIST mappings</span><span class="tag">Offline reports</span></div></div>
+  <div class="hero-metric"><div class="metric-label">Verified controls</div><div class="metric-number">18</div><div class="metric-note">14 Cisco IOS controls plus a source-backed four-control Junos subset. Broader vendor coverage remains roadmap.</div></div>
 </section>
 
 <div class="grid">
 <section class="panel">
-  <div class="panel-header"><div><h2>Audit a network configuration</h2><p class="panel-kicker">Start with a real saved <code>show running-config</code> export. Upload one device or a small batch.</p></div><span class="tag tag-active">Primary workflow</span></div>
+  <div class="panel-header"><div><h2>Audit a network configuration</h2><p class="panel-kicker">Start with a real saved device configuration. Upload one device or a small batch.</p></div><span class="tag tag-active">Primary workflow</span></div>
   <form action="/api/network/audit" method="post" enctype="multipart/form-data">
+    <div class="field"><label for="vendor">Vendor</label><select id="vendor" name="vendor"><option value="cisco_ios">Cisco IOS / IOS-XE (14 controls)</option><option value="juniper_junos">Juniper Junos (4-control verified subset)</option></select></div>
     <div class="field"><label for="network-files">Configuration files</label><input id="network-files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div>
-    <div class="field"><label for="framework">Report view</label><select id="framework" name="framework"><option value="all">CIS with NIST SP 800-53 mappings</option><option value="cis">CIS Cisco IOS only</option><option value="nist">NIST SP 800-53 mapped view</option></select></div>
+    <div class="field"><label for="framework">Report view</label><select id="framework" name="framework"><option value="all">Source-backed checks with NIST mappings</option><option value="cis">Source-backed controls only</option><option value="nist">NIST SP 800-53 mapped view</option></select></div>
     <div class="form-actions"><button class="button" type="submit">Upload and audit</button></div>
   </form>
   <p class="helper">Files are processed locally in a temporary workspace and discarded after the audit. AI remediation stays in dry-run mode here.</p>
@@ -286,7 +287,7 @@ def _apply_framework_view(results: dict, framework: str) -> dict:
             control["framework_mappings"] = mappings
             controls.append(control)
     viewed["controls"] = controls
-    viewed["benchmark"] = "NIST SP 800-53 mapped view (CIS-backed checks)"
+    viewed["benchmark"] = "NIST SP 800-53 mapped view (source-backed checks)"
     viewed["benchmark_version"] = "Rev. 5 mappings"
     viewed["summary"] = {key: 0 for key in ("pass", "fail", "error", "manual", "not_applicable")}
     for control in controls:
@@ -296,7 +297,7 @@ def _apply_framework_view(results: dict, framework: str) -> dict:
     return viewed
 
 
-async def _audit_network_upload(upload: UploadFile, framework: str, work_dir: Path) -> dict:
+async def _audit_network_upload(upload: UploadFile, framework: str, vendor: str, work_dir: Path) -> dict:
     display_name = _safe_upload_name(upload.filename)
     content = await upload.read(MAX_NETWORK_CONFIG_BYTES + 1)
     if not content:
@@ -315,14 +316,16 @@ async def _audit_network_upload(upload: UploadFile, framework: str, work_dir: Pa
     html_path = RESULTS_DIR / f"network_{item_id}.html"
     pdf_path = RESULTS_DIR / f"network_{item_id}.pdf"
     device_id = Path(display_name).stem or f"uploaded-device-{item_id}"
+    engine = "run_junos_audit.py" if vendor == "juniper_junos" else "run_audit.py"
     cmd = [
         sys.executable,
-        str(REPO_ROOT / "engines" / "network" / "run_audit.py"),
+        str(REPO_ROOT / "engines" / "network" / engine),
         "--config", str(input_path),
         "--device-id", device_id,
         "--output", str(results_path),
-        "--format", "json",
     ]
+    if vendor == "cisco_ios":
+        cmd.extend(["--format", "json"])
     process = await asyncio.create_subprocess_exec(
         *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
@@ -359,6 +362,7 @@ async def _audit_network_upload(upload: UploadFile, framework: str, work_dir: Pa
         "device": viewed.get("device", {}),
         "summary": viewed.get("summary", {}),
         "framework": framework,
+        "vendor": vendor,
         "json_url": f"/reports/{results_path.name}",
         "html_url": f"/reports/{html_path.name}",
         "pdf_url": f"/reports/{pdf_path.name}",
@@ -380,6 +384,7 @@ def _network_results_page(items: list[dict], framework: str) -> str:
         device = item.get("device") or {}
         blocks.append(
             f'<div class="card"><h2>{name}</h2>'
+            f'<p><b>Vendor:</b> {html.escape(str(item.get("vendor", "unknown")))}</p>'
             f'<p><b>Device:</b> {html.escape(str(device.get("device_id", "unknown")))}'
             f' ({html.escape(str(device.get("hostname") or "hostname unavailable"))})</p>'
             f'<p><b>Results:</b> pass={summary.get("pass", 0)}, fail={summary.get("fail", 0)}, '
@@ -391,7 +396,7 @@ def _network_results_page(items: list[dict], framework: str) -> str:
     return PAGE_TEMPLATE.split("<body>", 1)[0] + "<body><div class=\"shell\">" + (
         '<header class="topbar"><div class="brand"><div class="brand-mark">A</div><div><div class="brand-name">Attestor</div><div class="brand-subtitle">Network security compliance</div></div></div><div class="status-pill"><span class="status-dot"></span>Audit complete</div></header>'
         '<section class="hero-copy" style="margin-bottom:22px"><div class="eyebrow">Results workspace</div><h1>Configuration findings, ready to review.</h1>'
-        f'<p>Framework view: <b>{html.escape(framework)}</b>. NIST is a mapped view of the CIS-backed deterministic checks.</p></section>'
+        f'<p>Framework view: <b>{html.escape(framework)}</b>. NIST is a mapped view of source-backed deterministic checks.</p></section>'
         + "".join(blocks)
         + '<p><a class="report-link" href="/">Back to audit console</a></p></div></body></html>'
     )
@@ -401,6 +406,7 @@ def _network_results_page(items: list[dict], framework: str) -> str:
 async def audit_network_configs(
     files: list[UploadFile] = File(...),
     framework: str = Form("all"),
+    vendor: str = Form("cisco_ios"),
 ):
     if framework not in FRAMEWORK_VIEWS:
         return HTMLResponse("Invalid framework view", status_code=400)
@@ -408,9 +414,11 @@ async def audit_network_configs(
         return HTMLResponse(
             f"Upload between 1 and {MAX_NETWORK_FILES} configuration files", status_code=400
         )
+    if vendor not in {"cisco_ios", "juniper_junos"}:
+        return HTMLResponse("Unsupported vendor", status_code=400)
     with tempfile.TemporaryDirectory(prefix="attestor-network-upload-") as temp_name:
         work_dir = Path(temp_name)
-        items = [await _audit_network_upload(upload, framework, work_dir) for upload in files]
+        items = [await _audit_network_upload(upload, framework, vendor, work_dir) for upload in files]
     return HTMLResponse(_network_results_page(items, framework))
 
 

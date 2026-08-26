@@ -1,0 +1,18 @@
+id: "1.2"
+id_namespace: "junos-baseline"
+title: "Disable FTP service"
+description: "The Junos FTP service should not be enabled in system services."
+rationale: "FTP is an insecure administrative service and should not be exposed."
+benchmark: "Juniper Junos Security Baseline (vendor documentation)"
+benchmark_version: "2026-08"
+level: 1
+profile: [network_device]
+device: {vendor: Juniper, platform: Junos, config_format: junos-hierarchical}
+automated: true
+severity: high
+checks:
+  - {type: junos_statement, path_pattern: "system/services", statement_pattern: "ftp;", op: absent}
+remediation: "Remove the FTP service from [edit system services] and use a secure file-transfer method; commit after validation."
+source: "Juniper Junos system services CLI hierarchy: https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/ssh-edit-system.html; corpus oracle tests/fixtures/network/junos/manual_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "SC-8", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

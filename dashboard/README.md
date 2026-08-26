@@ -12,19 +12,22 @@ build step).
 
 ## PS26155 network ingestion (Phase H')
 
-The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE config
-files and returns JSON, standalone HTML, and PDF reports for each file. Uploads
-are processed in an isolated temporary directory and are not retained.
+The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE or
+Juniper Junos config files and returns JSON, standalone HTML, and PDF reports
+for each file. Uploads are processed in an isolated temporary directory and
+are not retained.
 
 The console has two explicit workflows: the primary network configuration audit
 and the established local Windows/Linux VM audit. The network surface exposes
-the verified Cisco IOS scope, framework view, bulk upload, and offline report
-links without implying support for other vendors.
+the verified Cisco IOS scope and the four-control Junos subset, framework view,
+bulk upload, and offline report links. Other vendors remain roadmap.
 
 The framework selector offers CIS, NIST SP 800-53 mapped, or combined display.
-It changes presentation only: the existing deterministic CIS-backed checks are
-authoritative, and the NIST option does not claim a separate native NIST rule
-pack. Cisco IOS is the only implemented network vendor.
+It changes presentation only: deterministic source-backed checks are
+authoritative. Cisco IOS has fourteen CIS-backed controls; Juniper Junos has a
+verified four-control vendor-documentation baseline subset. NIST is a mapped
+presentation of those checks, not a separate native NIST rule pack. Other
+vendors and broader Junos coverage remain roadmap.
 
 PDF remediation remains dry-run by default from the dashboard, clearly labelled,
 and makes no provider call. The F' human-confirmation training loop remains a

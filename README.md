@@ -98,14 +98,16 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | F' | AI-assisted syntax discovery/training loop | Complete (real batch; deterministic compliance unchanged) | 51 redacted candidates classified with available Haiku model; 32 tests pass; provider-reported usage 3,408 input + 3,268 output tokens, measured cost `$0.019748`; no pre-redaction cache |
 | G' | Offline PDF report + cached AI remediation | Complete (AI advisory scope) | ReportLab PDF renders the genuine Cisco report offline; 9 failed controls received clearly labelled Haiku-generated advisory remediation and reasoning; initial batch + one targeted retry used `$0.008774`; retry reproduced the known invalid `SHA-500` phrase, proving why human review remains required |
 | H' | Minimal network ingestion dashboard | Complete (Cisco IOS scope) | FastAPI console now separates network ingestion from the established VM workflow; single/bulk genuine config uploads, CIS/NIST-mapped/combined views, JSON/HTML/PDF links; 5 dashboard tests and full 41-test suite pass |
-| G | Optional additional vendor | Deferred | Cisco IOS is the only built vendor; other vendors remain roadmap |
+| G | Optional additional vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos and other vendors remain roadmap |
 | H | Honest pitch/documentation pass | Not started | Must reflect actual delivered coverage and live DevNet pull as a presentation-day step |
 
 The verified Phase C/D/E network track is limited to source-backed Cisco IOS
 lab/reference configurations, not production backups or live sandbox captures.
 Phase E includes 14 Cisco IOS rules whose corpus oracle contains both pass and
-fail states. VTY/unused-interface checks are not claimed as verified. Cisco IOS
-is the only built network target; other vendors are roadmap only. F' AI
+fail states. VTY/unused-interface checks are not claimed as verified. The
+implemented network scope is Cisco IOS (14 source-backed CIS controls) and
+Juniper Junos (four source-backed vendor-baseline controls). Broader Junos and
+other vendors are roadmap only. F' AI
 classification is discovery metadata only: deterministic compliance results
 remain authoritative, credentials are redacted before provider use, and dry-run
 remains the default. The first real batch ran only after explicit approval.
@@ -141,10 +143,10 @@ python3 dashboard/app.py
 # Watch live pass/fail results stream in, then click the report link
 ```
 
-The same page also accepts one or more saved Cisco IOS/IOS-XE configs. Choose a
-CIS, NIST-mapped, or combined report view, upload the files, then download JSON,
-offline HTML, or PDF per device. The NIST choice is a mapped view of the
-CIS-backed checks, not a separate NIST-native rule pack. Uploaded configs are
+The same page also accepts one or more saved Cisco IOS/IOS-XE or Juniper Junos
+configs. Choose a source-backed, NIST-mapped, or combined report view, upload
+the files, then download JSON, offline HTML, or PDF per device. The NIST choice is a mapped view of the
+source-backed checks, not a separate NIST-native rule pack. Uploaded configs are
 processed locally and discarded.
 
 Requires the dependencies pinned in `requirements.txt`.

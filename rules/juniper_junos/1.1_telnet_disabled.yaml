@@ -1,0 +1,18 @@
+id: "1.1"
+id_namespace: "junos-baseline"
+title: "Disable Telnet service"
+description: "The Junos Telnet service should not be enabled in system services."
+rationale: "Telnet transmits administrative sessions without SSH transport protections."
+benchmark: "Juniper Junos Security Baseline (vendor documentation)"
+benchmark_version: "2026-08"
+level: 1
+profile: [network_device]
+device: {vendor: Juniper, platform: Junos, config_format: junos-hierarchical}
+automated: true
+severity: high
+checks:
+  - {type: junos_statement, path_pattern: "system/services", statement_pattern: "telnet;", op: absent}
+remediation: "Remove the Telnet service from [edit system services] and use SSH for administrative access; commit after validation."
+source: "Juniper Junos CLI reference, ssh and system services hierarchy: https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/ssh-edit-system.html; corpus oracle tests/fixtures/network/junos/manual_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "SC-8", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

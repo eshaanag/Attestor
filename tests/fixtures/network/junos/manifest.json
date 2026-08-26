@@ -1,0 +1,32 @@
+{
+  "fixture_policy": "source-derived redacted excerpts; no commands synthesized",
+  "retrieval_date": "2026-08-26",
+  "sources": [
+    {
+      "repository": "JNPRAutomate/ansible-junos-evpn-vxlan",
+      "commit": "1d66fc780c568b3499dfaacca34f55bffa693768",
+      "license": "MIT",
+      "url": "https://github.com/JNPRAutomate/ansible-junos-evpn-vxlan",
+      "files": {
+        "junos_fabric01.conf": {"upstream_path": "config/fabric-01.conf", "sha256": "091b2a08b077ef78b1000a9a477bc0cb1f439998c133f5b65aabb1a150078d83", "fixture_sha256": "b955a601368e008d553cd3b4ddc100ca5c28ead6282e07485f6d74ae2e7a0158"}
+      }
+    },
+    {
+      "repository": "ckishimo/juniper_display_set",
+      "commit": "e466e02bd0c44f763279e2f4e8214126c4b26bbc",
+      "license": "Apache-2.0",
+      "url": "https://github.com/ckishimo/juniper_display_set",
+      "files": {
+        "junos_example.conf": {"upstream_path": "tests/example.conf", "sha256": "a344bc15c8b3b443743d5093b7b4f10107edc1456b649c17b303b7074840c9a4", "fixture_sha256": "3fc6d1c2a5e149a562e146fefdb93809ab8bc00562e98955fac36340563f4e7f"},
+        "junos_vqfx.conf": {"upstream_path": "tests/example2.conf", "sha256": "a576e4194f7f7cdeb75b12bcbc9dd2aeb17faf1bd5cf81608e193765bc308bce", "fixture_sha256": "5eac392d8465d72694212a08ab053412977a8b1edb7c3cab01c615f8c74cc82c"},
+        "junos_wh9999.conf": {"upstream_path": "tests/example3.conf", "sha256": "b026973cb45a62009bfadbac26b89e91745d18643c6b7249e9b98e182331dcd9", "fixture_sha256": "f586d16cb0e5fedf90c7454c38e73f0c58f247ed1c726088b2dd3f517cf16432"},
+        "junos_minimal.conf": {"upstream_path": "tests/example4.conf", "sha256": "89a63e4b9f91fb9236688c26e872702ba8c783b5648fae06fc99d2a52d88803a", "fixture_sha256": "9ab85cc7783236f0b8308a1e80e9b1ee545f856e0381f9c0fa03aef7945fa54a"},
+        "junos_lldp.conf": {"upstream_path": "tests/example5.conf", "sha256": "49fd9a55d4c6474e8cd65755b30e1cdeb35858a94a5d507ea7b7447dad9039be", "fixture_sha256": "a236124ace6da9f76f3a09fc91b3343da7ac3b9128668841b776a955f2ab255e"}
+      }
+    }
+  ],
+  "redaction": {
+    "removed": ["encrypted-password statements", "SSH public keys", "IP addresses", "unrelated topology"],
+    "replacement": "Only address/port tokens in retained statements are replaced with explicit redaction markers; no security command is introduced."
+  }
+}

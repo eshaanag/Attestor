@@ -25,6 +25,7 @@ def test_dashboard_home_explains_both_audit_tracks():
     assert "Audit a local VM" in response.text
     assert "Primary workflow" in response.text
     assert response.text.count('id="level"') == 1
+    assert "Juniper Junos (4-control verified subset)" in response.text
 
 
 def test_network_single_upload_generates_json_html_and_pdf(tmp_path, monkeypatch):
@@ -96,3 +97,19 @@ def test_network_nist_view_is_explicitly_mapped(tmp_path, monkeypatch):
     assert results["benchmark"].startswith("NIST SP 800-53 mapped view")
     assert results["controls"]
     assert all(control.get("framework_mappings") for control in results["controls"])
+
+
+def test_junos_upload_uses_verified_engine_and_shared_reports(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = Path("tests/fixtures/network/junos/junos_fabric01.conf")
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "juniper_junos"},
+        files={"files": (source.name, source.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+    assert "juniper_junos" in response.text
+    assert "pass=4, fail=0, error=0" in response.text
+    results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
+    assert results["device"]["vendor"] == "Juniper"
+    assert results["target"] == "juniper_junos"
