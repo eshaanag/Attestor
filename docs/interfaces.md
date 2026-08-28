@@ -199,21 +199,27 @@ hash — the ledger stores that separately (§4).
 
 - `files`: one or more saved Cisco IOS/IOS-XE or Juniper Junos configuration
   text files.
-- `vendor`: `cisco_ios` or `juniper_junos`; selects the corresponding parser
-  and source-backed rule subset.
+- `vendor`: `cisco_ios`, `juniper_junos`, or `custom:<profile_id>`. Built-in
+  values select a source-backed adapter. A custom value selects a published
+  organization-defined exact-pattern profile.
 - `framework`: `all`, `cis`, or `nist`. This controls report presentation only;
   deterministic vendor rules and their results are unchanged. The `nist`
   option is explicitly a NIST SP 800-53 *mapped view* of source-backed checks, not
   a separate NIST-native rule pack.
 
 Each file is copied to an isolated temporary directory and passed to the
-selected vendor adapter (`run_audit.py` for Cisco or `run_junos_audit.py` for
-Junos). A successful
+selected built-in adapter (`run_audit.py` for Cisco or `run_junos_audit.py` for
+Junos) or the published custom-profile engine. A successful
 item returns links to its JSON, offline HTML, and PDF report. A failed item
 returns an explicit error and no report links. Bulk items are processed
 independently; one invalid file must not create or imply a successful result for
 another. Uploaded configuration files are not retained by the dashboard after
 processing.
+
+Custom-profile results add top-level and per-control
+`verification_status: "organization_defined"`. Framework mappings and
+remediation in those reports are operator-defined and must not be presented as
+Attestor-verified vendor or framework equivalence.
 
 ### 3b. Additive normalized security model
 
@@ -242,6 +248,45 @@ observed, and `null` means unknown from the supplied configuration. Evidence is
 limited to safe line numbers/descriptions; raw configuration text and secrets
 are never copied into this model. A future vendor adapter must emit the same
 field names only when its own syntax provides equivalent evidence.
+
+### 3c. Local product-state contract
+
+The organizational dashboard persists local product state in SQLite. The
+database is an implementation detail under `dashboard/data/` and is never part
+of a report hash or committed repository evidence.
+
+Persisted entity boundaries are:
+
+- `device_records`: the latest inventory projection and scan history for a
+  device. The stored JSON is the same dashboard record shape already used by
+  `/console`; it does not retain uploaded configuration text.
+- `training_sessions`: metadata and SHA-256 for an unfamiliar configuration
+  submitted to the training workflow. Raw configuration text is temporary and
+  is not stored in SQLite.
+- `training_patterns`: redacted, normalized patterns plus provider or
+  human-confirmed classification metadata. Unredacted lines are forbidden.
+- `training_api_runs`: per-session provider accounting: model, number of real
+  calls, input/output token counts, and calculated USD cost. It contains no
+  configuration or command text.
+- `knowledge_sources`: vendor/platform document metadata, content hash, and a
+  bounded extracted excerpt. A source is evidence for operator review, not an
+  automatically trusted compliance benchmark.
+- `vendor_profiles` and `profile_rules`: operator-defined low-code audit
+  profiles. These remain `draft` until explicitly published and are always
+  labelled organization-defined unless they later pass the built-in vendor
+  evidence gates.
+
+SQLite writes are transactional. Invalid JSON, unsupported enum values, and
+missing required identifiers fail with an explicit exception; no write may
+silently create a successful scan or verified rule claim.
+
+`POST /training/{session_id}/classify` is the only dashboard action allowed to
+request provider classifications. It operates on already-redacted patterns
+loaded from SQLite, never on the raw upload. The operator must submit a positive
+`max_calls` cap after the review page displays the uncached pattern count and
+estimated Haiku-tier cost. The request fails before any provider call when the
+API key is absent or the cap is insufficient. Provider suggestions remain
+unconfirmed discovery metadata and never alter a compliance result.
 
 **Field types (strict):**
 

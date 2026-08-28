@@ -1,96 +1,121 @@
-# Attestor for PS26155 — Architecture Brief
+# Attestor for PS26155 - Architecture Brief
 
-## Problem and product boundary
+## Product boundary
 
 PS26155 asks for an AI-assisted, vendor-agnostic network security compliance
-auditor that ingests device configurations, normalizes vendor syntax, evaluates
-security frameworks, supports human training for unfamiliar syntax, and emits
-actionable reports.
+auditor that ingests device configurations, normalizes diverse syntax, checks
+security frameworks, learns unfamiliar commands through human training, and
+produces actionable per-device reports.
 
-Attestor implements a production-oriented first slice of that platform:
+Attestor delivers a competition-ready, evidence-first prototype:
 
 - Cisco IOS/IOS-XE: 14 CIS-backed controls with NIST SP 800-53 mappings.
-- Juniper Junos: four vendor-documentation-backed baseline controls with NIST
-  mappings. This is a scoped subset, not full Junos compliance coverage.
-- Saved configuration upload for one device or a small batch.
-- Shared JSON, offline HTML, and PDF reports with device identity, severity,
-  evidence, and remediation fields.
-- AI-assisted discovery for unmatched syntax, with redaction, caching, human
-  confirmation, dry-run default, and a hard provider-call cap.
-- Optional tamper evidence through a local SHA-256 chain and Ethereum Sepolia
-  anchor. Only hashes are public; configuration and report content stay local.
+- Juniper Junos: four vendor-documentation-backed baseline controls. This is a
+  scoped subset, not full Junos benchmark coverage.
+- Single and bulk saved-configuration upload with independent failure handling.
+- Persistent local device inventory, scan history, device detail, and
+  JSON/standalone HTML/PDF exports.
+- A privacy-safe Training Studio for unfamiliar vendor syntax.
+- Published organization-defined vendor profiles that add flat exact-pattern
+  checks without backend redeployment.
+- Optional local hash chain and Ethereum Sepolia hash anchor. Blockchain is a
+  bonus integrity proof, not the compliance decision engine.
 
-Palo Alto, Fortinet, Arista, Check Point, DISA STIG, ISO/IEC 27001, broader
-Junos coverage, fleet management, and live device collection remain roadmap.
+Native DISA STIG and ISO/IEC 27001 rule packs, full coverage for the vendors in
+the PS list, multi-user authentication, and verified live SSH collection remain
+outside the current evidence boundary.
 
 ## Runtime architecture
 
 ```text
-Saved Cisco/Junos configuration
-              |
-              v
-    Dashboard ingestion boundary
-    size/count/encoding validation
-              |
-              v
- Vendor adapter and normalized model
- Cisco flat/block parser | Junos brace parser
-              |
-              v
- Schema-validated deterministic rules
- pass | fail | error | manual review
-              |
-       +------+------------------+
-       |                         |
-       v                         v
- AI discovery/remediation       Shared results.json
- redacted + cached + capped      device + controls + evidence
- advisory only                   |
-                                 +----> Offline HTML report
-                                 +----> PDF report
-                                 +----> Optional hash chain/Sepolia proof
+Saved configuration(s)
+        |
+        v
+Local ingestion boundary
+count / size / UTF-8 validation
+        |
+        +--------------------------+
+        |                          |
+        v                          v
+Built-in adapter              Published custom profile
+Cisco flat/block parser       exact redacted full-line match
+Junos brace parser            organization-defined assurance
+        |                          |
+        +------------+-------------+
+                     v
+       Deterministic fail-closed controls
+       pass | fail | error | manual review
+                     |
+                     v
+     Shared results.json + local SQLite projection
+       |             |              |
+       v             v              v
+Offline HTML     ReportLab PDF   Device inventory/history
+       |
+       +----> optional SHA-256 chain / Sepolia hash-only anchor
+
+Unfamiliar genuine config + vendor document
+                     |
+                     v
+              Training Studio
+redact -> normalize -> dry-run inventory -> cost estimate
+                     |
+         explicit capped Haiku suggestion
+                     |
+         human confirm/correct mapping
+                     |
+         draft -> sourced rules -> publish profile
 ```
 
-The deterministic rule engine is authoritative. AI runs only after deterministic
-matching and cannot turn an unknown or failed state into a pass. Unreadable,
-ambiguous, or unsupported input fails closed with an explicit error.
+The deterministic engine is authoritative. AI classification is discovery
+metadata only and cannot create or change a compliance pass. Unreadable,
+ambiguous, draft, unsourced, or unsupported input fails closed.
 
-## Extensibility contract
+## Training and privacy boundary
 
-Every vendor adapter emits the same `results.json` contract and optional
-vendor-neutral `security_model`. Adding a vendor requires four evidence gates:
+Raw uploaded configuration bytes are hashed, processed temporarily, and
+discarded. SQLite stores report projections, SHA-256 values, bounded redacted
+document excerpts, and versioned redacted command patterns. It does not store
+raw configurations or device credentials.
 
-1. Traceable configuration corpus with source, license, date, and SHA-256.
+Upload analysis makes no provider call. Before an optional AI action, the UI
+shows the uncached redacted pattern count and estimated Haiku-tier cost. The
+operator must submit a hard `max_calls` cap. Missing credentials or an
+insufficient cap stop the action before provider access. Actual calls, tokens,
+and cost are persisted. Suggestions remain unconfirmed until a human accepts or
+corrects them.
+
+Organization-defined profiles require an attached knowledge-source hash, at
+least one confirmed source-referenced rule, and explicit publication. Their
+reports say they are not Attestor-verified vendor benchmarks. Hierarchical or
+context-dependent syntax is not forced into the flat custom-profile engine.
+
+## Extensibility and evidence gates
+
+Every built-in vendor adapter emits the same results contract. Promoting a new
+vendor from organization-defined to Attestor-verified requires:
+
+1. A traceable corpus with source, license, retrieval date, and SHA-256.
 2. Source-backed controls with no invented benchmark identifiers.
 3. Parser behavior manually checked against raw configurations.
-4. Both pass and fail corpus states for every control presented as verified.
+4. Both pass and fail corpus states for every control claimed as verified.
 
-This isolates syntactic diversity in vendor adapters while preserving shared
-reporting, AI discovery, dashboard ingestion, and tamper-evidence components.
-
-## Security and privacy boundaries
-
-- Uploaded configurations are processed in a temporary local workspace and are
-  not retained by the dashboard.
-- Sensitive values are redacted before any AI provider request and are never
-  stored in classification caches.
-- Provider use is opt-in; dry-run is the default and hard call caps prevent
-  accidental spend.
-- AI-generated remediation is visibly labelled advisory and requires operator
-  review.
-- The public chain receives a SHA-256 root and predecessor root only. It cannot
-  reconstruct device configuration, findings, identity, or remediation text.
+This design handles syntactic diversity through modular adapters and a training
+loop while retaining a conservative compliance core.
 
 ## Verified evidence
 
-- 218 schema-valid rules across all retained tracks.
-- 49 automated tests passing.
-- Cisco corpus: ten source-backed configurations; all 14 included controls have
+- `76` automated tests pass.
+- `218` real rule YAMLs validate; all negative fixtures fail as expected.
+- Pinned canonical hash and ledger contracts pass unchanged.
+- Cisco: ten source-backed configs; all 14 included controls have pass and fail
+  evidence.
+- Junos: six source-derived redacted configs; all four included controls have
   pass and fail evidence.
-- Junos corpus: six source-derived redacted configurations; all four included
-  controls have pass and fail evidence.
-- Real Sepolia proof for a Cisco network report:
+- Custom-profile workflow: genuine Cisco corpus train/confirm/publish plus one
+  pass and one fail, with organization-defined labels in JSON, HTML, and PDF.
+- Real Sepolia proof for a Cisco report:
   `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`.
 
-The existing Windows 11 and Ubuntu VM audit tracks remain separate, working
-inputs to the same report and ledger infrastructure.
+Only a SHA-256 root and predecessor root are public on Sepolia. Configuration,
+device identity, findings, evidence, and remediation remain local.

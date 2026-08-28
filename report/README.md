@@ -28,3 +28,8 @@ input + 1,269 output tokens, costing `$0.007872` at the published `$1/$5`
 per-million-token rates. Provider output is prominently labelled AI-generated
 advisory material and still requires operator review; it is not a deterministic
 compliance result or a human-verified remediation procedure.
+
+Organization-defined vendor-profile reports follow a different path: they do
+not request AI remediation. Failed controls render the operator-authored
+remediation and exact source reference, with a prominent notice that the profile
+is not an Attestor-verified vendor benchmark.

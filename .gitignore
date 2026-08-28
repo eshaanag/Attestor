@@ -12,6 +12,7 @@ venv/
 node_modules/
 reference/
 ai/state/
+dashboard/data/
 reports/*.html
 !reports/sample-report.html
 reports/*.json

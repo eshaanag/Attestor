@@ -42,8 +42,14 @@ def build_pdf(
     model: str | None = None,
 ) -> dict[str, Any]:
     controls = results.get("controls", [])
+    organization_defined = results.get("verification_status") == "organization_defined"
+    ai_eligible_controls = [
+        control
+        for control in controls
+        if control.get("verification_status") != "organization_defined"
+    ]
     remediation = remediation_for_failed_controls(
-        controls,
+        ai_eligible_controls,
         RemediationStore(state_dir) if state_dir else RemediationStore(),
         real_api=real_api,
         max_calls=max_calls,
@@ -57,14 +63,20 @@ def build_pdf(
     styles.add(ParagraphStyle(name="Failed", parent=styles["BodyText"], textColor=colors.HexColor("#b42318")))
     styles.add(ParagraphStyle(name="AIWarning", parent=styles["BodyText"], fontSize=8, leading=10, textColor=colors.HexColor("#7a2e0b"), backColor=colors.HexColor("#fff4e5"), borderPadding=6, spaceAfter=10))
     doc = SimpleDocTemplate(str(output), pagesize=letter, rightMargin=.55*inch, leftMargin=.55*inch, topMargin=.5*inch, bottomMargin=.5*inch)
-    story = [
-        Paragraph("Attestor Network Compliance Report", styles["CenterTitle"]),
-        Paragraph(
+    story = [Paragraph("Attestor Network Compliance Report", styles["CenterTitle"])]
+    if organization_defined:
+        story.append(Paragraph(
+            "<b>Organization-defined profile notice:</b> These controls, framework mappings, "
+            "and remediation steps were configured by the operator. They are not an "
+            "Attestor-verified vendor benchmark.",
+            styles["AIWarning"],
+        ))
+    else:
+        story.append(Paragraph(
             "<b>AI advisory notice:</b> AI-generated remediation and reasoning require operator review. "
             "They never alter the deterministic pass/fail compliance result.",
             styles["AIWarning"],
-        ),
-    ]
+        ))
     device = results.get("device") or {}
     host = results.get("host") or {}
     device_id = escape(str(device.get("device_id", "not recorded")))
@@ -73,6 +85,11 @@ def build_pdf(
     story += [Paragraph(f"<b>Device:</b> {device_id} ({hostname})", styles["BodyText"]),
               Paragraph(f"<b>Serial:</b> {serial}", styles["BodyText"]),
               Paragraph(f"<b>Vendor / platform:</b> {escape(str(device.get('vendor', 'unknown')))} / {escape(str(device.get('platform', 'unknown')))}", styles["BodyText"]),
+              Paragraph(
+                  "<b>Verification status:</b> Organization-defined (not Attestor-verified)"
+                  if organization_defined else "<b>Verification status:</b> Attestor built-in adapter",
+                  styles["BodyText"],
+              ),
               Paragraph(f"<b>Config SHA-256:</b> {escape(str(device.get('config_sha256', 'not recorded')))}", styles["Small"]),
               Paragraph(f"<b>Runner:</b> {escape(str(host.get('hostname', 'unknown')))} | <b>Report ID:</b> {escape(str(results.get('report_id', 'unknown')))}", styles["Small"]), Spacer(1, 10)]
     summary = results.get("summary", {})
@@ -112,9 +129,20 @@ def build_pdf(
         story.append(Paragraph(f"<font color='{color}'><b>{status}</b></font>  <b>{escape(str(control.get('rule_id')))}</b> — {escape(str(control.get('title', '')))}  [severity: {escape(str(control.get('severity', 'unknown')))}]", styles["BodyText"]))
         story.append(Paragraph(f"<b>Evidence:</b> {escape(str(control.get('evidence_summary', '')))}", styles["Small"]))
         if control.get("status") == "fail":
-            item = remediation_by_rule.get(control["rule_id"], {})
-            story.append(Paragraph(f"<b>AI-GENERATED ADVISORY REMEDIATION ({escape(str(item.get('mode', 'unknown')))}):</b> {escape(str(item.get('text', 'unavailable')))}", styles["Small"]))
-            story.append(Paragraph(f"<b>AI reasoning:</b> {escape(str(item.get('reasoning', 'unavailable')))}", styles["Small"]))
+            if control.get("verification_status") == "organization_defined":
+                story.append(Paragraph(
+                    "<b>OPERATOR-DEFINED REMEDIATION:</b> "
+                    f"{escape(str(control.get('remediation', 'Manual review required')))}",
+                    styles["Small"],
+                ))
+                story.append(Paragraph(
+                    f"<b>Operator source reference:</b> {escape(str(control.get('source', 'unavailable')))}",
+                    styles["Small"],
+                ))
+            else:
+                item = remediation_by_rule.get(control["rule_id"], {})
+                story.append(Paragraph(f"<b>AI-GENERATED ADVISORY REMEDIATION ({escape(str(item.get('mode', 'unknown')))}):</b> {escape(str(item.get('text', 'unavailable')))}", styles["Small"]))
+                story.append(Paragraph(f"<b>AI reasoning:</b> {escape(str(item.get('reasoning', 'unavailable')))}", styles["Small"]))
         mappings = control.get("framework_mappings") or []
         if mappings:
             mapping_text = "; ".join(

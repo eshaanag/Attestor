@@ -45,6 +45,8 @@ h2 { font-size: 1.2rem; margin: 1.5rem 0 0.75rem; border-bottom: 1px solid var(-
 .header-grid dd { font-size: 0.95rem; }
 .incomplete-banner { background: #fff8c5; border: 2px solid #d4a72c; border-radius: 6px;
                      padding: 1rem; margin-bottom: 1.5rem; font-weight: 600; text-align: center; }
+.verification-banner { background: #fff4e5; border: 1px solid #d4a72c; border-radius: 6px;
+                       padding: 0.85rem 1rem; margin-bottom: 1.5rem; }
 .summary { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .summary-item { padding: 0.75rem 1.25rem; border-radius: 6px; border: 1px solid var(--border);
                 text-align: center; min-width: 100px; }
@@ -112,6 +114,14 @@ footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border
   </dl>
 </div>
 
+{% if verification_status == "organization_defined" %}
+<div class="verification-banner" role="note">
+  <strong>Organization-defined profile:</strong> These controls, framework mappings,
+  and remediation steps were configured by the operator. They are not an
+  Attestor-verified vendor benchmark.
+</div>
+{% endif %}
+
 {% if not run.complete %}
 <div class="incomplete-banner" role="alert" aria-label="Incomplete run warning">
   ⚠️ INCOMPLETE RUN: Only {{ run.evaluated }} of {{ run.total_controls }} controls were evaluated.
@@ -156,7 +166,7 @@ footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border
     <dt>Evidence</dt>
     <dd><div class="evidence-block">{{ control.evidence_summary }}</div></dd>
     {% if control.status in ["fail", "error"] %}
-    <dt>Remediation</dt>
+    <dt>{% if control.verification_status == "organization_defined" %}Operator-defined remediation{% else %}Remediation{% endif %}</dt>
     <dd>{{ control.remediation }}</dd>
     {% endif %}
     <dt>Source</dt>
@@ -205,6 +215,7 @@ def render(results: dict) -> str:
     return template.render(
         benchmark=results["benchmark"],
         benchmark_version=results["benchmark_version"],
+        verification_status=results.get("verification_status"),
         device=results.get("device"),
         security_model=results.get("security_model"),
         host=results["host"],

@@ -148,33 +148,48 @@ Use the full path:
 ### Start the GUI server (from your Mac)
 ```bash
 cd /Users/eshaanog/Documents/SIH/Attestor
-python3 dashboard/app.py
+python3 -m pip install -r requirements.txt
+python3 -m uvicorn dashboard.app:app --host 127.0.0.1 --port 8000
 ```
 
 ### Open in browser
 ```
-http://localhost:8000
+http://127.0.0.1:8000
 ```
 
 ### Use it:
 1. For a local OS audit, select the OS target and level, then click **Run Audit**.
-2. For a network audit, choose `Cisco IOS / IOS-XE` or `Juniper Junos`, then
-   select one or more genuine saved configuration files.
+2. For a built-in network audit, choose `Cisco IOS / IOS-XE` or `Juniper Junos`,
+   then select one or more genuine saved configuration files.
 3. Select source-backed, NIST-mapped, or combined report presentation.
 4. Click **Upload and audit**.
-5. Download the JSON, offline HTML, or PDF output for each uploaded device.
+5. Download the JSON, offline HTML, or PDF output for each uploaded device and
+   open its persistent inventory/detail record.
+6. For an unfamiliar vendor, open **Training Studio**, upload a genuine config
+   plus text/PDF vendor documentation, and review the redacted patterns.
+7. Dry-run is automatic. The page shows the estimated Haiku-tier cost before an
+   optional real suggestion action. Real suggestions require
+   `ANTHROPIC_API_KEY` and a hard `max_calls` cap.
+8. Confirm or correct a pattern, create a draft profile, add a source-referenced
+   rule, publish it, and select it from the main console upload selector.
 
 The NIST option shows documented mappings attached to source-backed checks; it
 does not claim a separate NIST-native rule pack. Uploaded configurations are
-processed locally and discarded. The dashboard does not simulate SSH or DevNet
-collection. Cisco IOS provides 14 CIS-backed controls; Junos provides four
-vendor-documentation-backed controls. Other vendors remain roadmap.
+processed locally and discarded. SQLite retains hashes, redacted patterns,
+profiles, report projections, and scan history, not raw configs. The dashboard
+does not simulate SSH or DevNet collection. Cisco IOS provides 14 CIS-backed
+controls; Junos provides four vendor-documentation-backed controls. Other
+vendors may use organization-defined flat profiles, but are not claimed as
+Attestor-verified coverage. Native DISA/ISO packs and verified live SSH
+collection remain roadmap.
 
 ### ⚠️ GUI requirements:
-- Both VMs must be running and SSH accessible
 - `python3 -m pip install -r requirements.txt` must be completed
-- Ubuntu GUI works directly (engine runs as subprocess via SSH)
-- Windows GUI works via SSH to the Windows VM
+- Saved network configuration auditing runs locally without either VM.
+- The legacy Windows/Linux live audit buttons still require their respective
+  real machines and existing engine prerequisites.
+- Optional real AI suggestions require `ANTHROPIC_API_KEY`; all other dashboard
+  workflows work offline after dependencies are installed.
 
 ### Stop the server
 Press `Ctrl+C` in the terminal
@@ -242,11 +257,11 @@ python3 ledger/anchor.py anchor --chain-file ledger/chain.jsonl
 ```bash
 cd /Users/eshaanog/Documents/SIH/Attestor
 
-# Validate all 200 rules pass schema
+# Validate all 218 current real rules and negative fixtures
 python3 tests/validate_rules.py
 
-# Run test suite (10 tests)
-python3 -m pytest tests/ -v
+# Run the full test suite (current verified gate: 76 passed)
+python3 -m pytest -q
 
 # Show help
 python3 engines/linux/run_audit.py --help

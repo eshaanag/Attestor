@@ -225,23 +225,26 @@ a browser on the local host, clicking "Run audit" runs the real engine, shows
 live pass/fail/error results as checks complete, and links to a generated report
 that opens offline.
 
-For the additive PS26155 track, the same local dashboard provides a bounded
-multipart ingestion adapter for saved Cisco IOS/IOS-XE or Juniper Junos
-configurations. It writes each upload only to a temporary directory, invokes the
-selected file-based adapter, and returns JSON plus offline HTML/PDF. Cisco has
-14 CIS-backed controls; Junos has four source-backed vendor-baseline controls.
-Framework selection is a report view over deterministic results; NIST is a
-mapped view, not a native second rule engine. No sandbox/SSH connector is
-simulated.
+For the additive PS26155 track, the same local dashboard provides bounded
+single/bulk ingestion for saved Cisco IOS/IOS-XE or Juniper Junos configs plus
+published organization-defined profiles. Uploads remain temporary; SQLite
+stores only hashes, redacted training patterns, profile metadata, report
+projections, and scan history. Cisco has 14 CIS-backed controls; Junos has four
+source-backed vendor-baseline controls. Framework selection is a report view
+over deterministic results; NIST is mapped, not a native second rule engine.
+No sandbox/SSH connector is simulated.
 
-The AI layer is advisory discovery only. It classifies genuinely unmatched,
-redacted syntax and generates cached remediation text for failed controls; it
-cannot change a deterministic pass/fail result. Dry-run is the dashboard
-default. The optional Sepolia anchor publishes only report hashes, never
-configuration content or report metadata.
+The AI layer is advisory discovery only. Training Studio classifies genuinely
+unmatched, already-redacted syntax after showing a cost estimate and enforcing
+an explicit call cap. Suggestions require human confirmation before reuse.
+Published custom profiles evaluate exact redacted full lines and remain
+organization-defined. Built-in AI remediation is cached and advisory; custom
+profiles render operator-authored remediation. AI cannot change a deterministic
+pass/fail result. The optional Sepolia anchor publishes only report hashes.
 
-**Explicitly out of current scope:** RHEL 8/9, Windows 11 Enterprise, Ubuntu
-20.04 / Server, all Level 2 controls, broader Junos controls, and all other
-network vendors. The fleet backend/dashboard remains stretch work. Sepolia
-anchoring is already proven for a Cisco network report and remains an optional
-hash-only differentiator, not the compliance engine's authority.
+**Explicitly out of current verified scope:** RHEL 8/9, Windows 11 Enterprise,
+Ubuntu 20.04/Server, all Level 2 controls, broader Junos controls, native
+DISA/ISO packs, full vendor grammars, authenticated multi-user deployment, and
+verified live SSH collection. Additional vendors can be organization-defined
+through the flat-profile path without being mislabeled as verified. Sepolia is
+an optional hash-only differentiator, not the compliance engine's authority.

@@ -72,3 +72,47 @@ def test_network_report_renders_device_and_dual_framework_mapping():
     assert "SC-8" in html
     assert "direct" in html
     assert "NIST official catalog" in html
+
+
+def test_organization_defined_html_is_explicitly_not_attestor_verified():
+    results = {
+        "attestor_format_version": "1.0",
+        "report_id": "custom-report-test",
+        "target": "custom_profile:cisco-reference",
+        "benchmark": "Organization-defined baseline: C4Geeks IOS",
+        "benchmark_version": "1",
+        "verification_status": "organization_defined",
+        "device": {
+            "device_id": "reference-router",
+            "hostname": None,
+            "vendor": "Cisco",
+            "platform": "IOS reference",
+            "roles": ["organization_defined"],
+            "config_source": "file",
+            "config_sha256": "a" * 64,
+        },
+        "host": {
+            "hostname": "runner", "os_name": "Darwin", "os_version": "test",
+            "kernel": "test", "arch": "arm64", "environment": "native",
+            "elevated": False, "user": "tester",
+        },
+        "run": {
+            "started_at": "2026-08-28T00:00:00Z",
+            "finished_at": "2026-08-28T00:00:01Z",
+            "engine": "network-custom-profile", "engine_version": "0.1.0",
+            "complete": True, "evaluated": 1, "total_controls": 1,
+        },
+        "summary": {"pass": 0, "fail": 1, "error": 0, "manual": 0, "not_applicable": 0},
+        "controls": [{
+            "rule_id": "ORG-CISCO-001", "title": "Require log timestamps", "level": 1,
+            "severity": "medium", "status": "fail", "verification_status": "organization_defined",
+            "evidence_summary": "Exact redacted pattern was not observed.",
+            "remediation": "Apply the source-documented timestamp command.",
+            "source": "SOURCES.md; C4Geeks Cisco IOS fixture", "framework_mappings": [],
+        }],
+    }
+
+    html = render(results)
+    assert "Organization-defined profile" in html
+    assert "not an\n  Attestor-verified vendor benchmark" in html
+    assert "Operator-defined remediation" in html

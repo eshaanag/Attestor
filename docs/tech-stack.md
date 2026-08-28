@@ -53,17 +53,15 @@ better option instead of rubber-stamping it.
 
 ## 4. Report generation
 
-**Use: Jinja2 → a single self-contained, offline HTML file (inline CSS + minimal
-vanilla JS).**
+**Use: Jinja2 standalone HTML plus additive ReportLab PDF.**
 - *Why:* opens on any machine with no network and no server — critical for a
   demo on conference wifi. Jinja2 is battle-tested and already in the Python
   stack. Inline everything so the file is portable and archivable alongside its
   ledger hash.
-- *Alternative: PDF* (rejected for MVP — adds a heavy renderer like
-  wkhtmltopdf/weasyprint; HTML "Print to PDF" covers the need) *or a React SPA
-  report* (rejected — overkill for a static findings document).
-- *Revisit if:* auditors demand signed PDF deliverables — add a PDF export from
-  the same HTML later.
+- *Why PDF too:* PS26155 explicitly requests per-device PDF reporting. ReportLab
+  is pure Python and produces an offline artifact without browser automation.
+- *Alternative: a React SPA report.* Rejected because a static evidence document
+  needs portability and archival, not a client application.
 
 ## 5. Ledger (tamper-evidence)
 
@@ -127,6 +125,14 @@ Files remain temporary; each vendor adapter consumes a normal filesystem path.
 Report output is JSON + standalone HTML + ReportLab PDF, with provider calls
 disabled by default. The Junos adapter is intentionally a four-control,
 vendor-documentation-backed subset; broader vendor support remains roadmap.
+
+SQLite now persists local device projections/history, training sessions,
+redacted patterns, bounded source excerpts, API usage accounting, and published
+organization-defined profiles. It does not retain raw uploaded configs.
+Training Studio uses the existing capped Haiku-tier classifier; dry-run is the
+default and provider access is explicit. The generic custom engine deliberately
+supports exact flat redacted-line semantics only, not an invented universal
+network grammar.
 
 ## 9. Deployment
 

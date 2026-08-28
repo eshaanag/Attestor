@@ -18,8 +18,10 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import hashlib
 import html
 import json
+import os
 import re
 import subprocess
 import sys
@@ -38,15 +40,33 @@ if str(REPO_ROOT) not in sys.path:
 
 from report.generate_pdf import build_pdf  # noqa: E402
 from report.generate_report import render  # noqa: E402
+from dashboard.store import DashboardStore  # noqa: E402
+from ai.network_discovery import (  # noqa: E402
+    CATEGORIES,
+    MODEL_DEFAULT,
+    ProviderError,
+    estimate_cost,
+)
+from ai.vendor_training import (  # noqa: E402
+    classify_patterns,
+    collect_training_patterns,
+    extract_knowledge_text,
+)
+from engines.network.custom import CustomProfileError, audit_custom_profile  # noqa: E402
 
 RESULTS_DIR = REPO_ROOT / "reports"
 RESULTS_DIR.mkdir(exist_ok=True)
+DASHBOARD_DATA_DIR = Path(
+    os.environ.get("ATTESTOR_DASHBOARD_DATA_DIR", REPO_ROOT / "dashboard" / "data")
+)
+STORE = DashboardStore(DASHBOARD_DATA_DIR / "attestor.db")
 
 app = FastAPI(title="Attestor Local GUI", version="0.2.0")
 MAX_NETWORK_FILES = 20
 MAX_NETWORK_CONFIG_BYTES = 2 * 1024 * 1024
+MAX_KNOWLEDGE_SOURCE_BYTES = 5 * 1024 * 1024
 FRAMEWORK_VIEWS = {"all", "cis", "nist"}
-DEVICE_RECORDS: dict[str, dict] = {}
+DEVICE_RECORDS: dict[str, dict] = STORE.load_device_records()
 
 # ─────────────────────── HTML Template (inline, self-contained) ───────────────
 
@@ -317,7 +337,120 @@ def _format_time(value: str | None) -> str:
     return value.replace("T", " ").replace("Z", " UTC")
 
 
+def _training_page(message: str = "") -> str:
+    sessions = STORE.list_training_sessions()
+    session_rows = "".join(
+        f'<a class="training-row" href="/training/{html.escape(item["session_id"])}">'
+        f'<div><strong>{html.escape(item["vendor"])} · {html.escape(item["platform"])}</strong>'
+        f'<span>{html.escape(item["filename"])} · {_format_time(item["created_at"])}</span></div>'
+        f'<div><span class="state {"good" if item["status"] == "confirmed" else "pending"}">'
+        f'{html.escape(item["status"])}</span><span>{item["confirmed_count"]}/{item["pattern_count"]} confirmed</span></div></a>'
+        for item in sessions
+    ) or '<div class="empty"><strong>No training sessions yet</strong><span>Analyze an unfamiliar genuine configuration to start.</span></div>'
+    notice = f'<div class="notice">{html.escape(message)}</div>' if message else ""
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | Training Studio</title><style>
+:root{{--ink:#102a3c;--muted:#526d7d;--green:#0d7043;--amber:#805400}}*{{box-sizing:border-box}}body{{margin:0}}.shell{{max-width:1180px;margin:auto;padding:25px 28px 60px}}.topbar,.head,.training-grid,.training-row{{display:flex;justify-content:space-between;gap:18px}}.topbar{{align-items:center;margin-bottom:28px;padding:10px 12px}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{width:38px;height:38px;display:grid;place-items:center;color:white;font-weight:800}}.brand strong,.brand small{{display:block}}.brand small,.sub,.field-help,.training-row span,.empty span{{color:var(--muted);font-size:12px}}.nav{{display:flex;gap:16px;align-items:center}}.nav a{{text-decoration:none;font-size:12px;font-weight:750}}.head{{align-items:end;margin-bottom:20px}}.eyebrow{{font-size:11px;font-weight:800;text-transform:uppercase;margin-bottom:8px}}h1{{margin:0;font-size:36px}}.sub{{margin:8px 0 0}}.training-grid{{align-items:start}}.panel{{padding:22px;flex:1}}.panel h2{{margin:0;font-size:18px}}.panel p{{line-height:1.5}}label{{display:block;font-size:12px;font-weight:750;margin:15px 0 6px}}input,select{{width:100%;padding:11px 12px}}input[type=file]{{padding:9px}}.button{{display:inline-flex;align-items:center;justify-content:center;margin-top:18px;padding:11px 15px;text-decoration:none;cursor:pointer}}.field-help{{display:block;margin-top:7px}}.notice{{padding:12px 14px;margin-bottom:16px;border:1px solid rgba(255,255,255,.75);border-radius:14px;background:rgba(255,255,255,.55);color:var(--ink)}}.training-list{{display:grid;gap:9px;margin-top:15px}}.training-row{{align-items:center;text-decoration:none;padding:13px;border-bottom:1px solid rgba(255,255,255,.48)}}.training-row strong,.training-row span{{display:block}}.training-row>div:last-child{{text-align:right}}.state{{display:inline-block!important;width:max-content;padding:4px 7px;border-radius:999px;text-transform:uppercase;font-size:9px!important;font-weight:800;margin-left:auto}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.empty{{padding:24px;text-align:center}}.empty strong,.empty span{{display:block}}@media(max-width:760px){{.training-grid,.head{{display:block}}.training-grid .panel+.panel{{margin-top:14px}}.topbar{{display:block}}.nav{{margin-top:12px;flex-wrap:wrap}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>AI-assisted vendor onboarding</small></div></div><nav class="nav"><a href="/console">Console</a><a href="/training">Training Studio</a><a href="/">Overview</a></nav></header><main><section class="head"><div><div class="eyebrow">Human-in-the-loop adaptation</div><h1>Training Studio</h1><p class="sub">Teach Attestor unfamiliar syntax without converting an AI guess into a compliance result.</p></div></section>{notice}<div class="training-grid"><section class="panel"><h2>Analyze unfamiliar syntax</h2><p class="sub">The configuration is processed temporarily. Only its SHA-256 and redacted normalized patterns are persisted.</p><form action="/api/training/analyze" method="post" enctype="multipart/form-data"><label for="training-vendor">Vendor</label><input id="training-vendor" name="vendor" placeholder="Example Networks" required maxlength="100"><label for="training-platform">Platform / OS</label><input id="training-platform" name="platform" placeholder="ExampleOS 1.x" required maxlength="100"><label for="training-config">Configuration file</label><input id="training-config" name="config_file" type="file" accept=".txt,.cfg,.conf,text/plain" required><span class="field-help">Maximum 2 MiB. UTF-8 text only.</span><label for="knowledge-file">Vendor documentation (optional)</label><input id="knowledge-file" name="knowledge_file" type="file" accept=".txt,.md,.rst,.pdf,text/plain,application/pdf"><span class="field-help">Text or PDF, maximum 5 MiB. A redacted excerpt and source hash are retained.</span><button class="button" type="submit">Analyze in dry-run mode</button></form></section><section class="panel"><h2>Review queue</h2><p class="sub">Confirmed mappings are reused for the same vendor and platform without another provider call.</p><div class="training-list">{session_rows}</div></section></div></main></div></body></html>"""
+
+
+def _training_session_page(session: dict, message: str = "") -> str:
+    pattern_rows = []
+    for item in session.get("patterns", []):
+        category_options = "".join(
+            f'<option value="{category}" {"selected" if category == item["category"] else ""}>{category}</option>'
+            for category in CATEGORIES
+        )
+        state = "Confirmed" if item["confirmed"] else "Review required"
+        form = "" if item["structural"] else f'''<form class="confirm-form" action="/training/{html.escape(session["session_id"])}/patterns/{html.escape(item["pattern_hash"])}/confirm" method="post"><select name="category" aria-label="Security category">{category_options}</select><input name="note" value="{html.escape(item.get("note", ""))}" placeholder="Evidence or correction note" maxlength="500"><button class="button" type="submit">Confirm mapping</button></form>'''
+        pattern_rows.append(
+            f'<article class="pattern"><div class="pattern-head"><div><strong>{html.escape(item["pattern"])}</strong>'
+            f'<span>{item["occurrence_count"]} occurrence(s) · {html.escape(item["source"])} · {html.escape(item["mode"])}</span></div>'
+            f'<span class="state {"good" if item["confirmed"] else "pending"}">{state}</span></div>'
+            f'<p>{html.escape(item["reasoning"])}</p>{form}</article>'
+        )
+    notice = f'<div class="notice">{html.escape(message)}</div>' if message else ""
+    source_note = "Vendor document attached" if session.get("source_id") else "No vendor document attached"
+    ai_candidates = [
+        item for item in session.get("patterns", [])
+        if not item["structural"]
+        and not item["confirmed"]
+        and item.get("source") not in {"provider", "human_confirmed"}
+    ]
+    estimate = estimate_cost(len(ai_candidates))
+    api_runs = session.get("api_runs", [])
+    total_calls = sum(int(item.get("call_count", 0)) for item in api_runs)
+    total_cost = sum(float(item.get("cost_usd", 0.0)) for item in api_runs)
+    api_panel = ""
+    if ai_candidates:
+        key_state = "API key configured" if os.environ.get("ANTHROPIC_API_KEY") else "API key not configured"
+        api_panel = f'''<section class="pattern"><h2>AI suggestion budget</h2><p>{len(ai_candidates)} redacted, unconfirmed pattern(s) are eligible. Estimated Haiku-tier cost: <strong>${estimate["estimated_usd"]:.4f}</strong> ({estimate["input_tokens"]} input + {estimate["output_tokens"]} output tokens). {key_state}.</p><p>No raw configuration is available to this action. Suggestions remain unconfirmed until a human accepts or corrects them.</p><form class="confirm-form" action="/training/{html.escape(session["session_id"])}/classify" method="post"><input name="max_calls" type="number" min="1" max="200" value="{len(ai_candidates)}" required aria-label="Maximum provider calls"><button class="button" type="submit">Run budget-capped AI suggestions</button></form></section>'''
+    elif api_runs:
+        api_panel = f'''<section class="pattern"><h2>AI suggestion accounting</h2><p>No uncached patterns remain. Recorded real calls: <strong>{total_calls}</strong>; recorded cost: <strong>${total_cost:.6f}</strong>. Human confirmation is still required.</p></section>'''
+    profile_form = ""
+    if session.get("source_id"):
+        profile_form = f'''<section class="pattern"><h2>Create a reusable vendor profile</h2><p>Creates an organization-defined draft. It cannot be audited until at least one confirmed, source-referenced rule is added and the profile is explicitly published.</p><form class="confirm-form" action="/training/{html.escape(session["session_id"])}/profiles" method="post"><input name="name" placeholder="Organization baseline name" required maxlength="120"><button class="button" type="submit">Create draft profile</button></form></section>'''
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | Training review</title><style>
+:root{{--ink:#102a3c;--muted:#526d7d;--green:#0d7043;--amber:#805400}}*{{box-sizing:border-box}}body{{margin:0}}.shell{{max-width:1120px;margin:auto;padding:25px 28px 60px}}.topbar,.pattern-head,.confirm-form{{display:flex;justify-content:space-between;gap:14px}}.topbar{{align-items:center;margin-bottom:26px;padding:10px 12px}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{width:38px;height:38px;display:grid;place-items:center;color:white;font-weight:800}}.brand strong,.brand small,.pattern strong,.pattern span{{display:block}}.brand small,.muted,.pattern span,.pattern p{{color:var(--muted);font-size:12px}}.nav{{display:flex;gap:16px}}.nav a{{text-decoration:none;font-size:12px;font-weight:750}}h1{{margin:6px 0;font-size:34px}}.eyebrow{{font-size:11px;font-weight:800;text-transform:uppercase}}.summary-strip{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}}.metric{{padding:14px}}.metric strong,.metric span{{display:block}}.metric strong{{font-size:20px}}.metric span{{color:var(--muted);font-size:10px;text-transform:uppercase}}.notice{{padding:12px 14px;margin:15px 0;border-radius:14px;background:rgba(255,255,255,.55)}}.pattern-list{{display:grid;gap:12px}}.pattern{{padding:18px;border-radius:20px;background:rgba(238,251,255,.58);border:1px solid rgba(255,255,255,.76);box-shadow:0 20px 48px rgba(0,38,105,.14);backdrop-filter:blur(24px) saturate(160%)}}.pattern strong{{overflow-wrap:anywhere}}.pattern p{{margin:9px 0 0}}.state{{display:inline-block!important;width:max-content;height:max-content;padding:5px 8px;border-radius:999px;text-transform:uppercase;font-size:9px!important;font-weight:800}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.confirm-form{{margin-top:13px;align-items:center}}.confirm-form select{{flex:0 0 180px}}.confirm-form input{{flex:1}}input,select{{min-width:0;padding:10px 11px}}.button{{padding:10px 13px;cursor:pointer}}@media(max-width:720px){{.topbar,.pattern-head,.confirm-form{{display:block}}.nav{{margin-top:12px;flex-wrap:wrap}}.summary-strip{{grid-template-columns:1fr}}.confirm-form>*{{width:100%;margin-top:8px}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Training review</small></div></div><nav class="nav"><a href="/training">All sessions</a><a href="/profiles">Vendor profiles</a><a href="/console">Console</a></nav></header><main><div class="eyebrow">Unfamiliar syntax review</div><h1>{html.escape(session["vendor"])} · {html.escape(session["platform"])}</h1><p class="muted">{html.escape(session["filename"])} · {source_note} · status {html.escape(session["status"])}</p>{notice}<section class="summary-strip"><div class="metric"><strong>{len(session.get("patterns", []))}</strong><span>Unique redacted patterns</span></div><div class="metric"><strong>{sum(1 for item in session.get("patterns", []) if item["confirmed"])}</strong><span>Confirmed or structural</span></div><div class="metric"><strong>0</strong><span>Compliance results changed</span></div></section><section class="pattern-list">{api_panel}{profile_form}{''.join(pattern_rows)}</section></main></div></body></html>"""
+
+
+def _profiles_page(message: str = "") -> str:
+    profiles = STORE.list_vendor_profiles()
+    rows = "".join(
+        f'<a class="profile" href="/profiles/{html.escape(item["profile_id"])}"><div><strong>{html.escape(item["name"])}</strong><span>{html.escape(item["vendor"])} · {html.escape(item["platform"])}</span></div><div><span class="state {"good" if item["status"] == "published" else "pending"}">{html.escape(item["status"])}</span><span>{item["rule_count"]} rule(s)</span></div></a>'
+        for item in profiles
+    ) or '<div class="empty"><strong>No vendor profiles</strong><span>Create one from a training session with an attached source document.</span></div>'
+    notice = f'<div class="notice">{html.escape(message)}</div>' if message else ""
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | Vendor profiles</title><style>
+:root{{--muted:#526d7d;--green:#0d7043;--amber:#805400}}*{{box-sizing:border-box}}body{{margin:0}}.shell{{max-width:1020px;margin:auto;padding:25px 28px 60px}}.topbar,.profile{{display:flex;justify-content:space-between;gap:16px}}.topbar{{align-items:center;padding:10px 12px;margin-bottom:28px}}.brand{{display:flex;gap:11px;align-items:center}}.mark{{width:38px;height:38px;display:grid;place-items:center;color:white;font-weight:800}}.brand strong,.brand small,.profile strong,.profile span{{display:block}}.brand small,.sub,.profile span,.empty span{{font-size:12px;color:var(--muted)}}.nav{{display:flex;gap:16px}}.nav a{{text-decoration:none;font-size:12px;font-weight:750}}h1{{font-size:36px;margin:5px 0}}.eyebrow{{font-size:11px;font-weight:800;text-transform:uppercase}}.panel{{padding:20px;margin-top:20px}}.profile{{align-items:center;padding:16px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45)}}.profile>div:last-child{{text-align:right}}.state{{display:inline-block!important;width:max-content;margin-left:auto;padding:5px 8px;border-radius:999px;text-transform:uppercase;font-size:9px!important;font-weight:800}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.notice{{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.55)}}.empty{{padding:30px;text-align:center}}.empty strong,.empty span{{display:block}}@media(max-width:620px){{.topbar,.profile{{display:block}}.nav{{margin-top:12px;flex-wrap:wrap}}.profile>div:last-child{{text-align:left;margin-top:8px}}.state{{margin-left:0}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Organization-defined adapters</small></div></div><nav class="nav"><a href="/training">Training Studio</a><a href="/console">Console</a></nav></header><main><div class="eyebrow">Low-code vendor onboarding</div><h1>Vendor profiles</h1><p class="sub">Published profiles can audit exact redacted line patterns. They remain organization-defined, not Attestor-verified vendor benchmarks.</p>{notice}<section class="panel">{rows}</section></main></div></body></html>"""
+
+
+def _profile_page(profile: dict, message: str = "") -> str:
+    confirmed = STORE.list_confirmed_patterns(profile["vendor"], profile["platform"])
+    used_hashes = {rule["pattern_hash"] for rule in profile.get("rules", [])}
+    options = "".join(
+        f'<option value="{html.escape(item["pattern_hash"])}">{html.escape(item["pattern"])} · {html.escape(item["category"])}</option>'
+        for item in confirmed if item["pattern_hash"] not in used_hashes
+    )
+    rule_rows = "".join(
+        f'<article class="rule"><div><strong>{html.escape(rule["title"])}</strong><span>{html.escape(rule["category"])} · secure when {html.escape(rule["secure_when"])} · {html.escape(rule["severity"])} severity</span></div><code>{html.escape(rule["pattern"])}</code><p>{html.escape(rule["source_reference"])}</p></article>'
+        for rule in profile.get("rules", [])
+    ) or '<div class="empty">No rules yet. Add a confirmed pattern below.</div>'
+    notice = f'<div class="notice">{html.escape(message)}</div>' if message else ""
+    editable = profile["status"] == "draft"
+    rule_form = ""
+    publish_form = ""
+    if editable and options:
+        rule_form = f'''<section class="panel"><h2>Add a confirmed pattern rule</h2><form action="/profiles/{html.escape(profile["profile_id"])}/rules" method="post"><label>Confirmed pattern</label><select name="pattern_hash" required>{options}</select><label>Control title</label><input name="title" required maxlength="160"><div class="two"><div><label>Secure when</label><select name="secure_when"><option value="present">Pattern is present</option><option value="absent">Pattern is absent</option></select></div><div><label>Severity</label><select name="severity"><option>low</option><option selected>medium</option><option>high</option></select></div></div><div class="two"><div><label>Framework</label><select name="framework"><option value="Organization baseline">Organization baseline</option><option value="CIS Benchmark">CIS Benchmark (operator mapping)</option><option value="NIST SP 800-53">NIST SP 800-53 (operator mapping)</option><option value="DISA STIG">DISA STIG (operator mapping)</option><option value="ISO/IEC 27001">ISO/IEC 27001 (operator mapping)</option></select></div><div><label>Control ID</label><input name="framework_control_id" placeholder="e.g. internal LOG-1" maxlength="80"></div></div><label>Exact source reference</label><input name="source_reference" required maxlength="500" placeholder="Document title, version, section/page"><label>Remediation</label><textarea name="remediation" required maxlength="2000"></textarea><button class="button" type="submit">Add organization-defined rule</button></form></section>'''
+    if editable and profile.get("rules"):
+        publish_form = f'''<form action="/profiles/{html.escape(profile["profile_id"])}/publish" method="post"><button class="button" type="submit">Publish profile for auditing</button></form>'''
+    audit_form = ""
+    if profile["status"] == "published":
+        audit_form = f'''<section class="panel"><h2>Audit with this profile</h2><p>Each uploaded configuration is processed independently and receives JSON, HTML, and PDF output.</p><form action="/api/custom/audit" method="post" enctype="multipart/form-data"><input type="hidden" name="profile_id" value="{html.escape(profile["profile_id"])}"><label>Configuration files</label><input type="file" name="files" accept=".txt,.cfg,.conf,text/plain" multiple required><button class="button" type="submit">Run organization-defined audit</button></form></section>'''
+    source = profile.get("source") or {}
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | {html.escape(profile["name"])}</title><style>
+:root{{--muted:#526d7d;--green:#0d7043;--amber:#805400}}*{{box-sizing:border-box}}body{{margin:0}}.shell{{max-width:1080px;margin:auto;padding:25px 28px 60px}}.topbar,.head,.two{{display:flex;justify-content:space-between;gap:16px}}.topbar{{align-items:center;padding:10px 12px;margin-bottom:26px}}.brand{{display:flex;gap:11px;align-items:center}}.mark{{width:38px;height:38px;display:grid;place-items:center;color:white;font-weight:800}}.brand strong,.brand small{{display:block}}.brand small,.muted,.rule span,.rule p,.panel p{{font-size:12px;color:var(--muted)}}.nav{{display:flex;gap:16px}}.nav a{{text-decoration:none;font-size:12px;font-weight:750}}.head{{align-items:end}}h1{{font-size:34px;margin:5px 0}}.eyebrow{{font-size:11px;text-transform:uppercase;font-weight:800}}.state{{display:inline-block;padding:6px 9px;border-radius:999px;text-transform:uppercase;font-size:9px;font-weight:800}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.panel{{padding:20px;margin-top:15px}}.panel h2{{margin-top:0}}.rule{{padding:15px 0;border-bottom:1px solid rgba(255,255,255,.48)}}.rule strong,.rule span,.rule code{{display:block}}.rule code{{margin:9px 0;overflow-wrap:anywhere}}label{{display:block;font-size:12px;font-weight:750;margin:13px 0 6px}}input,select,textarea{{width:100%;padding:10px 11px}}textarea{{min-height:100px;resize:vertical}}.two>div{{flex:1}}.button{{display:inline-flex;margin-top:16px;padding:11px 14px;cursor:pointer}}.notice{{padding:12px 14px;margin:14px 0;border-radius:14px;background:rgba(255,255,255,.55)}}.empty{{padding:18px;color:var(--muted)}}@media(max-width:700px){{.topbar,.head,.two{{display:block}}.nav{{margin-top:12px;flex-wrap:wrap}}.head .state{{margin-top:10px}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Custom vendor profile</small></div></div><nav class="nav"><a href="/profiles">All profiles</a><a href="/training">Training Studio</a><a href="/console">Console</a></nav></header><main><section class="head"><div><div class="eyebrow">Organization-defined flat-pattern adapter</div><h1>{html.escape(profile["name"])}</h1><p class="muted">{html.escape(profile["vendor"])} · {html.escape(profile["platform"])} · source {html.escape(source.get("filename", "unavailable"))}</p></div><span class="state {"good" if profile["status"] == "published" else "pending"}">{html.escape(profile["status"])}</span></section>{notice}<section class="panel"><h2>Rules</h2>{rule_rows}{publish_form}</section>{rule_form}{audit_form}</main></div></body></html>"""
+
+
 def _console_page(search: str = "", vendor: str = "all", status: str = "all") -> str:
+    published_profiles = [
+        profile for profile in STORE.list_vendor_profiles()
+        if profile["status"] == "published"
+    ]
+    custom_upload_options = "".join(
+        f'<option value="custom:{html.escape(profile["profile_id"])}">'
+        f'{html.escape(profile["name"])} ({html.escape(profile["vendor"])} · '
+        f'{html.escape(profile["platform"])}) — organization-defined</option>'
+        for profile in published_profiles
+    )
+    custom_filter_options = "".join(
+        f'<option value="custom:{html.escape(profile["profile_id"])}" '
+        f'{"selected" if vendor == f"custom:{profile["profile_id"]}" else ""}>'
+        f'{html.escape(profile["name"])}</option>'
+        for profile in published_profiles
+    )
     records = list(DEVICE_RECORDS.values())
     if search:
         needle = search.casefold()
@@ -344,7 +477,11 @@ def _console_page(search: str = "", vendor: str = "all", status: str = "all") ->
         badge_class = "good" if status_name == "complete" else "bad" if status_name in {"failed", "error"} else "pending"
         score_total = sum(summary.values())
         score = round(summary.get("pass", 0) * 100 / score_total) if score_total else 0
-        vendor_initial = "J" if record.get("vendor_key") == "juniper_junos" else "C"
+        vendor_initial = (
+            "J" if record.get("vendor_key") == "juniper_junos"
+            else "O" if str(record.get("vendor_key", "")).startswith("custom:")
+            else "C"
+        )
         rows.append(
             f'<a class="device-row" href="/console/devices/{html.escape(record["record_id"])}">'
             f'<div class="device-identity"><span class="device-icon">{vendor_initial}</span><div><strong>{html.escape(str(record.get("device_id", "Unknown device")))}</strong><span>{html.escape(str(record.get("vendor", "Unknown")))} · {html.escape(str(record.get("platform", "")))}</span></div></div>'
@@ -355,7 +492,7 @@ def _console_page(search: str = "", vendor: str = "all", status: str = "all") ->
     device_rows = "".join(rows) or '<div class="empty"><div class="empty-icon">+</div><strong>No devices in this view</strong><span>Upload a genuine configuration to create the first auditable device record.</span><a href="#upload">Add configuration</a></div>'
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | Audit console</title><style>
 :root{{--ink:#10212b;--muted:#657782;--line:#d8e4e8;--canvas:#f4f9fa;--surface:#fff;--blue:#0b6b8f;--teal:#16a5a0;--green:#18794e;--red:#b42318;--amber:#976c00}}*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 0%,rgba(22,165,160,.14),transparent 31%),linear-gradient(145deg,#edf7f8,#f8fbfc 51%,#eaf3f5);background-attachment:fixed}}body:before{{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 70%)}}.shell{{max-width:1340px;margin:auto;padding:24px 30px 64px;position:relative;z-index:1}}.topbar,.metric,.upload,.device-list{{border:1px solid rgba(255,255,255,.84);box-shadow:0 16px 40px rgba(38,76,89,.08),inset 0 1px 0 rgba(255,255,255,.95);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%)}}.topbar{{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:14px;margin-bottom:25px;background:rgba(255,255,255,.5)}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{display:grid;place-items:center;width:39px;height:39px;border-radius:10px;background:rgba(16,33,43,.92);color:#fff;font-weight:800;box-shadow:0 8px 22px rgba(16,33,43,.2),inset 0 1px 0 rgba(255,255,255,.24)}}.brand strong{{display:block;font-size:17px}}.brand small,.sub,.device-row span,.metric small{{color:var(--muted);font-size:11px}}.nav{{display:flex;gap:19px;align-items:center}}.nav a{{color:var(--muted);font-size:13px;text-decoration:none}}.nav .active{{color:var(--ink);font-weight:750}}.workspace-head{{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}}.eyebrow{{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;margin-bottom:9px}}h1{{font-size:34px;line-height:1.1}}.sub{{display:block;font-size:13px;margin-top:8px}}.top-actions,.filters{{display:flex;gap:9px;flex-wrap:wrap}}.button{{border:1px solid rgba(255,255,255,.25);border-radius:8px;background:rgba(16,33,43,.92);color:#fff;padding:11px 14px;font:inherit;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(16,33,43,.15),inset 0 1px 0 rgba(255,255,255,.2)}}.button.alt{{background:rgba(255,255,255,.58);border-color:rgba(255,255,255,.9);color:var(--ink)}}.overview{{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.7fr);gap:14px;margin-bottom:14px}}.metrics{{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}}.metric{{position:relative;overflow:hidden;background:rgba(255,255,255,.58);border-radius:10px;padding:17px;min-height:105px}}.metric strong{{font-size:28px;display:block;font-variant-numeric:tabular-nums}}.metric span{{display:block;color:var(--muted);font-size:10px;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}}.metric small{{display:block;margin-top:11px}}.metric.good strong{{color:var(--green)}}.metric.bad strong{{color:var(--red)}}.network-card{{position:relative;overflow:hidden;background:rgba(16,33,43,.92);color:#fff;border-radius:10px;padding:17px;min-height:105px;box-shadow:0 16px 36px rgba(16,33,43,.2),inset 0 1px 0 rgba(255,255,255,.22)}}.network-card strong{{display:block;font-size:14px}}.network-card span{{display:block;color:#b9d1d8;font-size:11px;margin-top:5px;max-width:190px}}.network-nodes{{position:absolute;right:21px;bottom:18px;display:flex;gap:18px;align-items:center}}.network-nodes i{{display:block;width:9px;height:9px;background:var(--teal);border-radius:50%;box-shadow:0 0 0 5px rgba(22,165,160,.16)}}.network-nodes i:nth-child(2){{width:15px;height:15px;background:#fff;box-shadow:0 0 0 6px rgba(255,255,255,.12)}}.upload{{background:rgba(255,255,255,.58);border-radius:10px;padding:20px;margin-bottom:14px}}.upload-header,.inventory-head{{display:flex;justify-content:space-between;align-items:start;gap:20px}}.upload h2,.inventory-head h2{{font-size:17px}}.upload p,.inventory-head p{{color:var(--muted);font-size:12px;margin-top:5px}}.scope-chip{{background:rgba(222,247,248,.72);border:1px solid rgba(255,255,255,.82);color:var(--blue);border-radius:999px;padding:6px 9px;font-size:10px;font-weight:800;white-space:nowrap}}.upload-grid{{display:grid;grid-template-columns:190px 230px minmax(250px,1fr) auto;gap:10px;align-items:end;margin-top:16px}}label{{display:block;font-size:11px;font-weight:750;margin-bottom:6px}}.upload input,.upload select,.filters input,.filters select{{width:100%;border:1px solid rgba(255,255,255,.92);border-radius:7px;padding:10px 11px;font:inherit;font-size:12px;background:rgba(255,255,255,.68);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}}.upload input[type=file]{{padding:8px}}.upload-note{{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:12px}}.upload-note span:before{{content:"✓";color:var(--green);font-weight:800;margin-right:5px}}.inventory-head{{align-items:end;margin:24px 0 11px}}.filters{{align-items:center}}.filters input{{min-width:210px}}.device-list{{background:rgba(255,255,255,.58);border-radius:10px;overflow:hidden}}.list-head,.device-row{{display:grid;grid-template-columns:minmax(250px,1.45fr) 110px minmax(200px,1fr) minmax(145px,.7fr);gap:18px;align-items:center}}.list-head{{padding:11px 18px;background:rgba(248,252,253,.55);border-bottom:1px solid var(--line);color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}}.device-row{{padding:16px 18px;border-bottom:1px solid rgba(223,235,238,.8);text-decoration:none;color:inherit;transition:transform .16s ease-out,background .16s ease-out}}.device-row:last-child{{border-bottom:0}}.device-row:hover{{background:rgba(255,255,255,.5);transform:translateX(2px)}}.device-identity{{display:flex;align-items:center;gap:11px}}.device-icon{{display:grid!important;place-items:center;width:36px;height:36px;border-radius:9px;background:rgba(222,247,248,.72);border:1px solid rgba(255,255,255,.82);color:var(--blue)!important;font-size:12px!important;font-weight:850;margin:0!important}}.device-row strong{{font-size:13px;display:block}}.row-score{{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}}.row-score span{{font-size:9px;font-weight:600;text-transform:uppercase}}.row-summary{{display:flex;gap:9px;flex-wrap:wrap}}.row-summary span{{display:inline-block!important;margin:0!important}}.mini-pass{{color:var(--green)!important}}.mini-fail{{color:var(--red)!important}}.state{{display:inline-block!important;width:max-content;border-radius:999px;padding:5px 8px;font-size:9px!important;font-weight:800;text-transform:uppercase;margin:0!important}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.bad{{background:#fdecea;color:var(--red)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.last-scan{{font-size:10px!important}}.empty{{padding:46px;text-align:center;color:var(--muted);font-size:12px}}.empty-icon{{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:rgba(222,247,248,.72);color:var(--blue);font-size:21px;margin:0 auto 11px}}.empty strong,.empty span{{display:block}}.empty strong{{color:var(--ink);font-size:14px}}.empty span{{margin-top:5px}}.empty a{{display:inline-block;color:var(--blue);font-weight:750;text-decoration:none;margin-top:12px}}@media(max-width:1000px){{.overview{{grid-template-columns:1fr}}.upload-grid{{grid-template-columns:1fr 1fr}}}}@media(max-width:820px){{.metrics{{grid-template-columns:repeat(2,1fr)}}.inventory-head{{display:block}}.filters{{margin-top:12px}}.list-head{{display:none}}.device-row{{grid-template-columns:1fr 80px;gap:10px}}.row-summary{{grid-column:1/-1}}.device-row>div:last-child{{text-align:right}}}}@media(max-width:560px){{.shell{{padding:20px 16px 45px}}.workspace-head{{display:block}}.top-actions{{margin-top:16px}}.filters,.upload-grid{{display:flex;align-items:stretch;flex-direction:column}}.filters input{{width:100%;min-width:0}}.upload-header{{display:block}}.scope-chip{{display:inline-block;margin-top:10px}}}}@media(prefers-reduced-motion:reduce){{.device-row{{transition:none}}}}
-</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><nav class="nav"><a class="active" href="/console">Console</a><a href="/">Overview</a></nav></header><main><section class="workspace-head"><div><div class="eyebrow">Organization workspace / local</div><h1>Security posture operations</h1><p class="sub">Evaluate saved network state, isolate device-level findings, and produce evidence-ready reports.</p></div><div class="top-actions"><a class="button alt" href="/#coverage">Supported scope</a><a class="button" href="/console#upload">Add configuration</a></div></section><section class="overview"><div class="metrics"><div class="metric"><strong>{counts["total"]}</strong><span>Devices tracked</span><small>Current local session</small></div><div class="metric good"><strong>{counts["complete"]}</strong><span>Completed scans</span><small>Evidence available</small></div><div class="metric bad"><strong>{aggregate["fail"]}</strong><span>Failed controls</span><small>Require remediation</small></div><div class="metric"><strong>{aggregate["error"]}</strong><span>Errors requiring review</span><small>Fail-closed results</small></div></div><aside class="network-card"><strong>Verified adapter surface</strong><span>Cisco IOS / IOS-XE and a scoped Juniper Junos baseline.</span><div class="network-nodes" aria-hidden="true"><i></i><i></i><i></i></div></aside></section><section class="upload" id="upload"><div class="upload-header"><div><h2>Add network configurations</h2><p>Upload genuine saved configurations. Each file becomes an independent scan and report set.</p></div><span class="scope-chip">Up to 20 files · 2 MiB each</span></div><form class="upload-grid" action="/api/network/audit" method="post" enctype="multipart/form-data"><div><label for="vendor">Vendor adapter</label><select id="vendor" name="vendor"><option value="cisco_ios">Cisco IOS / IOS-XE</option><option value="juniper_junos">Juniper Junos</option></select></div><div><label for="framework">Framework view</label><select id="framework" name="framework"><option value="all">Source-backed + NIST mappings</option><option value="cis">Source-backed controls</option><option value="nist">NIST mapped view</option></select></div><div><label for="files">Configuration files</label><input id="files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div><button class="button" type="submit">Queue scans</button></form><div class="upload-note"><span>Processed locally</span><span>Temporary upload workspace</span><span>JSON, HTML and PDF per device</span></div></section><section class="inventory-head"><div><h2>Device inventory</h2><p>Open a device to review evidence, severity, remediation, report exports, and integrity state.</p></div><form class="filters" method="get" action="/console"><input name="search" value="{html.escape(search)}" placeholder="Search device or file" aria-label="Search device or file"><select name="vendor" aria-label="Filter by vendor"><option value="all">All vendors</option><option value="cisco_ios" {"selected" if vendor == "cisco_ios" else ""}>Cisco IOS / IOS-XE</option><option value="juniper_junos" {"selected" if vendor == "juniper_junos" else ""}>Juniper Junos</option></select><select name="status" aria-label="Filter by status"><option value="all">All statuses</option><option value="queued" {"selected" if status == "queued" else ""}>Queued</option><option value="running" {"selected" if status == "running" else ""}>Running</option><option value="complete" {"selected" if status == "complete" else ""}>Completed</option><option value="failed" {"selected" if status == "failed" else ""}>Failed</option><option value="error" {"selected" if status == "error" else ""}>Error</option></select><button class="button alt" type="submit">Filter</button></form></section><section class="device-list"><div class="list-head"><span>Device / platform</span><span>Posture</span><span>Control summary</span><span>Scan state</span></div>{device_rows}</section></main></div></body></html>"""
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><nav class="nav"><a class="active" href="/console">Console</a><a href="/training">Training Studio</a><a href="/profiles">Vendor profiles</a><a href="/">Overview</a></nav></header><main><section class="workspace-head"><div><div class="eyebrow">Organization workspace / local</div><h1>Security posture operations</h1><p class="sub">Evaluate saved network state, isolate device-level findings, and produce evidence-ready reports.</p></div><div class="top-actions"><a class="button alt" href="/profiles">Manage profiles</a><a class="button" href="/console#upload">Add configuration</a></div></section><section class="overview"><div class="metrics"><div class="metric"><strong>{counts["total"]}</strong><span>Devices tracked</span><small>Persistent local inventory</small></div><div class="metric good"><strong>{counts["complete"]}</strong><span>Completed scans</span><small>Evidence available</small></div><div class="metric bad"><strong>{aggregate["fail"]}</strong><span>Failed controls</span><small>Require remediation</small></div><div class="metric"><strong>{aggregate["error"]}</strong><span>Errors requiring review</span><small>Fail-closed results</small></div></div><aside class="network-card"><strong>Adapter surface</strong><span>Cisco IOS / IOS-XE and scoped Juniper Junos are built-in. Published low-code profiles remain organization-defined.</span><div class="network-nodes" aria-hidden="true"><i></i><i></i><i></i></div></aside></section><section class="upload" id="upload"><div class="upload-header"><div><h2>Add network configurations</h2><p>Upload genuine saved configurations. Each file becomes an independent scan and report set.</p></div><span class="scope-chip">Up to 20 files · 2 MiB each</span></div><form class="upload-grid" action="/api/network/audit" method="post" enctype="multipart/form-data"><div><label for="vendor">Vendor adapter / profile</label><select id="vendor" name="vendor"><optgroup label="Attestor built-in adapters"><option value="cisco_ios">Cisco IOS / IOS-XE</option><option value="juniper_junos">Juniper Junos</option></optgroup>{f'<optgroup label="Organization-defined profiles">{custom_upload_options}</optgroup>' if custom_upload_options else ''}</select></div><div><label for="framework">Framework view</label><select id="framework" name="framework"><option value="all">Source-backed + mapped controls</option><option value="cis">Source-backed controls</option><option value="nist">NIST mapped view</option></select></div><div><label for="files">Configuration files</label><input id="files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div><button class="button" type="submit">Queue scans</button></form><div class="upload-note"><span>Processed locally</span><span>Temporary upload workspace</span><span>JSON, HTML and PDF per device</span><span>Custom profiles are operator-defined</span></div></section><section class="inventory-head"><div><h2>Device inventory</h2><p>Open a device to review evidence, severity, remediation, report exports, and integrity state.</p></div><form class="filters" method="get" action="/console"><input name="search" value="{html.escape(search)}" placeholder="Search device or file" aria-label="Search device or file"><select name="vendor" aria-label="Filter by vendor"><option value="all">All adapters</option><option value="cisco_ios" {"selected" if vendor == "cisco_ios" else ""}>Cisco IOS / IOS-XE</option><option value="juniper_junos" {"selected" if vendor == "juniper_junos" else ""}>Juniper Junos</option>{custom_filter_options}</select><select name="status" aria-label="Filter by status"><option value="all">All statuses</option><option value="queued" {"selected" if status == "queued" else ""}>Queued</option><option value="running" {"selected" if status == "running" else ""}>Running</option><option value="complete" {"selected" if status == "complete" else ""}>Completed</option><option value="failed" {"selected" if status == "failed" else ""}>Failed</option><option value="error" {"selected" if status == "error" else ""}>Error</option></select><button class="button alt" type="submit">Filter</button></form></section><section class="device-list"><div class="list-head"><span>Device / platform</span><span>Posture</span><span>Control summary</span><span>Scan state</span></div>{device_rows}</section></main></div></body></html>"""
 
 
 def _device_detail_page(record: dict) -> str:
@@ -416,6 +553,7 @@ async def _audit_network_upload(upload: UploadFile, framework: str, vendor: str,
     display_name = _safe_upload_name(upload.filename)
     if record_id and record_id in DEVICE_RECORDS:
         DEVICE_RECORDS[record_id]["status"] = "running"
+        STORE.upsert_device_record(DEVICE_RECORDS[record_id])
     content = await upload.read(MAX_NETWORK_CONFIG_BYTES + 1)
     if not content:
         return {"record_id": record_id, "filename": display_name, "status": "error", "error": "uploaded file is empty", "vendor": vendor}
@@ -520,7 +658,7 @@ def _network_results_page(items: list[dict], framework: str) -> str:
         '<section class="hero-copy" style="margin-bottom:22px"><div class="eyebrow">Results workspace</div><h1>Configuration findings, ready to review.</h1>'
         f'<p>Framework view: <b>{html.escape(framework)}</b>. NIST is a mapped view of source-backed deterministic checks.</p></section>'
         + "".join(blocks)
-        + '<p><a class="report-link" href="/">Back to audit console</a></p></div></body></html>'
+        + '<p><a class="report-link" href="/console">Back to audit console</a></p></div></body></html>'
     )
 
 
@@ -535,6 +673,10 @@ async def audit_network_configs(
     if not files or len(files) > MAX_NETWORK_FILES:
         return HTMLResponse(
             f"Upload between 1 and {MAX_NETWORK_FILES} configuration files", status_code=400
+        )
+    if vendor.startswith("custom:"):
+        return await audit_custom_vendor_profile(
+            profile_id=vendor.removeprefix("custom:"), files=files
         )
     if vendor not in {"cisco_ios", "juniper_junos"}:
         return HTMLResponse("Unsupported vendor", status_code=400)
@@ -558,6 +700,7 @@ async def audit_network_configs(
                 "last_scan": None,
                 "chain_status": "Not chained (local report only)",
             }
+            STORE.upsert_device_record(DEVICE_RECORDS[record_id])
             queued.append((upload, record_id))
         items = [await _audit_network_upload(upload, framework, vendor, work_dir, record_id) for upload, record_id in queued]
     _record_network_items(items)
@@ -570,13 +713,22 @@ def _record_network_items(items: list[dict]) -> None:
     for item in items:
         device = item.get("device") or {}
         device_id = str(device.get("device_id") or Path(item.get("filename", "device")).stem)
+        vendor_key = item.get("vendor_key", item.get("vendor", "unknown"))
         queued_record = DEVICE_RECORDS.get(str(item.get("record_id")))
-        existing = next((record for record in DEVICE_RECORDS.values() if record is not queued_record and record.get("device_id") == device_id), None)
+        existing = next(
+            (
+                record for record in DEVICE_RECORDS.values()
+                if record is not queued_record
+                and record.get("device_id") == device_id
+                and record.get("vendor_key") == vendor_key
+            ),
+            None,
+        )
         record = existing or queued_record or {"record_id": uuid.uuid4().hex[:12], "history": []}
         record.update({
             "device_id": device_id,
             "filename": item.get("filename", "unknown"),
-            "vendor_key": item.get("vendor", "unknown"),
+            "vendor_key": vendor_key,
             "vendor": device.get("vendor") or record.get("vendor") or item.get("vendor", "unknown"),
             "platform": device.get("platform") or record.get("platform", "unknown"),
             "status": "complete" if item.get("status") == "complete" else "failed",
@@ -593,19 +745,490 @@ def _record_network_items(items: list[dict]) -> None:
         record.setdefault("history", []).append({"timestamp": now, "pass": summary.get("pass", 0), "fail": summary.get("fail", 0), "error": summary.get("error", 0)})
         if existing and queued_record:
             DEVICE_RECORDS.pop(queued_record["record_id"], None)
+            STORE.delete_device_record(queued_record["record_id"])
         DEVICE_RECORDS[record["record_id"]] = record
+        STORE.upsert_device_record(record)
 
 
 @app.get("/console", response_class=HTMLResponse)
 async def console(request: Request):
-    return HTMLResponse(_apple_glass(_console_page(request.query_params.get("search", ""), request.query_params.get("vendor", "all"), request.query_params.get("status", "all"))))
+    page = _console_page(
+        request.query_params.get("search", ""),
+        request.query_params.get("vendor", "all"),
+        request.query_params.get("status", "all"),
+    )
+    return HTMLResponse(_apple_glass(page))
+
+
+@app.get("/training", response_class=HTMLResponse)
+async def training_studio():
+    return HTMLResponse(_apple_glass(_training_page()))
+
+
+@app.post("/api/training/analyze", response_class=HTMLResponse)
+async def analyze_training_config(
+    vendor: str = Form(...),
+    platform: str = Form(...),
+    config_file: UploadFile = File(...),
+    knowledge_file: UploadFile | None = File(None),
+):
+    vendor = vendor.strip()[:100]
+    platform = platform.strip()[:100]
+    if not vendor or not platform:
+        return HTMLResponse(
+            _apple_glass(_training_page("Vendor and platform are required.")),
+            status_code=400,
+        )
+    content = await config_file.read(MAX_NETWORK_CONFIG_BYTES + 1)
+    if not content or len(content) > MAX_NETWORK_CONFIG_BYTES:
+        return HTMLResponse(
+            _apple_glass(_training_page("Configuration is empty or exceeds the 2 MiB limit.")),
+            status_code=400,
+        )
+    try:
+        config_text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        return HTMLResponse(
+            _apple_glass(_training_page("Configuration is not valid UTF-8 text.")),
+            status_code=400,
+        )
+
+    source_id = None
+    if knowledge_file and knowledge_file.filename:
+        knowledge = await knowledge_file.read(MAX_KNOWLEDGE_SOURCE_BYTES + 1)
+        if not knowledge or len(knowledge) > MAX_KNOWLEDGE_SOURCE_BYTES:
+            return HTMLResponse(
+                _apple_glass(_training_page("Knowledge source is empty or exceeds 5 MiB.")),
+                status_code=400,
+            )
+        try:
+            excerpt = extract_knowledge_text(knowledge_file.filename, knowledge)
+        except ValueError as exc:
+            return HTMLResponse(_apple_glass(_training_page(str(exc))), status_code=400)
+        if not excerpt:
+            return HTMLResponse(
+                _apple_glass(_training_page("Knowledge source contains no extractable text.")),
+                status_code=400,
+            )
+        source_id = uuid.uuid4().hex[:12]
+        STORE.add_knowledge_source({
+            "source_id": source_id,
+            "vendor": vendor,
+            "platform": platform,
+            "filename": _safe_upload_name(knowledge_file.filename),
+            "media_type": knowledge_file.content_type or "application/octet-stream",
+            "content_sha256": hashlib.sha256(knowledge).hexdigest(),
+            "excerpt": excerpt,
+        })
+
+    known_patterns = []
+    if vendor.casefold() == "cisco" and "ios" in platform.casefold():
+        from ai.network_discovery import _production_patterns
+
+        known_patterns = [
+            pattern
+            for _, pattern in _production_patterns(REPO_ROOT / "rules" / "cisco_ios")
+        ]
+    patterns = collect_training_patterns(config_text, vendor, platform, known_patterns)
+    if not patterns:
+        return HTMLResponse(
+            _apple_glass(_training_page("No unfamiliar active patterns were found.")),
+            status_code=400,
+        )
+    classified = classify_patterns(
+        patterns,
+        vendor,
+        platform,
+        STORE.find_prior_training_pattern,
+        real_api=False,
+    )
+    session_id = uuid.uuid4().hex[:12]
+    STORE.create_training_session({
+        "session_id": session_id,
+        "vendor": vendor,
+        "platform": platform,
+        "filename": _safe_upload_name(config_file.filename),
+        "config_sha256": hashlib.sha256(content).hexdigest(),
+        "source_id": source_id,
+        "status": "review",
+    })
+    STORE.save_training_patterns(session_id, classified)
+    session = STORE.get_training_session(session_id)
+    return HTMLResponse(
+        _apple_glass(
+            _training_session_page(
+                session or {}, "Dry-run analysis complete. No provider call was made."
+            )
+        )
+    )
+
+
+@app.get("/training/{session_id}", response_class=HTMLResponse)
+async def training_session(session_id: str):
+    session = STORE.get_training_session(session_id)
+    if not session:
+        return HTMLResponse("Training session not found", status_code=404)
+    return HTMLResponse(_apple_glass(_training_session_page(session)))
+
+
+@app.post(
+    "/training/{session_id}/patterns/{pattern_hash}/confirm",
+    response_class=HTMLResponse,
+)
+async def confirm_training_pattern(
+    session_id: str,
+    pattern_hash: str,
+    category: str = Form(...),
+    note: str = Form(""),
+):
+    if category not in CATEGORIES:
+        return HTMLResponse("Invalid training category", status_code=400)
+    try:
+        STORE.confirm_training_pattern(
+            session_id, pattern_hash, category, note.strip()[:500]
+        )
+    except KeyError:
+        return HTMLResponse("Training pattern not found", status_code=404)
+    session = STORE.get_training_session(session_id)
+    return HTMLResponse(
+        _apple_glass(
+            _training_session_page(
+                session or {}, "Mapping confirmed and saved for future configurations."
+            )
+        )
+    )
+
+
+@app.post("/training/{session_id}/classify", response_class=HTMLResponse)
+async def classify_training_session(session_id: str, max_calls: int = Form(...)):
+    session = STORE.get_training_session(session_id)
+    if not session:
+        return HTMLResponse("Training session not found", status_code=404)
+    if max_calls < 1 or max_calls > 200:
+        return HTMLResponse(
+            _apple_glass(_training_session_page(session, "max_calls must be between 1 and 200.")),
+            status_code=400,
+        )
+    candidates = [
+        item for item in session.get("patterns", [])
+        if not item["structural"]
+        and not item["confirmed"]
+        and item.get("source") not in {"provider", "human_confirmed"}
+    ]
+    if not candidates:
+        return HTMLResponse(
+            _apple_glass(_training_session_page(session, "No uncached patterns require provider classification."))
+        )
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return HTMLResponse(
+            _apple_glass(
+                _training_session_page(session, "real training mode requires ANTHROPIC_API_KEY")
+            ),
+            status_code=400,
+        )
+    if len(candidates) > max_calls:
+        return HTMLResponse(
+            _apple_glass(
+                _training_session_page(
+                    session,
+                    f"refusing training calls: {len(candidates)} uncached patterns exceed "
+                    f"max_calls={max_calls}",
+                )
+            ),
+            status_code=400,
+        )
+    classified = []
+    input_tokens = 0
+    output_tokens = 0
+    actual_cost = 0.0
+    try:
+        for candidate in candidates:
+            item = classify_patterns(
+                [candidate],
+                session["vendor"],
+                session["platform"],
+                STORE.find_prior_training_pattern,
+                real_api=True,
+                max_calls=1,
+                api_key=api_key,
+                model=MODEL_DEFAULT,
+            )[0]
+            classified.append(item)
+            if item.get("confirmed"):
+                STORE.confirm_training_pattern(
+                    session_id,
+                    item["pattern_hash"],
+                    item["category"],
+                    str(item.get("note", "Reused prior human confirmation"))[:500],
+                )
+                continue
+            STORE.update_training_classifications(session_id, [item])
+            usage = item.get("usage") or {}
+            call_input = int(usage.get("input_tokens", 0))
+            call_output = int(usage.get("output_tokens", 0))
+            call_cost = float(usage.get("cost_usd", 0.0))
+            input_tokens += call_input
+            output_tokens += call_output
+            actual_cost += call_cost
+            STORE.record_training_api_run({
+                "run_id": uuid.uuid4().hex[:12],
+                "session_id": session_id,
+                "model": MODEL_DEFAULT,
+                "call_count": 1,
+                "input_tokens": call_input,
+                "output_tokens": call_output,
+                "cost_usd": call_cost,
+            })
+    except (ProviderError, RuntimeError, KeyError, ValueError) as exc:
+        current = STORE.get_training_session(session_id) or session
+        return HTMLResponse(
+            _apple_glass(
+                _training_session_page(
+                    current,
+                    f"Provider batch stopped after {len(classified)} persisted result(s): {exc}",
+                )
+            ),
+            status_code=400,
+        )
+    real_results = [item for item in classified if item.get("mode") == "real-api"]
+    current = STORE.get_training_session(session_id) or session
+    return HTMLResponse(
+        _apple_glass(
+            _training_session_page(
+                current,
+                f"AI suggestions loaded: {len(real_results)} real call(s), "
+                f"{len(classified) - len(real_results)} cache reuse(s), {input_tokens} input + "
+                f"{output_tokens} output tokens, actual cost ${actual_cost:.6f}. "
+                "Human confirmation is still required.",
+            )
+        )
+    )
+
+
+@app.post("/training/{session_id}/profiles", response_class=HTMLResponse)
+async def create_profile_from_training(session_id: str, name: str = Form(...)):
+    session = STORE.get_training_session(session_id)
+    if not session:
+        return HTMLResponse("Training session not found", status_code=404)
+    if not session.get("source_id"):
+        return HTMLResponse(
+            _apple_glass(
+                _training_session_page(
+                    session, "Attach a vendor knowledge source before creating a profile."
+                )
+            ),
+            status_code=400,
+        )
+    profile_id = uuid.uuid4().hex[:12]
+    STORE.create_vendor_profile({
+        "profile_id": profile_id,
+        "name": name.strip()[:120],
+        "vendor": session["vendor"],
+        "platform": session["platform"],
+        "source_id": session["source_id"],
+        "status": "draft",
+    })
+    profile = STORE.get_vendor_profile(profile_id)
+    return HTMLResponse(
+        _apple_glass(
+            _profile_page(
+                profile or {},
+                "Draft created. Add only confirmed patterns with exact source references.",
+            )
+        )
+    )
+
+
+@app.get("/profiles", response_class=HTMLResponse)
+async def vendor_profiles():
+    return HTMLResponse(_apple_glass(_profiles_page()))
+
+
+@app.get("/profiles/{profile_id}", response_class=HTMLResponse)
+async def vendor_profile(profile_id: str):
+    profile = STORE.get_vendor_profile(profile_id)
+    if not profile:
+        return HTMLResponse("Vendor profile not found", status_code=404)
+    return HTMLResponse(_apple_glass(_profile_page(profile)))
+
+
+@app.post("/profiles/{profile_id}/rules", response_class=HTMLResponse)
+async def add_vendor_profile_rule(
+    profile_id: str,
+    pattern_hash: str = Form(...),
+    title: str = Form(...),
+    secure_when: str = Form(...),
+    severity: str = Form(...),
+    framework: str = Form("Organization baseline"),
+    framework_control_id: str = Form(""),
+    source_reference: str = Form(...),
+    remediation: str = Form(...),
+):
+    profile = STORE.get_vendor_profile(profile_id)
+    if not profile:
+        return HTMLResponse("Vendor profile not found", status_code=404)
+    candidates = {
+        item["pattern_hash"]: item
+        for item in STORE.list_confirmed_patterns(profile["vendor"], profile["platform"])
+    }
+    pattern = candidates.get(pattern_hash)
+    if not pattern:
+        return HTMLResponse("Confirmed training pattern not found", status_code=400)
+    try:
+        STORE.add_profile_rule({
+            "rule_id": f"ORG-{profile_id[:6].upper()}-{len(profile.get('rules', [])) + 1:03d}",
+            "profile_id": profile_id,
+            "title": title.strip()[:160],
+            "category": pattern["category"],
+            "pattern_hash": pattern_hash,
+            "pattern": pattern["pattern"],
+            "secure_when": secure_when,
+            "severity": severity,
+            "framework": framework.strip()[:100],
+            "framework_control_id": framework_control_id.strip()[:80],
+            "source_reference": source_reference.strip()[:500],
+            "remediation": remediation.strip()[:2000],
+        })
+    except (KeyError, ValueError) as exc:
+        return HTMLResponse(_apple_glass(_profile_page(profile, str(exc))), status_code=400)
+    return HTMLResponse(
+        _apple_glass(
+            _profile_page(
+                STORE.get_vendor_profile(profile_id) or {},
+                "Organization-defined rule added. It is not active until publication.",
+            )
+        )
+    )
+
+
+@app.post("/profiles/{profile_id}/publish", response_class=HTMLResponse)
+async def publish_vendor_profile(profile_id: str):
+    profile = STORE.get_vendor_profile(profile_id)
+    if not profile:
+        return HTMLResponse("Vendor profile not found", status_code=404)
+    try:
+        STORE.publish_vendor_profile(profile_id)
+    except (KeyError, ValueError) as exc:
+        return HTMLResponse(_apple_glass(_profile_page(profile, str(exc))), status_code=400)
+    return HTMLResponse(
+        _apple_glass(
+            _profile_page(
+                STORE.get_vendor_profile(profile_id) or {},
+                "Profile published as organization-defined and is ready for audit.",
+            )
+        )
+    )
+
+
+@app.post("/api/custom/audit", response_class=HTMLResponse)
+async def audit_custom_vendor_profile(
+    profile_id: str = Form(...),
+    files: list[UploadFile] = File(...),
+):
+    profile = STORE.get_vendor_profile(profile_id)
+    if not profile:
+        return HTMLResponse("Vendor profile not found", status_code=404)
+    if not files or len(files) > MAX_NETWORK_FILES:
+        return HTMLResponse(
+            f"Upload between 1 and {MAX_NETWORK_FILES} configuration files", status_code=400
+        )
+    items = []
+    for upload in files:
+        record_id = uuid.uuid4().hex[:12]
+        display_name = _safe_upload_name(upload.filename)
+        DEVICE_RECORDS[record_id] = {
+            "record_id": record_id,
+            "device_id": Path(display_name).stem,
+            "filename": display_name,
+            "vendor_key": f"custom:{profile_id}",
+            "vendor": profile["vendor"],
+            "platform": profile["platform"],
+            "status": "queued",
+            "summary": {},
+            "controls": [],
+            "history": [],
+            "last_scan": None,
+            "chain_status": "Not chained (local report only)",
+        }
+        STORE.upsert_device_record(DEVICE_RECORDS[record_id])
+        DEVICE_RECORDS[record_id]["status"] = "running"
+        STORE.upsert_device_record(DEVICE_RECORDS[record_id])
+        content = await upload.read(MAX_NETWORK_CONFIG_BYTES + 1)
+        if not content or len(content) > MAX_NETWORK_CONFIG_BYTES:
+            items.append({
+                "record_id": record_id,
+                "filename": display_name,
+                "status": "error",
+                "error": "configuration is empty or exceeds the 2 MiB limit",
+                "vendor": profile["vendor"],
+                "vendor_key": f"custom:{profile_id}",
+            })
+            continue
+        try:
+            config_text = content.decode("utf-8")
+        except UnicodeDecodeError:
+            items.append({
+                "record_id": record_id,
+                "filename": display_name,
+                "status": "error",
+                "error": "configuration is not valid UTF-8 text",
+                "vendor": profile["vendor"],
+                "vendor_key": f"custom:{profile_id}",
+            })
+            continue
+        try:
+            results = audit_custom_profile(
+                config_text,
+                profile,
+                device_id=Path(display_name).stem,
+                config_sha256=hashlib.sha256(content).hexdigest(),
+            )
+            item_id = uuid.uuid4().hex[:10]
+            results_path = RESULTS_DIR / f"custom_{item_id}.json"
+            html_path = RESULTS_DIR / f"custom_{item_id}.html"
+            pdf_path = RESULTS_DIR / f"custom_{item_id}.pdf"
+            results_path.write_text(
+                json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+            )
+            html_path.write_text(render(results), encoding="utf-8")
+            build_pdf(results, pdf_path, state_dir=DASHBOARD_DATA_DIR / "ai_state")
+        except (CustomProfileError, OSError, ValueError) as exc:
+            items.append({
+                "record_id": record_id,
+                "filename": display_name,
+                "status": "error",
+                "error": str(exc),
+                "vendor": profile["vendor"],
+                "vendor_key": f"custom:{profile_id}",
+            })
+            continue
+        items.append({
+            "record_id": record_id,
+            "filename": display_name,
+            "status": "complete",
+            "device": results["device"],
+            "summary": results["summary"],
+            "controls": results["controls"],
+            "framework": "organization-defined",
+            "vendor": profile["vendor"],
+            "vendor_key": f"custom:{profile_id}",
+            "json_url": f"/reports/{results_path.name}",
+            "html_url": f"/reports/{html_path.name}",
+            "pdf_url": f"/reports/{pdf_path.name}",
+        })
+    _record_network_items(items)
+    return HTMLResponse(
+        _apple_glass(_network_results_page(items, "organization-defined profile"))
+    )
 
 
 @app.get("/console/devices/{record_id}", response_class=HTMLResponse)
 async def device_detail(record_id: str):
-    record = DEVICE_RECORDS.get(record_id)
+    record = DEVICE_RECORDS.get(record_id) or STORE.get_device_record(record_id)
     if not record:
         return HTMLResponse("Device record not found", status_code=404)
+    DEVICE_RECORDS[record_id] = record
     return HTMLResponse(_apple_glass(_device_detail_page(record)))
 
 

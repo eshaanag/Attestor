@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi.testclient import TestClient
 
 import dashboard.app as dashboard
+from dashboard.store import DashboardStore
 
 
 CORPUS = Path("tests/fixtures/network/cisco_ios")
@@ -15,6 +16,8 @@ CORPUS = Path("tests/fixtures/network/cisco_ios")
 def _client(tmp_path, monkeypatch) -> TestClient:
     monkeypatch.setattr(dashboard, "RESULTS_DIR", tmp_path / "reports")
     dashboard.RESULTS_DIR.mkdir()
+    monkeypatch.setattr(dashboard, "STORE", DashboardStore(tmp_path / "attestor.db"))
+    dashboard.DEVICE_RECORDS.clear()
     return TestClient(dashboard.app)
 
 
@@ -162,3 +165,45 @@ def test_console_filters_and_missing_device_are_explicit(tmp_path, monkeypatch):
     assert filtered.status_code == 200
     assert "junos_example" in filtered.text
     assert client.get("/console/devices/missing").status_code == 404
+
+
+def test_console_inventory_survives_memory_reload(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = CORPUS / "c4geeks_snmp_syslog_router_ios152.txt"
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files={"files": (source.name, source.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+    record_id = next(iter(dashboard.DEVICE_RECORDS))
+
+    dashboard.DEVICE_RECORDS.clear()
+    restored = dashboard.STORE.load_device_records()
+    dashboard.DEVICE_RECORDS.update(restored)
+
+    console = client.get("/console")
+    detail = client.get(f"/console/devices/{record_id}")
+    assert console.status_code == 200
+    assert "c4geeks_snmp_syslog_router_ios152" in console.text
+    assert detail.status_code == 200
+    assert "Findings and evidence" in detail.text
+
+
+def test_repeat_scan_updates_one_device_history(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = CORPUS / "c4geeks_snmp_syslog_router_ios152.txt"
+    for _ in range(2):
+        response = client.post(
+            "/api/network/audit",
+            data={"framework": "all", "vendor": "cisco_ios"},
+            files={"files": (source.name, source.read_bytes(), "text/plain")},
+        )
+        assert response.status_code == 200
+
+    assert len(dashboard.DEVICE_RECORDS) == 1
+    record = next(iter(dashboard.DEVICE_RECORDS.values()))
+    assert len(record["history"]) == 2
+    detail = client.get(f'/console/devices/{record["record_id"]}')
+    assert detail.status_code == 200
+    assert detail.text.count("pass 5 · fail 9 · error 0") == 2

@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 
+from pypdf import PdfReader
+
 from report.generate_pdf import build_pdf
 from report.remediation import RemediationStore, remediation_for_failed_controls
 
@@ -29,6 +31,27 @@ def test_pdf_renders_failed_control_and_dry_run_remediation(tmp_path):
     assert result["remediations"][0]["mode"] == "dry-run"
     assert "DRY-RUN" in result["remediations"][0]["text"]
     assert "DRY-RUN" in result["remediations"][0]["reasoning"]
+
+
+def test_organization_defined_pdf_uses_operator_remediation_without_ai(tmp_path):
+    results = _results()
+    results["verification_status"] = "organization_defined"
+    results["benchmark"] = "Organization-defined baseline: C4Geeks IOS"
+    results["controls"][0]["verification_status"] = "organization_defined"
+    results["controls"][0]["source"] = "SOURCES.md; C4Geeks Cisco IOS fixture"
+    results["controls"][0]["remediation"] = "Apply the source-documented SSH configuration."
+    output = tmp_path / "organization-defined.pdf"
+
+    built = build_pdf(results, output, state_dir=tmp_path / "state")
+    text = "\n".join(page.extract_text() or "" for page in PdfReader(output).pages)
+
+    assert built["failed_controls"] == 0
+    assert built["remediations"] == []
+    assert "Organization-defined profile notice" in text
+    assert "not Attestor-verified" in text
+    assert "OPERATOR-DEFINED REMEDIATION" in text
+    assert "Apply the source-documented SSH configuration" in text
+    assert "AI-GENERATED" not in text
 
 
 def test_remediation_cache_key_is_vendor_platform_rule_and_real_entries_are_reused(tmp_path):

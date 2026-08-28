@@ -59,5 +59,11 @@ listed above; it must not be presented as full Junos compliance coverage.
 ## Other vendors
 
 Arista EOS, Palo Alto, Fortinet, Check Point, Huawei, MikroTik, and other PS
-examples remain roadmap candidates. No vendor selector or support claim should
-be added for them without the same evidence gate.
+examples remain roadmap candidates for built-in verified adapters.
+
+The Training Studio can onboard genuine unfamiliar configs and source documents
+as published organization-defined flat-pattern profiles. Those profiles appear
+in the shared console, but their results and reports are explicitly marked
+`organization_defined` and not Attestor-verified benchmark coverage. This path
+does not justify adding a vendor to the implemented list above; promotion still
+requires the same corpus, source, parser, and pass/fail evidence gate.

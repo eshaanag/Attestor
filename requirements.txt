@@ -7,3 +7,4 @@ web3==7.13.0
 python-dotenv==1.0.1
 reportlab==4.2.5
 python-multipart==0.0.32
+pypdf==6.14.2

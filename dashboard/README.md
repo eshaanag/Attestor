@@ -10,17 +10,18 @@ build step).
   view over the `backend/` collector API. Only started after Phases 0–7 are
   complete and the backend API contract is defined.
 
-## PS26155 network ingestion (Phase H')
+## PS26155 organizational ingestion
 
 The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE or
 Juniper Junos config files and returns JSON, standalone HTML, and PDF reports
 for each file. Uploads are processed in an isolated temporary directory and
 are not retained.
 
-The console has two explicit workflows: the primary network configuration audit
-and the established local Windows/Linux VM audit. The network surface exposes
-the verified Cisco IOS scope and the four-control Junos subset, framework view,
-bulk upload, and offline report links. Other vendors remain roadmap.
+The console preserves the established Windows/Linux local audit and adds a
+persistent network workspace. Built-in adapters cover the verified Cisco IOS
+scope and the four-control Junos subset. Published organization-defined profiles
+appear in the same upload selector and inventory, but are visually and
+semantically separated from Attestor-verified adapters.
 
 The framework selector offers CIS, NIST SP 800-53 mapped, or combined display.
 It changes presentation only: deterministic source-backed checks are
@@ -29,9 +30,27 @@ verified four-control vendor-documentation baseline subset. NIST is a mapped
 presentation of those checks, not a separate native NIST rule pack. Other
 vendors and broader Junos coverage remain roadmap.
 
-PDF remediation remains dry-run by default from the dashboard, clearly labelled,
-and makes no provider call. The F' human-confirmation training loop remains a
-CLI workflow in this round.
+PDF remediation remains dry-run by default for built-in adapters and makes no
+provider call. Organization-defined reports bypass AI remediation and show the
+operator-authored, source-referenced remediation instead.
+
+## Training Studio
+
+`/training` accepts an unfamiliar genuine configuration plus optional text/PDF
+vendor documentation. Raw configuration is discarded after analysis. SQLite
+stores the configuration SHA-256, a bounded redacted document excerpt, and
+versioned redacted command patterns.
+
+Upload analysis is always dry-run. The review page shows the uncached pattern
+count and estimated Haiku-tier cost before an explicit AI action. That action
+requires `ANTHROPIC_API_KEY` and a positive `max_calls` cap, refuses an
+insufficient cap before provider access, and records actual token/cost totals.
+Suggestions remain unconfirmed until a human accepts or corrects them.
+
+Confirmed patterns can become source-referenced rules in a draft vendor profile.
+Publication requires an attached knowledge source and at least one enabled rule.
+The custom engine performs exact redacted full-line matching and fails closed;
+hierarchical or ambiguous syntax must stay out of this flat-profile path.
 
 ## Organizational console
 
@@ -41,8 +60,9 @@ session: upload one or more genuine configurations, filter the inventory by
 vendor/status/search, and open any device for its compliance score, severity-
 sorted findings, evidence, remediation, scan history, and JSON/HTML/PDF links.
 
-Inventory state is intentionally local and in-memory in this release. It is not
-a fleet database or multi-user service. A failed file is recorded independently
-as failed and cannot imply a successful result for another upload. Persistent
-organizations, authentication, background jobs, and cross-session history are
-future fleet-backend work.
+Inventory, training, knowledge-source metadata, profiles, and history persist in
+local SQLite under `dashboard/data/` (gitignored). Raw configurations and
+credentials are not stored. A failed file is recorded independently and cannot
+imply success for another bulk item. Authentication, role-based access,
+background workers, and a remote multi-user fleet service remain production
+hardening work.

@@ -33,6 +33,12 @@ python3 -m ai.network_discovery confirm \
 The cache and confirmed mappings are local state and are ignored by git. A
 confirmed mapping is training-loop state, not a compliance pass/fail claim.
 
+The dashboard exposes the same safety model at `/training`: upload analysis is
+dry-run, the review page displays the uncached count and cost estimate, and an
+explicit budget-capped action operates only on already-redacted SQLite patterns.
+Actual calls/tokens/cost are recorded per session. AI suggestions remain
+unconfirmed until the operator confirms or corrects them.
+
 The first approved real batch used `claude-haiku-4-5-20251001`. Fifty-one
 successful redacted responses were checkpointed individually. Their provider-
 reported usage totaled 3,408 input tokens and 3,268 output tokens, measured at
