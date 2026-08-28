@@ -33,12 +33,13 @@ Key point: AI is an onboarding assistant, never the compliance authority.
 
 - Cisco IOS/IOS-XE: 14 CIS-backed controls with NIST SP 800-53 mappings.
 - Juniper Junos: four source-backed baseline controls.
+- Fortinet FortiOS: three source-backed management-access baseline controls.
 - Genuine traceable corpora with pass and fail evidence for every claimed rule.
 - Persistent local inventory, bulk partial-failure handling, device drill-down,
   severity/evidence/remediation, and JSON/HTML/PDF exports.
 - Training Studio: redaction, dry-run, pre-call cost, hard cap, cache, human
   confirmation, source attachment, draft/publish lifecycle.
-- 76 automated tests; 218 validated rule files.
+- 103 automated tests; 221 validated rule files.
 
 Scope label: custom profiles are organization-defined, not Attestor-verified.
 

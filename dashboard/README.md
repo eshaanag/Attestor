@@ -12,8 +12,8 @@ build step).
 
 ## PS26155 organizational ingestion
 
-The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE or
-Juniper Junos config files and returns JSON, standalone HTML, PDF, and an
+The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE,
+Juniper Junos, or Fortinet FortiOS config files and returns JSON, standalone HTML, PDF, and an
 evidence-bundle ZIP for each successful file. The ZIP contains the three report
 formats plus a hash/provenance manifest; it never contains the raw uploaded
 configuration file. Because report evidence may contain matched command text,
@@ -29,16 +29,17 @@ have a verified hardware parser.
 
 The console preserves the established Windows/Linux local audit and adds a
 persistent network workspace. Built-in adapters cover the verified Cisco IOS
-scope and the four-control Junos subset. Published organization-defined profiles
+scope, the four-control Junos subset, and the three-control FortiOS subset. Published organization-defined profiles
 appear in the same upload selector and inventory, but are visually and
 semantically separated from Attestor-verified adapters.
 
 The framework selector offers CIS, NIST SP 800-53 mapped, or combined display.
 It changes presentation only: deterministic source-backed checks are
 authoritative. Cisco IOS has fourteen CIS-backed controls; Juniper Junos has a
-verified four-control vendor-documentation baseline subset. NIST is a mapped
+verified four-control vendor-documentation baseline subset; FortiOS has a
+verified three-control vendor-documentation baseline subset. NIST is a mapped
 presentation of those checks, not a separate native NIST rule pack. Other
-vendors and broader Junos coverage remain roadmap.
+vendors and broader Junos/FortiOS coverage remain roadmap.
 
 PDF remediation remains dry-run by default for built-in adapters and makes no
 provider call. Organization-defined reports bypass AI remediation and show the

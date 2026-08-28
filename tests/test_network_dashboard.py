@@ -33,6 +33,7 @@ def test_dashboard_home_explains_both_audit_tracks():
     assert "Windows 11 Standalone" in response.text
     assert "Cisco IOS / IOS-XE" in response.text
     assert "Juniper Junos" in response.text
+    assert "Fortinet FortiOS" in response.text
     assert "Hash-only proof" in response.text
 
 
@@ -161,6 +162,38 @@ def test_junos_upload_uses_verified_engine_and_shared_reports(tmp_path, monkeypa
     results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
     assert results["device"]["vendor"] == "Juniper"
     assert results["target"] == "juniper_junos"
+
+
+def test_fortios_upload_uses_verified_engine_and_shared_reports(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = Path("tests/fixtures/network/fortios/oxidized_fortigate_91g_7.4.7.txt")
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "fortinet_fortios"},
+        files={"files": (source.name, source.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+    assert "fortinet_fortios" in response.text
+    assert "pass=2, fail=1, error=0" in response.text
+    results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
+    assert results["device"]["vendor"] == "Fortinet"
+    assert results["target"] == "fortinet_fortios"
+    assert next(dashboard.RESULTS_DIR.glob("*.pdf")).read_bytes().startswith(b"%PDF")
+
+
+def test_fortios_rejects_unimplemented_companion_facts(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = Path("tests/fixtures/network/fortios/oxidized_fortigate_91g_7.4.7.txt")
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "fortinet_fortios"},
+        files=[
+            ("files", (source.name, source.read_bytes(), "text/plain")),
+            ("facts_files", ("facts.txt", b"not implemented", "text/plain")),
+        ],
+    )
+    assert response.status_code == 400
+    assert "not implemented for the scoped FortiOS adapter" in response.text
 
 
 def test_dashboard_pairs_cisco_config_and_show_version_into_all_reports(tmp_path, monkeypatch):

@@ -6,8 +6,8 @@ Nothing is marked done here without repository evidence.
 
 | Requirement | Delivered scope | Status and evidence |
 |---|---|---|
-| Unified single/bulk ingestion | Local FastAPI console, bounded UTF-8 uploads, per-file isolation, queued/running/completed/failed records | done: `dashboard/app.py`; genuine Cisco/Junos dashboard tests |
-| Multi-vendor compliance | Built-in Cisco IOS/IOS-XE (14 CIS-backed controls) and scoped Junos (4 vendor-baseline controls) | done (scoped): both corpora have pass/fail oracles; other vendors are not claimed built-in |
+| Unified single/bulk ingestion | Local FastAPI console, bounded UTF-8 uploads, per-file isolation, queued/running/completed/failed records | done: `dashboard/app.py`; genuine Cisco/Junos/FortiOS dashboard tests |
+| Multi-vendor compliance | Built-in Cisco IOS/IOS-XE (14 CIS-backed), scoped Junos (4 vendor-baseline), and scoped FortiOS (3 vendor-baseline) | done (scoped): all three corpora have pass/fail oracles; broader coverage is not claimed |
 | Vendor-neutral normalization | Shared result contract plus additive security model; unknown values never become passes | done (scoped): `docs/interfaces.md`, normalization tests |
 | AI/NLP for unfamiliar syntax | Redacted pattern discovery, dry-run default, pre-call estimate, explicit cap, cache reuse, actual usage accounting | done: Training Studio and classifier tests; AI remains discovery metadata |
 | Interactive training loop | Human confirm/correct, persistent vendor/platform mapping, genuine source upload | done: SQLite-backed `/training` workflow |
@@ -24,7 +24,7 @@ Nothing is marked done here without repository evidence.
 | Concern | Implementation | Evidence |
 |---|---|---|
 | False pass | Fail-closed checks; unreadable/ambiguous input errors; draft/unsourced profiles refused | engine and dashboard negative tests |
-| Fabricated evidence | Genuine source-tracked Cisco and Junos fixtures; no synthetic demo configs | corpus manifests and hashes |
+| Fabricated evidence | Genuine source-tracked Cisco, Junos, and FortiOS fixtures; no synthetic demo configs | corpus manifests and hashes |
 | AI leakage | Redaction before persistence/provider use; provider action receives only redacted SQLite patterns | vendor-training and dashboard tests |
 | AI spend | Dry-run default, cost estimate, hard cap, cache, persisted token/cost totals | Training Studio tests |
 | Custom-profile overclaim | `organization_defined` status in result/control plus explicit HTML/PDF notices | report tests |
@@ -41,8 +41,8 @@ Nothing is marked done here without repository evidence.
 
 ## Current exit evidence
 
-- `python3 -m pytest -q`: 93 passed.
-- `python3 tests/validate_rules.py`: 218 real rules, 0 failures; all seven
+- `python3 -m pytest -q`: 103 passed.
+- `python3 tests/validate_rules.py`: 221 real rules, 0 failures; all seven
   fixtures behaved as expected.
 - Canonical/ledger regression subset: 12 passed unchanged.
 - `git diff --check`: clean at the verification point.

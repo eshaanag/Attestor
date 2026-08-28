@@ -1,0 +1,78 @@
+{
+  "retrieved_at": "2026-08-29",
+  "policy": "Unmodified licensed public command/configuration captures; no Attestor-authored device configurations.",
+  "files": [
+    {
+      "file": "oxidized_fortigate_91g_7.4.7.txt",
+      "repository": "ytti/oxidized",
+      "revision": "687ed4262d9d21e54662e872e2383386d8498f7b",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/ytti/oxidized/blob/687ed4262d9d21e54662e872e2383386d8498f7b/spec/model/data/fortigate%23FortiGate-91G_7.4.7%23output.txt",
+      "source_sha256": "2fc51b340cbbddfe9f13a8c68f63ebb94825a76ddf3553c4b560b4ade92b270b",
+      "provenance": "Oxidized model capture with redacted identifiers and encrypted values."
+    },
+    {
+      "file": "oxidized_fortigate_3001f_7.4.8_ha.txt",
+      "repository": "ytti/oxidized",
+      "revision": "687ed4262d9d21e54662e872e2383386d8498f7b",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/ytti/oxidized/blob/687ed4262d9d21e54662e872e2383386d8498f7b/spec/model/data/fortigate%23FortiGate-3001F_7.4.8_HA%23output.txt",
+      "source_sha256": "5fcb3390bce127dc534eaf8d812436d36668cf1b5a45eecace0934a3d6214eab",
+      "provenance": "Oxidized model capture; intentionally narrow output proves missing-data error behavior."
+    },
+    {
+      "file": "oxidized_fortigate_501e_7.4.8_vdom.txt",
+      "repository": "ytti/oxidized",
+      "revision": "687ed4262d9d21e54662e872e2383386d8498f7b",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/ytti/oxidized/blob/687ed4262d9d21e54662e872e2383386d8498f7b/spec/model/data/fortigate%23FortiGate-501E_vdomHAdown%23output.txt",
+      "source_sha256": "d2005a497860f9ad56da2fd6a41d96c244dd39d9fe6190266ba6aed61575ad88",
+      "provenance": "Oxidized multi-VDOM model capture with redacted identifiers."
+    },
+    {
+      "file": "batfish_fortios_first_basic.txt",
+      "repository": "batfish/lab-validation",
+      "revision": "556c58e344df3ce29d3cb44f60ae9e4921efdfee",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/batfish/lab-validation/blob/556c58e344df3ce29d3cb44f60ae9e4921efdfee/snapshots/fortios_first_basic/configs/d2_fw/show.txt",
+      "source_sha256": "ff35776173ffc27848dd13ff7c661311b7571fd42ffbbe2e159c49ae84e182c5",
+      "provenance": "FortiOS configuration deployed and captured in Batfish's empirical real-device lab validation framework."
+    },
+    {
+      "file": "batfish_fortios_fw_policy_basic.txt",
+      "repository": "batfish/lab-validation",
+      "revision": "556c58e344df3ce29d3cb44f60ae9e4921efdfee",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/batfish/lab-validation/blob/556c58e344df3ce29d3cb44f60ae9e4921efdfee/snapshots/fortios_fw_policy_basic/configs/fw/show.txt",
+      "source_sha256": "81aa956b1a63605356438c8b829f028079f54a8461d21aadc664dfeb07704b6e",
+      "provenance": "FortiOS configuration deployed and captured in Batfish's empirical real-device lab validation framework."
+    },
+    {
+      "file": "napalm_fortios_get_config.txt",
+      "repository": "napalm-automation-community/napalm-fortios",
+      "revision": "6407c0dfc26d2e227c64867382b33d03524aa608",
+      "license": "Apache-2.0",
+      "source_url": "https://github.com/napalm-automation-community/napalm-fortios/blob/6407c0dfc26d2e227c64867382b33d03524aa608/test/unit/mocked_data/test_get_config/normal/show.txt",
+      "source_sha256": "dcb8ee0bdc6cfb3958e393542b9029ef0ac531ac537c46ed7231bcaa790bebe3",
+      "provenance": "Recorded FortiOS show output retained as the NAPALM get_config test fixture."
+    },
+    {
+      "file": "fortios_xutils_sample_0.txt",
+      "repository": "ssato/fortios-xutils",
+      "revision": "26a837764cb7014883e92e9c2e960b1e824b4673",
+      "license": "MIT",
+      "source_url": "https://github.com/ssato/fortios-xutils/blob/26a837764cb7014883e92e9c2e960b1e824b4673/tests/res/show_configs/fortigate_cli_show_sample_0.txt",
+      "source_sha256": "99287554375955761a1d450e929eeb9d03151db936980e35598124b65030bc58",
+      "provenance": "FortiGate CLI show-configuration output used by the documented parser examples."
+    },
+    {
+      "file": "fortios_xutils_sample_1.txt",
+      "repository": "ssato/fortios-xutils",
+      "revision": "26a837764cb7014883e92e9c2e960b1e824b4673",
+      "license": "MIT",
+      "source_url": "https://github.com/ssato/fortios-xutils/blob/26a837764cb7014883e92e9c2e960b1e824b4673/tests/res/show_configs/fortigate_cli_show_sample_1.txt",
+      "source_sha256": "becb431047762a430d988fa431cc1f1c76df1c9172b9e4d57292f5a2182216ae",
+      "provenance": "FortiGate multi-VDOM CLI show-configuration output used by the documented parser examples."
+    }
+  ]
+}

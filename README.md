@@ -109,7 +109,7 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 
 | Phase | Scope | Status | Evidence |
 |---|---|---|---|
-| A | Additive schema + interface contracts | Complete | Existing OS rules validate unchanged; current gate is 218 real rules plus 7 schema fixtures; canonical/ledger/anchor tests pass |
+| A | Additive schema + interface contracts | Complete | Existing OS rules validate unchanged; current gate is 221 real rules plus 7 schema fixtures; canonical/ledger/anchor tests pass |
 | B | Genuine Cisco IOS config corpus | Complete | 10 MIT-licensed source-backed IOS reference configs; immutable source commits, retrieval date, platform, and SHA-256 in `tests/fixtures/network/cisco_ios/manifest.json`; integrity test passes |
 | C | Cisco IOS flat-check parser primitive | Complete | `engines/network/run_audit.py`; five manual-oracle checks span all 10 corpus files and each has pass + fail evidence; focused tests pass |
 | D | Cisco IOS block-aware VTY/interface parser primitive | Complete | `engines/network/run_audit.py`; interface oracle has pass/fail coverage across all 10 source-backed configs; 21-test suite and rule validator pass |
@@ -122,15 +122,17 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | K' | Source-backed device identity facts | Complete (optional companion input) | Genuine Cisco/Junos `show version` corpus with provenance and SHA-256; optional CLI/dashboard pairing adds explicit model, serial, and software fields without changing compliance results; 89 tests pass |
 | M' | Per-scan evidence bundle | Complete | Successful built-in and organization-defined scans export JSON/HTML/PDF plus a manifest with artifact hashes, provenance, privacy, and integrity status; raw configurations are excluded |
 | N' | Same-device scan comparison | Complete (scoped) | Repeated genuine Cisco scans preserve historical artifacts and show new failures, resolved findings, score/config movement, and same-framework coverage changes; missing software facts stay not comparable |
-| G | Optional additional vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos and other vendors remain roadmap |
-| H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos scope and roadmap honestly |
+| G | Optional second vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos coverage remains roadmap |
+| O' | Fortinet FortiOS third-vendor subset | Complete (scoped) | Eight licensed public captures, narrow `config/edit/next/end` parser, and three Fortinet-documentation baseline controls; every included rule has genuine pass and fail states; CIS FortiGate coverage is not claimed |
+| H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos/FortiOS scope and roadmap honestly |
 
 The verified Phase C/D/E network track is limited to source-backed Cisco IOS
 lab/reference configurations, not production backups or live sandbox captures.
 Phase E includes 14 Cisco IOS rules whose corpus oracle contains both pass and
 fail states. VTY/unused-interface checks are not claimed as verified. The
-built-in network scope is Cisco IOS (14 source-backed CIS controls) and Juniper
-Junos (four source-backed vendor-baseline controls). Other vendors can be
+built-in network scope is Cisco IOS (14 source-backed CIS controls), Juniper
+Junos (four source-backed vendor-baseline controls), and Fortinet FortiOS
+(three source-backed vendor-baseline controls). Other vendors can be
 onboarded through an organization-defined exact-pattern profile, but those
 profiles are not presented as Attestor-verified benchmark coverage. Official
 Cisco IOS DISA STIG packages have been inspected, but native DISA coverage is
@@ -169,8 +171,9 @@ python3 -m uvicorn dashboard.app:app --host 127.0.0.1 --port 8000
 # Open http://127.0.0.1:8000
 ```
 
-Use **Open audit console** to upload one or more saved Cisco IOS/IOS-XE or
-Juniper Junos configurations. Choose a source-backed, NIST-mapped, or combined
+Use **Open audit console** to upload one or more saved Cisco IOS/IOS-XE,
+Juniper Junos, or Fortinet FortiOS configurations. Choose a source-backed,
+NIST-mapped, or combined
 report view, then download JSON, offline HTML, PDF, or the evidence-bundle ZIP
 per device. The bundle contains those three reports plus a hash/provenance
 manifest; it never contains the uploaded configuration file. Report evidence
@@ -189,7 +192,7 @@ The NIST option is a mapped view of source-backed checks, not a separate
 NIST-native rule pack. Operator-created DISA/ISO mappings are explicitly labeled
 operator-defined and are not claimed as verified framework equivalence.
 
-Current verification gate: `93 passed`; `218` real rule YAMLs validate with no
+Current verification gate: `103 passed`; `221` real rule YAMLs validate with no
 failures; the pinned canonical hash and ledger tests pass unchanged.
 
 Requires the dependencies pinned in `requirements.txt`.

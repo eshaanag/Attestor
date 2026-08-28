@@ -1,7 +1,7 @@
 # Attestor — Architecture
 
 Status: design doc for the MVP (Windows 11 Standalone + Ubuntu 22.04 Desktop,
-plus scoped PS26155 Cisco IOS and Juniper Junos adapters). Written to be improved, not rubber-stamped — where the obvious
+plus scoped PS26155 Cisco IOS, Juniper Junos, and Fortinet FortiOS adapters). Written to be improved, not rubber-stamped — where the obvious
 design isn't the best one, the better option and the reasoning are called out
 inline and in **Open Risks**.
 
@@ -22,6 +22,7 @@ inline and in **Open Risks**.
         │   engines/windows/run_audit.ps1 (PowerShell)       │
         │   engines/network/run_audit.py (Cisco IOS)         │
         │   engines/network/run_junos_audit.py (Junos)       │
+        │   engines/network/run_fortios_audit.py (FortiOS)   │
         │                                                    │
         │   loads rules ─► DISPATCHER ─► one check fn per     │
         │                   check_type   (kernel_module,      │
@@ -61,11 +62,11 @@ grows into the fleet dashboard (stretch).
 
 | Folder | Responsibility | Owner language |
 |--------|----------------|----------------|
-| `rules/<target>/` | Rule packs — one YAML file per control. Pure data. Targets include OS packs, `cisco_ios`, and the scoped `juniper_junos` baseline. | YAML |
+| `rules/<target>/` | Rule packs — one YAML file per control. Pure data. Targets include OS packs, `cisco_ios`, and the scoped `juniper_junos` and `fortinet_fortios` baselines. | YAML |
 | `schema/` | `rule_schema.json` — the single contract every rule file must satisfy. Fail-closed: a malformed rule never reaches an engine. | JSON Schema |
 | `engines/linux/` | `run_audit.py` — loads + validates rules for a Linux target, dispatches each `check_type`, emits results. | Python 3 |
 | `engines/windows/` | `run_audit.ps1` — same role on Windows; native registry / `secedit` / `auditpol` access. | PowerShell |
-| `engines/network/` | Cisco IOS flat/block adapter and scoped Junos brace-aware adapter; file input only, no simulated SSH. | Python 3 |
+| `engines/network/` | Cisco IOS flat/block adapter, scoped Junos brace-aware adapter, and scoped FortiOS `config/edit/next/end` adapter; saved-file input only, no simulated SSH. | Python 3 |
 | `report/` | Consumes `results.json`, renders a **self-contained, offline** HTML report (inline CSS/JS, no network). | Python (Jinja2) |
 | `ai/` | Measures deterministic-rule misses, redacts sensitive values, and stores cached/provider or human-confirmed discovery metadata. It never determines compliance status. | Python |
 | `ledger/` | SHA-256 hash-chain over canonical `results.json` per host; append + verify; break detection. | Python |

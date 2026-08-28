@@ -56,9 +56,28 @@ SSH root-login, NTP, and broader Junos coverage remain unverified and are not
 included in the rule pack. Junos is implemented only for the four controls
 listed above; it must not be presented as full Junos compliance coverage.
 
+## Fortinet FortiOS — implemented scoped subset
+
+- Engine: `engines/network/run_fortios_audit.py`
+- Parser: narrow `config` / `edit` / `next` / `end` hierarchy; filtered or
+  missing required sections return `error` rather than a pass.
+- Corpus: eight unmodified licensed public captures from `ytti/oxidized`,
+  `batfish/lab-validation`, `napalm-automation-community/napalm-fortios`, and
+  `ssato/fortios-xutils`. Revisions, URLs, licenses, and hashes are recorded in
+  `tests/fixtures/network/fortios/manifest.json`.
+- Rules: HTTP administrative access absent from interface `allowaccess`, the
+  default `admin` entry absent, and every observed administrator restricted to
+  a non-any trusted host.
+- Source: official Fortinet FortiOS 7.6 hardening guidance plus the committed
+  manual corpus oracle. These are `fortios-baseline` controls, not CIS IDs.
+
+Every included rule has at least one genuine pass and one genuine fail. SNMPv3,
+NTP authentication, central syslog, timeout, and broader FortiOS controls are
+excluded because the retained corpus does not prove both states.
+
 ## Other vendors
 
-Arista EOS, Palo Alto, Fortinet, Check Point, Huawei, MikroTik, and other PS
+Arista EOS, Palo Alto, Check Point, Huawei, MikroTik, and other PS
 examples remain roadmap candidates for built-in verified adapters.
 
 The Training Studio can onboard genuine unfamiliar configs and source documents

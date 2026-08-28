@@ -171,12 +171,13 @@
               "secpol",
               "audit_policy",
               "config_block",
-              "junos_statement"
+              "junos_statement",
+              "fortios_statement"
             ]
           },
           "op": {
             "type": "string",
-            "enum": ["equals", "matches", "absent", "present"],
+            "enum": ["equals", "matches", "absent", "present", "all_entries_match"],
             "description": "Comparison operator for the check (type-specific params carry the rest)."
           }
         },
@@ -224,6 +225,24 @@
                 "path_pattern": { "type": "string", "minLength": 1 },
                 "statement_pattern": { "type": "string", "minLength": 1 },
                 "op": { "type": "string", "enum": ["present", "absent", "matches"] }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": { "type": { "const": "fortios_statement" } },
+              "required": ["type"]
+            },
+            "then": {
+              "required": ["path_pattern", "target", "pattern", "op"],
+              "properties": {
+                "path_pattern": { "type": "string", "minLength": 1 },
+                "target": { "type": "string", "enum": ["entry", "statement"] },
+                "pattern": { "type": "string", "minLength": 1 },
+                "op": {
+                  "type": "string",
+                  "enum": ["present", "absent", "all_entries_match"]
+                }
               }
             }
           }

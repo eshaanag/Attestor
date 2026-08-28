@@ -12,6 +12,8 @@ Attestor delivers a competition-ready, evidence-first prototype:
 - Cisco IOS/IOS-XE: 14 CIS-backed controls with NIST SP 800-53 mappings.
 - Juniper Junos: four vendor-documentation-backed baseline controls. This is a
   scoped subset, not full Junos benchmark coverage.
+- Fortinet FortiOS: three vendor-documentation-backed management-access
+  controls. This is a scoped baseline, not a CIS FortiGate benchmark claim.
 - Single and bulk saved-configuration upload with independent failure handling.
 - Optional source-backed Cisco/Junos `show version` companion input for explicit
   model, serial, and software identity.
@@ -45,6 +47,7 @@ count / size / UTF-8 validation
 Built-in adapter              Published custom profile
 Cisco flat/block parser       exact redacted full-line match
 Junos brace parser            organization-defined assurance
+FortiOS config/edit parser
         |                          |
         +------------+-------------+
                      v
@@ -117,13 +120,15 @@ loop while retaining a conservative compliance core.
 
 ## Verified evidence
 
-- `89` automated tests pass.
-- `218` real rule YAMLs validate; all negative fixtures fail as expected.
+- `103` automated tests pass.
+- `221` real rule YAMLs validate; all negative fixtures fail as expected.
 - Pinned canonical hash and ledger contracts pass unchanged.
 - Cisco: ten source-backed configs; all 14 included controls have pass and fail
   evidence.
 - Junos: six source-derived redacted configs; all four included controls have
   pass and fail evidence.
+- FortiOS: eight licensed public captures; all three included controls have
+  pass and fail evidence, while missing required sections remain errors.
 - Device identity: five unmodified Apache-2.0 `show version` fixtures plus one
   source-derived hostname-matched Cisco integration config; manifest hashes and
   parser/report/dashboard behavior are covered by tests.

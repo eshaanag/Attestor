@@ -1,0 +1,22 @@
+id: "1.1"
+id_namespace: "fortios-baseline"
+title: "Do not permit HTTP administrative access on device interfaces"
+description: "FortiOS interface administrative access should not include unencrypted HTTP."
+rationale: "Administrative credentials and sessions should use encrypted management protocols."
+benchmark: "Fortinet FortiOS Security Baseline (vendor documentation)"
+benchmark_version: "2026-08"
+level: 1
+profile: [network_device]
+device: {vendor: Fortinet, platform: FortiOS, config_format: fortios-cli}
+automated: true
+severity: high
+checks:
+  - type: fortios_statement
+    path_pattern: "(?:.*/)?system interface"
+    target: statement
+    pattern: "set allowaccess(?:\\s+\\S+)*\\s+http(?:\\s+\\S+)*"
+    op: absent
+remediation: "For each affected interface, use `config system interface`, `edit <interface>`, and `set allowaccess <required encrypted protocols>` to remove `http` while preserving only required services such as `https` and `ssh`; validate access before ending the session."
+source: "Fortinet FortiOS 7.6.0 Best Practices, Hardening, Encrypted protocols and Blocking external access to administrative ports: https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/555436/hardening; corpus oracle tests/fixtures/network/fortios/manual_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "SC-8", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}

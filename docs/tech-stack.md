@@ -120,11 +120,13 @@ deferred to the fleet dashboard.
   links to a generated report that opens offline.
 
 For PS26155 Phase H', FastAPI's multipart support (`python-multipart`) is used
-for bounded single/bulk Cisco IOS/IOS-XE and Juniper Junos config uploads.
+for bounded single/bulk Cisco IOS/IOS-XE, Juniper Junos, and Fortinet FortiOS
+config uploads.
 Files remain temporary; each vendor adapter consumes a normal filesystem path.
 Report output is JSON + standalone HTML + ReportLab PDF, with provider calls
-disabled by default. The Junos adapter is intentionally a four-control,
-vendor-documentation-backed subset; broader vendor support remains roadmap.
+disabled by default. The Junos and FortiOS adapters are intentionally narrow,
+vendor-documentation-backed subsets with four and three controls respectively;
+broader vendor and control coverage remains roadmap.
 
 SQLite now persists local device projections/history, training sessions,
 redacted patterns, bounded source excerpts, API usage accounting, and published

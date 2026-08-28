@@ -1,2 +1,3 @@
 # Preserve byte-exact third-party command-output fixtures and their manifest hashes.
 tests/fixtures/network/device_facts/*.txt whitespace=-trailing-space,cr-at-eol
+tests/fixtures/network/fortios/*.txt whitespace=-trailing-space,cr-at-eol

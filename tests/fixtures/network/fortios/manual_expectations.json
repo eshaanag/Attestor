@@ -1,0 +1,50 @@
+{
+  "review_method": "Manual inspection of the unmodified source files. Error means the required config block is not present and cannot support a compliance claim.",
+  "rules": {
+    "1.1": {
+      "pass": [
+        "oxidized_fortigate_501e_7.4.8_vdom.txt",
+        "fortios_xutils_sample_0.txt",
+        "fortios_xutils_sample_1.txt"
+      ],
+      "fail": [
+        "oxidized_fortigate_91g_7.4.7.txt",
+        "batfish_fortios_first_basic.txt",
+        "batfish_fortios_fw_policy_basic.txt",
+        "napalm_fortios_get_config.txt"
+      ],
+      "error": ["oxidized_fortigate_3001f_7.4.8_ha.txt"],
+      "raw_evidence": "HTTP appears in allowaccess at 91G line 49, Batfish first-basic line 102, Batfish policy-basic line 36, and NAPALM line 83. The three pass files contain system interface blocks but no allowaccess HTTP token."
+    },
+    "1.2": {
+      "pass": ["oxidized_fortigate_91g_7.4.7.txt"],
+      "fail": [
+        "batfish_fortios_first_basic.txt",
+        "batfish_fortios_fw_policy_basic.txt",
+        "napalm_fortios_get_config.txt"
+      ],
+      "error": [
+        "oxidized_fortigate_3001f_7.4.8_ha.txt",
+        "oxidized_fortigate_501e_7.4.8_vdom.txt",
+        "fortios_xutils_sample_0.txt",
+        "fortios_xutils_sample_1.txt"
+      ],
+      "raw_evidence": "The 91G admin entry is oxidized at line 59. Default admin entries appear at Batfish first-basic line 134, Batfish policy-basic line 125, and NAPALM line 98."
+    },
+    "1.3": {
+      "pass": ["oxidized_fortigate_91g_7.4.7.txt"],
+      "fail": [
+        "batfish_fortios_first_basic.txt",
+        "batfish_fortios_fw_policy_basic.txt",
+        "napalm_fortios_get_config.txt"
+      ],
+      "error": [
+        "oxidized_fortigate_3001f_7.4.8_ha.txt",
+        "oxidized_fortigate_501e_7.4.8_vdom.txt",
+        "fortios_xutils_sample_0.txt",
+        "fortios_xutils_sample_1.txt"
+      ],
+      "raw_evidence": "The 91G oxidized account has trusthost1 at line 60. Each failing full-output admin entry lacks any trusthost statement in its system admin block."
+    }
+  }
+}

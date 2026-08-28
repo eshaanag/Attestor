@@ -197,9 +197,10 @@ hash — the ledger stores that separately (§4).
 
 `POST /api/network/audit` accepts multipart form data:
 
-- `files`: one or more saved Cisco IOS/IOS-XE or Juniper Junos configuration
-  text files.
-- `vendor`: `cisco_ios`, `juniper_junos`, or `custom:<profile_id>`. Built-in
+- `files`: one or more saved Cisco IOS/IOS-XE, Juniper Junos, or Fortinet
+  FortiOS configuration text files.
+- `vendor`: `cisco_ios`, `juniper_junos`, `fortinet_fortios`, or
+  `custom:<profile_id>`. Built-in
   values select a source-backed adapter. A custom value selects a published
   organization-defined exact-pattern profile.
 - `framework`: `all`, `cis`, or `nist`. This controls report presentation only;
@@ -208,8 +209,9 @@ hash — the ledger stores that separately (§4).
   a separate NIST-native rule pack.
 
 Each file is copied to an isolated temporary directory and passed to the
-selected built-in adapter (`run_audit.py` for Cisco or `run_junos_audit.py` for
-Junos) or the published custom-profile engine. A successful
+selected built-in adapter (`run_audit.py` for Cisco, `run_junos_audit.py` for
+Junos, or `run_fortios_audit.py` for FortiOS) or the published custom-profile
+engine. A successful
 item returns links to its JSON, offline HTML, and PDF report. A failed item
 returns an explicit error and no report links. Bulk items are processed
 independently; one invalid file must not create or imply a successful result for

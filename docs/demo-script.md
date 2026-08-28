@@ -13,6 +13,7 @@ platform foundation; lead with the scored network-device workflow.
    - `tests/fixtures/network/cisco_ios/c4geeks_base_router_iosv.txt`
    - `tests/fixtures/network/cisco_ios/SOURCES.md`
    - `tests/fixtures/network/junos/junos_fabric01.conf`
+   - `tests/fixtures/network/fortios/oxidized_fortigate_91g_7.4.7.txt`
 5. Do not enable a real AI call during the competition demo unless the remaining
    cost and cap have been reviewed. Dry-run plus the recorded approved batch is
    sufficient to show the safety model.
@@ -26,8 +27,8 @@ truth for configuration compliance. Attestor turns saved network configurations
 into deterministic evidence, then uses AI only to help administrators understand
 syntax the verified rules do not yet recognize."
 
-State the honest scope: Cisco IOS/IOS-XE and a scoped Junos subset are built-in.
-Other vendors use an organization-defined training path until they pass the same
+State the honest scope: Cisco IOS/IOS-XE plus scoped Junos and FortiOS subsets
+are built in. Other vendors use an organization-defined training path until they pass the same
 corpus/source verification gates.
 
 ### 2. Bulk deterministic audit - 55 seconds
@@ -36,6 +37,8 @@ corpus/source verification gates.
 2. Show independent per-file results and JSON/HTML/PDF links.
 3. Open a device record: score, severity, evidence, remediation, history, hash.
 4. Upload the Junos fixture and show the adapter filter.
+5. Upload the FortiOS fixture and show one HTTP finding plus the verified
+   administrator-account controls.
 
 Say: "Missing or unreadable evidence is never a default pass. NIST is a mapped
 view of source-backed checks, not a second invented benchmark pack."
@@ -74,7 +77,7 @@ Windows controls. Reports can be hash-chained, and a real Cisco report hash was
 anchored on Ethereum Sepolia. Only the SHA-256 hash is public, never the report
 or configuration."
 
-Close with the evidence: `76` tests, `218` validated rules, two built-in vendor
+Close with the evidence: `103` tests, `221` validated rules, three built-in vendor
 adapters, a reusable human training loop, and offline JSON/HTML/PDF reporting.
 
 ## Judge questions

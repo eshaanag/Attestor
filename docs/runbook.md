@@ -159,8 +159,9 @@ http://127.0.0.1:8000
 
 ### Use it:
 1. For a local OS audit, select the OS target and level, then click **Run Audit**.
-2. For a built-in network audit, choose `Cisco IOS / IOS-XE` or `Juniper Junos`,
-   then select one or more genuine saved configuration files.
+2. For a built-in network audit, choose `Cisco IOS / IOS-XE`, `Juniper Junos`,
+   or `Fortinet FortiOS`, then select one or more genuine saved configuration
+   files.
 3. Optionally select one matching `show version` text file per configuration.
    Companion files pair by selection order and are used only for model, serial,
    and software identity. A mismatch fails only that paired item.
@@ -195,6 +196,10 @@ python3 engines/network/run_junos_audit.py \
   --config configuration.conf \
   --device-facts show-version.txt \
   --output results.json
+
+python3 engines/network/run_fortios_audit.py \
+  --config fortigate-show.txt \
+  --output results.json
 ```
 
 The NIST option shows documented mappings attached to source-backed checks; it
@@ -202,8 +207,9 @@ does not claim a separate NIST-native rule pack. Uploaded configurations are
 processed locally and discarded. SQLite retains hashes, redacted patterns,
 profiles, report projections, and scan history, not raw configs. The dashboard
 does not simulate SSH or DevNet collection. Cisco IOS provides 14 CIS-backed
-controls; Junos provides four vendor-documentation-backed controls. Other
-vendors may use organization-defined flat profiles, but are not claimed as
+controls; Junos provides four vendor-documentation-backed controls; FortiOS
+provides three vendor-documentation-backed controls. Other vendors may use
+organization-defined flat profiles, but are not claimed as
 Attestor-verified coverage. Native DISA/ISO packs and verified live SSH
 collection remain roadmap.
 
@@ -281,10 +287,10 @@ python3 ledger/anchor.py anchor --chain-file ledger/chain.jsonl
 ```bash
 cd /Users/eshaanog/Documents/SIH/Attestor
 
-# Validate all 218 current real rules and negative fixtures
+# Validate all 221 current real rules and negative fixtures
 python3 tests/validate_rules.py
 
-# Run the full test suite (current verified gate: 76 passed)
+# Run the full test suite (current verified gate: 103 passed)
 python3 -m pytest -q
 
 # Show help

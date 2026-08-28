@@ -1,0 +1,22 @@
+id: "1.2"
+id_namespace: "fortios-baseline"
+title: "Change the default administrator username"
+description: "The well-known FortiOS administrator account name `admin` should not remain configured."
+rationale: "Changing a well-known privileged username removes one predictable element from administrative authentication attempts."
+benchmark: "Fortinet FortiOS Security Baseline (vendor documentation)"
+benchmark_version: "2026-08"
+level: 1
+profile: [network_device]
+device: {vendor: Fortinet, platform: FortiOS, config_format: fortios-cli}
+automated: true
+severity: medium
+checks:
+  - type: fortios_statement
+    path_pattern: "(?:.*/)?system admin"
+    target: entry
+    pattern: "admin"
+    op: absent
+remediation: "Create and verify a replacement super-admin account with a non-guessable name before removing or renaming `admin`. In `config system admin`, use `edit <new-admin-name>` to configure the replacement and verify login in a separate session; then remove the old entry only after access is proven."
+source: "Fortinet FortiOS 7.6.0 Best Practices, Hardening, Non-standard admin ports and administrator usernames: https://docs.fortinet.com/document/fortigate/7.6.0/best-practices/555436/hardening; corpus oracle tests/fixtures/network/fortios/manual_expectations.json"
+framework_mappings:
+  - {framework: "NIST SP 800-53", version: "Rev. 5", control_id: "AC-2", relationship: "supporting", source: "https://csrc.nist.gov/pubs/sp/800/53/r5/upd1/final"}
