@@ -93,7 +93,7 @@ attestor/
 **Phase 0** through **Phase 7** and **Phase 9** are complete for the OS track.
 For PS26155, Cisco IOS, scoped Junos, persistent single/bulk ingestion,
 budget-capped AI-assisted training, organization-defined vendor profiles, and
-JSON/HTML/PDF reporting are implemented and covered by the current automated
+JSON/HTML/PDF plus evidence-bundle reporting are implemented and covered by the current automated
 suite. Live SSH collection remains optional and unverified because no reachable
 real device is part of the repository test environment.
 
@@ -119,6 +119,7 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | H' | Organizational ingestion dashboard | Complete (scoped) | Persistent inventory, single/bulk upload, scan states, device history/detail, CIS/NIST-mapped views, JSON/HTML/PDF links, Training Studio, and published organization-defined profiles |
 | J' | Low-code vendor profile path | Complete (organization-defined assurance) | Genuine config + vendor source upload, redacted pattern confirmation, publication gate, exact fail-closed pattern audit, pass/fail corpus proof, and explicit not-Attestor-verified labels in JSON/HTML/PDF |
 | K' | Source-backed device identity facts | Complete (optional companion input) | Genuine Cisco/Junos `show version` corpus with provenance and SHA-256; optional CLI/dashboard pairing adds explicit model, serial, and software fields without changing compliance results; 89 tests pass |
+| M' | Per-scan evidence bundle | Complete | Successful built-in and organization-defined scans export JSON/HTML/PDF plus a manifest with artifact hashes, provenance, privacy, and integrity status; raw configurations are excluded |
 | G | Optional additional vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos and other vendors remain roadmap |
 | H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos scope and roadmap honestly |
 
@@ -168,7 +169,11 @@ python3 -m uvicorn dashboard.app:app --host 127.0.0.1 --port 8000
 
 Use **Open audit console** to upload one or more saved Cisco IOS/IOS-XE or
 Juniper Junos configurations. Choose a source-backed, NIST-mapped, or combined
-report view, then download JSON, offline HTML, or PDF per device. Use **Training
+report view, then download JSON, offline HTML, PDF, or the evidence-bundle ZIP
+per device. The bundle contains those three reports plus a hash/provenance
+manifest; it never contains the uploaded configuration file. Report evidence
+may include matched command text, so the ZIP must be handled as sensitive audit
+material. Use **Training
 Studio** to analyze unfamiliar genuine syntax, attach vendor documentation,
 review budget-capped AI suggestions, confirm/correct categories, and publish an
 organization-defined profile. Published profiles appear in the same upload and
@@ -180,7 +185,7 @@ The NIST option is a mapped view of source-backed checks, not a separate
 NIST-native rule pack. Operator-created DISA/ISO mappings are explicitly labeled
 operator-defined and are not claimed as verified framework equivalence.
 
-Current verification gate: `76 passed`; `218` real rule YAMLs validate with no
+Current verification gate: `90 passed`; `218` real rule YAMLs validate with no
 failures; the pinned canonical hash and ledger tests pass unchanged.
 
 Requires the dependencies pinned in `requirements.txt`.

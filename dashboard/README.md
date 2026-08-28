@@ -13,9 +13,12 @@ build step).
 ## PS26155 organizational ingestion
 
 The same local FastAPI page accepts one or more saved Cisco IOS/IOS-XE or
-Juniper Junos config files and returns JSON, standalone HTML, and PDF reports
-for each file. Uploads are processed in an isolated temporary directory and
-are not retained.
+Juniper Junos config files and returns JSON, standalone HTML, PDF, and an
+evidence-bundle ZIP for each successful file. The ZIP contains the three report
+formats plus a hash/provenance manifest; it never contains the raw uploaded
+configuration file. Because report evidence may contain matched command text,
+the ZIP must be handled as sensitive audit material. Uploads are processed in an
+isolated temporary directory and are not retained.
 
 Built-in Cisco and Junos uploads may include one optional `show version` file
 per configuration, paired by multipart order. The parser records only explicit
@@ -65,7 +68,8 @@ Open `http://localhost:8000` for the product overview, then choose **Open audit
 console**. The console is a local organization workspace for the current
 session: upload one or more genuine configurations, filter the inventory by
 vendor/status/search, and open any device for its compliance score, severity-
-sorted findings, evidence, remediation, scan history, and JSON/HTML/PDF links.
+sorted findings, evidence, remediation, scan history, JSON/HTML/PDF links, and
+the per-scan evidence bundle.
 
 Inventory, training, knowledge-source metadata, profiles, and history persist in
 local SQLite under `dashboard/data/` (gitignored). Raw configurations and

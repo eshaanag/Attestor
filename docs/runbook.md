@@ -166,8 +166,10 @@ http://127.0.0.1:8000
    and software identity. A mismatch fails only that paired item.
 4. Select source-backed, NIST-mapped, or combined report presentation.
 5. Click **Upload and audit**.
-6. Download the JSON, offline HTML, or PDF output for each uploaded device and
-   open its persistent inventory/detail record.
+6. Download the JSON, offline HTML, PDF, or evidence-bundle ZIP for each
+   uploaded device and open its persistent inventory/detail record. The ZIP
+   contains report hashes and provenance but not the raw configuration file.
+   Treat it as sensitive because report evidence may contain matched commands.
 7. For an unfamiliar vendor, open **Training Studio**, upload a genuine config
    plus text/PDF vendor documentation, and review the redacted patterns.
 8. Dry-run is automatic. The page shows the estimated Haiku-tier cost before an

@@ -1,7 +1,9 @@
 """Phase H' network ingestion dashboard tests using genuine Phase B configs."""
 from __future__ import annotations
 
+import hashlib
 import json
+import zipfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -46,11 +48,32 @@ def test_network_single_upload_generates_json_html_and_pdf(tmp_path, monkeypatch
     assert "HTML report" in response.text
     assert "PDF report" in response.text
     reports = list(dashboard.RESULTS_DIR.iterdir())
-    assert {path.suffix for path in reports} == {".json", ".html", ".pdf"}
+    assert {path.suffix for path in reports} == {".json", ".html", ".pdf", ".zip"}
     results = json.loads(next(path for path in reports if path.suffix == ".json").read_text())
     assert results["device"]["hostname"] == "R1"
     assert results["summary"] == {"pass": 5, "fail": 9, "error": 0, "manual": 0, "not_applicable": 0}
     assert next(path for path in reports if path.suffix == ".pdf").read_bytes().startswith(b"%PDF")
+    bundle_path = next(path for path in reports if path.suffix == ".zip")
+    with zipfile.ZipFile(bundle_path) as bundle:
+        assert set(bundle.namelist()) == {
+            "report.json", "report.html", "report.pdf", "manifest.json"
+        }
+        manifest = json.loads(bundle.read("manifest.json"))
+        assert manifest["bundle_format_version"] == "attestor-evidence-bundle-v1"
+        assert manifest["source_filename"] == source.name
+        assert manifest["privacy"]["raw_configuration_file_included"] is False
+        assert manifest["privacy"]["may_contain_sensitive_report_evidence"] is True
+        assert manifest["integrity"]["canonical_report"]["status"] == "available"
+        for artifact in manifest["artifacts"]:
+            data = bundle.read(artifact["path"])
+            assert artifact["size_bytes"] == len(data)
+            assert artifact["sha256"] == hashlib.sha256(data).hexdigest()
+        assert source.read_bytes() not in [bundle.read(name) for name in bundle.namelist()]
+    assert "Evidence bundle" in response.text
+    record = next(iter(dashboard.DEVICE_RECORDS.values()))
+    download = client.get(record["urls"]["bundle_url"])
+    assert download.status_code == 200
+    assert download.headers["content-type"].startswith("application/zip")
 
 
 def test_network_bulk_upload_isolates_valid_files(tmp_path, monkeypatch):
@@ -86,6 +109,25 @@ def test_network_invalid_input_returns_error_without_reports(tmp_path, monkeypat
     assert "ERROR" in response.text
     assert "not valid UTF-8" in response.text
     assert not list(dashboard.RESULTS_DIR.glob("*"))
+
+
+def test_network_bundle_failure_fails_scan_and_removes_partial_reports(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = CORPUS / "c4geeks_snmp_syslog_router_ios152.txt"
+
+    def fail_bundle(*args, **kwargs):
+        raise OSError("bundle write failed")
+
+    monkeypatch.setattr(dashboard, "build_evidence_bundle", fail_bundle)
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all"},
+        files={"files": (source.name, source.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+    assert "ERROR" in response.text
+    assert "bundle write failed" in response.text
+    assert not list(dashboard.RESULTS_DIR.iterdir())
 
 
 def test_network_nist_view_is_explicitly_mapped(tmp_path, monkeypatch):
@@ -150,6 +192,7 @@ def test_dashboard_pairs_cisco_config_and_show_version_into_all_reports(tmp_path
     assert "Model: WS-C4948E" in detail.text
     assert "Serial: CAT1451S15C" in detail.text
     assert "cisco_show_version_v1" in detail.text
+    assert "Evidence bundle" in detail.text
 
 
 def test_dashboard_requires_one_facts_file_per_config(tmp_path, monkeypatch):

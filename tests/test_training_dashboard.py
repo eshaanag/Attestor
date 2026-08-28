@@ -1,6 +1,8 @@
 """Training Studio dashboard integration tests."""
 from __future__ import annotations
 
+import json
+import zipfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -202,7 +204,9 @@ def test_published_profile_audits_genuine_pass_and_fail_configs(tmp_path, monkey
     json_reports = sorted(dashboard.RESULTS_DIR.glob("*.json"))
     html_reports = sorted(dashboard.RESULTS_DIR.glob("*.html"))
     pdf_reports = sorted(dashboard.RESULTS_DIR.glob("*.pdf"))
+    bundle_reports = sorted(dashboard.RESULTS_DIR.glob("*.zip"))
     assert len(json_reports) == len(html_reports) == len(pdf_reports) == 2
+    assert len(bundle_reports) == 2
     results = [dashboard.json.loads(path.read_text()) for path in json_reports]
     assert {item["summary"]["pass"] for item in results} == {0, 1}
     assert {item["summary"]["fail"] for item in results} == {0, 1}
@@ -215,6 +219,14 @@ def test_published_profile_audits_genuine_pass_and_fail_configs(tmp_path, monkey
     assert all("organization-defined" in path.read_text().casefold() for path in html_reports)
     pdf_text = ["\n".join(page.extract_text() or "" for page in PdfReader(path).pages) for path in pdf_reports]
     assert all("organization-defined" in text.casefold() for text in pdf_text)
+    for path in bundle_reports:
+        with zipfile.ZipFile(path) as bundle:
+            manifest = json.loads(bundle.read("manifest.json"))
+            canonical = manifest["integrity"]["canonical_report"]
+            assert canonical["status"] == "not_applicable"
+            assert canonical["value"] is None
+            assert manifest["assurance"] == "organization_defined"
+            assert manifest["privacy"]["raw_configuration_file_included"] is False
 
     assert len(dashboard.DEVICE_RECORDS) == 2
     assert all(

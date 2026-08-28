@@ -584,6 +584,38 @@ Single line, all object keys sorted recursively, `controls`/`checks` order pinne
 ```
 `content_hash` = `sha256(<the bytes above>)` = `7127f834f00f28c6cd8f84aa094dcefd7ae3090e9948544ca5bab81386eea829` → stored in `ledger/chain.jsonl`. (Verified: this line is the exact output of the §4 reference `canonical_bytes()`.)
 
+### 5.6 Per-scan evidence bundle
+
+A successful network or organization-defined scan may emit one ZIP alongside
+the existing report artifacts. The ZIP is an export container, not a new report
+or ledger format:
+
+```text
+evidence-bundle.zip
+├── report.json
+├── report.html
+├── report.pdf
+└── manifest.json
+```
+
+`manifest.json` uses `attestor-evidence-bundle-v1` and contains:
+
+- generated timestamp, source filename, selected framework view, and assurance label;
+- device identity plus configuration and optional device-facts SHA-256 values;
+- report summary, integrity/chain status, and privacy statement;
+- SHA-256, media type, and byte size for each included report artifact;
+- unique control provenance (`rule_id`, source, verification status, mappings);
+- the pinned canonical report content hash only when the report uses the
+  canonical ledger-compatible dotted numeric rule IDs.
+
+Organization-defined `ORG-*` identifiers are intentionally outside the pinned
+canonical sort contract. Their manifest sets the canonical hash to `null` and
+states that canonicalization is not applicable; their exported artifact hashes
+remain available. The bundle never contains the raw configuration file, AI
+cache files, or private keys. The included reports may contain matched command
+evidence and must be handled as sensitive audit material. A failed scan emits no
+bundle.
+
 ---
 
 ## 6. Notes for reviewer (additions beyond the literal task field list)

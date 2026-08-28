@@ -38,6 +38,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from report.evidence_bundle import build_evidence_bundle  # noqa: E402
 from report.generate_pdf import build_pdf  # noqa: E402
 from report.generate_report import render  # noqa: E402
 from dashboard.store import DashboardStore  # noqa: E402
@@ -1114,6 +1115,7 @@ async def _audit_network_upload(
     results_path = RESULTS_DIR / f"network_{item_id}.json"
     html_path = RESULTS_DIR / f"network_{item_id}.html"
     pdf_path = RESULTS_DIR / f"network_{item_id}.pdf"
+    bundle_path = RESULTS_DIR / f"network_{item_id}.zip"
     device_id = Path(display_name).stem or f"uploaded-device-{item_id}"
     engine = "run_junos_audit.py" if vendor == "juniper_junos" else "run_audit.py"
     cmd = [
@@ -1146,8 +1148,18 @@ async def _audit_network_upload(
         results_path.write_text(json.dumps(viewed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         html_path.write_text(render(viewed), encoding="utf-8")
         build_pdf(viewed, pdf_path, state_dir=work_dir / f"state_{item_id}")
+        build_evidence_bundle(
+            viewed,
+            results_path,
+            html_path,
+            pdf_path,
+            bundle_path,
+            source_filename=display_name,
+            framework_view=framework,
+            integrity_status="Not chained (local report only)",
+        )
     except Exception as exc:
-        for artifact in (results_path, html_path, pdf_path):
+        for artifact in (results_path, html_path, pdf_path, bundle_path):
             try:
                 artifact.unlink(missing_ok=True)
             except OSError:
@@ -1171,6 +1183,7 @@ async def _audit_network_upload(
         "json_url": f"/reports/{results_path.name}",
         "html_url": f"/reports/{html_path.name}",
         "pdf_url": f"/reports/{pdf_path.name}",
+        "bundle_url": f"/reports/{bundle_path.name}",
         "engine_output_lines": len(stdout.decode("utf-8", errors="replace").splitlines()),
     }
 
@@ -1204,7 +1217,8 @@ def _network_results_page(items: list[dict], framework: str) -> str:
             f'error={summary.get("error", 0)}, manual={summary.get("manual", 0)}</p>'
             f'<a class="report-link" href="{item["html_url"]}" target="_blank">HTML report</a> '
             f'<a class="report-link" href="{item["pdf_url"]}" target="_blank">PDF report</a> '
-            f'<a class="report-link" href="{item["json_url"]}" target="_blank">JSON results</a></div>'
+            f'<a class="report-link" href="{item["json_url"]}" target="_blank">JSON results</a> '
+            f'<a class="report-link" href="{item["bundle_url"]}">Evidence bundle</a></div>'
         )
     return PAGE_TEMPLATE.split("<body>", 1)[0] + "<body><div class=\"shell\">" + (
         '<header class="topbar"><div class="brand"><div class="brand-mark">A</div><div><div class="brand-name">Attestor</div><div class="brand-subtitle">Network security compliance</div></div></div><div class="status-pill"><span class="status-dot"></span>Audit complete</div></header>'
@@ -1309,7 +1323,11 @@ def _record_network_items(items: list[dict]) -> None:
             "status": "complete" if item.get("status") == "complete" else "failed",
             "summary": item.get("summary", {}),
             "controls": item.get("controls", []),
-            "urls": {key: item[key] for key in ("json_url", "html_url", "pdf_url") if key in item},
+            "urls": {
+                key: item[key]
+                for key in ("json_url", "html_url", "pdf_url", "bundle_url")
+                if key in item
+            },
             "last_scan": now,
             "config_sha256": device.get("config_sha256"),
             "model": device.get("model"),
@@ -1342,6 +1360,14 @@ def _device_detail_with_facts(page: str, record: dict) -> str:
         f'{html.escape(observed)}</span>'
     )
     page = page.replace("<span>Status:", facts + "<span>Status:", 1)
+    bundle_url = (record.get("urls") or {}).get("bundle_url")
+    if bundle_url:
+        new_scan = '<a class="button" href="/console#upload">New scan</a>'
+        bundle_link = (
+            f'<a class="button alt" href="{html.escape(str(bundle_url))}">'
+            "Evidence bundle</a>"
+        )
+        page = page.replace(new_scan, bundle_link + new_scan, 1)
     if source:
         source_block = (
             '<p class="muted" style="margin-top:12px">Device facts: '
@@ -1781,6 +1807,7 @@ async def audit_custom_vendor_profile(
                 "vendor_key": f"custom:{profile_id}",
             })
             continue
+        artifacts: tuple[Path, ...] = ()
         try:
             results = audit_custom_profile(
                 config_text,
@@ -1792,12 +1819,26 @@ async def audit_custom_vendor_profile(
             results_path = RESULTS_DIR / f"custom_{item_id}.json"
             html_path = RESULTS_DIR / f"custom_{item_id}.html"
             pdf_path = RESULTS_DIR / f"custom_{item_id}.pdf"
+            bundle_path = RESULTS_DIR / f"custom_{item_id}.zip"
+            artifacts = (results_path, html_path, pdf_path, bundle_path)
             results_path.write_text(
                 json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
             )
             html_path.write_text(render(results), encoding="utf-8")
             build_pdf(results, pdf_path, state_dir=DASHBOARD_DATA_DIR / "ai_state")
+            build_evidence_bundle(
+                results,
+                results_path,
+                html_path,
+                pdf_path,
+                bundle_path,
+                source_filename=display_name,
+                framework_view="organization-defined",
+                integrity_status="Not chained (local report only)",
+            )
         except (CustomProfileError, OSError, ValueError) as exc:
+            for artifact in artifacts:
+                artifact.unlink(missing_ok=True)
             items.append({
                 "record_id": record_id,
                 "filename": display_name,
@@ -1820,6 +1861,7 @@ async def audit_custom_vendor_profile(
             "json_url": f"/reports/{results_path.name}",
             "html_url": f"/reports/{html_path.name}",
             "pdf_url": f"/reports/{pdf_path.name}",
+            "bundle_url": f"/reports/{bundle_path.name}",
         })
     _record_network_items(items)
     return HTMLResponse(
@@ -1914,6 +1956,7 @@ async def serve_report(filename: str):
         ".html": "text/html",
         ".pdf": "application/pdf",
         ".json": "application/json",
+        ".zip": "application/zip",
     }
     media_type = media_types.get(file_path.suffix.lower())
     if media_type:

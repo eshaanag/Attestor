@@ -16,7 +16,7 @@ Attestor delivers a competition-ready, evidence-first prototype:
 - Optional source-backed Cisco/Junos `show version` companion input for explicit
   model, serial, and software identity.
 - Persistent local device inventory, scan history, device detail, and
-  JSON/standalone HTML/PDF exports.
+  JSON/standalone HTML/PDF exports plus a hash/provenance evidence bundle.
 - A privacy-safe Training Studio for unfamiliar vendor syntax.
 - Published organization-defined vendor profiles that add flat exact-pattern
   checks without backend redeployment.
@@ -56,6 +56,8 @@ Junos brace parser            organization-defined assurance
        |             |              |
        v             v              v
 Offline HTML     ReportLab PDF   Device inventory/history
+       \              /                 |
+        +---- evidence bundle ZIP ------+
        |
        +----> optional SHA-256 chain / Sepolia hash-only anchor
 
@@ -127,6 +129,10 @@ loop while retaining a conservative compliance core.
   parser/report/dashboard behavior are covered by tests.
 - Custom-profile workflow: genuine Cisco corpus train/confirm/publish plus one
   pass and one fail, with organization-defined labels in JSON, HTML, and PDF.
+- Evidence bundles: successful built-in and organization-defined scans contain
+  only JSON/HTML/PDF plus artifact hashes, provenance, privacy, and integrity
+  metadata; the raw configuration file is excluded. Included report evidence
+  may contain matched command text, so bundles remain sensitive local artifacts.
 - Real Sepolia proof for a Cisco report:
   `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`.
 
