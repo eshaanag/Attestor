@@ -616,6 +616,39 @@ cache files, or private keys. The included reports may contain matched command
 evidence and must be handled as sensitive audit material. A failed scan emits no
 bundle.
 
+### 5.7 Device scan history and comparison
+
+The dashboard inventory record is an aggregate view of one stable
+`(vendor_key, device_id)` pair. Its `history` array stores append-only scan
+projections; it does not rewrite or embed historical report artifacts:
+
+```json
+{
+  "timestamp": "2026-08-28T12:00:00Z",
+  "status": "complete",
+  "report_id": "report UUID",
+  "framework_view": "all",
+  "summary": {"pass": 5, "fail": 9, "error": 0, "manual": 0, "not_applicable": 0},
+  "controls": [
+    {"rule_id": "1.3.3", "title": "...", "severity": "medium", "status": "pass"}
+  ],
+  "urls": {"json_url": "/reports/...json", "html_url": "/reports/...html",
+           "pdf_url": "/reports/...pdf", "bundle_url": "/reports/...zip"},
+  "config_sha256": "64 lowercase hex characters",
+  "software_version": "optional explicitly parsed value",
+  "facts_sha256": "optional 64 lowercase hex characters"
+}
+```
+
+Failed attempts are retained with `status: "failed"` and an error string, but
+they are excluded from compliance deltas. The latest successful snapshot is
+compared with the most recent earlier successful snapshot having the same
+`framework_view`. The derived comparison reports score movement, fail-to-pass
+resolutions, new failures, persistent failures, added/removed control IDs,
+configuration-hash movement, and software-version movement. Missing hashes or
+software facts produce `not_comparable`, never an inferred change. Historical
+JSON/HTML/PDF/ZIP files and ledger contracts are not modified by comparison.
+
 ---
 
 ## 6. Notes for reviewer (additions beyond the literal task field list)

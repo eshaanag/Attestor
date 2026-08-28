@@ -15,7 +15,7 @@ Nothing is marked done here without repository evidence.
 | Multi-framework engine | Cisco CIS controls with NIST SP 800-53 mappings; operator-defined sourced mapping fields for custom profiles | done (scoped): NIST is a mapped view; official Cisco IOS DISA packages were inspected but native DISA/ISO packs remain gated on complete corpus evidence |
 | Per-device report | JSON, standalone HTML, ReportLab PDF, and evidence-bundle ZIP; identity when observable, severity, evidence, remediation, hashes, provenance | done: report and dashboard tests; raw configuration excluded from bundles |
 | Device-specific remediation | Cached, clearly labeled AI advisory for built-in failed controls; operator-authored remediation for custom profiles | done (advisory): known invalid AI phrase retained to prove human review boundary |
-| Persistent organization view | Local SQLite device inventory, scan history, filters, details, profile/training state | done: persistence/reload/history tests |
+| Persistent organization view | Local SQLite inventory, immutable scan projections, conservative same-framework comparison, filters, details, profile/training state | done: genuine repeated-scan, artifact-preservation, persistence/reload, and framework-mismatch tests |
 | Live collection via Netmiko/NAPALM | Same file input can consume a real exported running config; connector not verified without a reachable device | not claimed; optional next input adapter |
 | Vendor-agnostic scalability | Shared adapter/result/report contracts plus low-code onboarding | done as prototype architecture, not universal grammar coverage |
 
@@ -41,7 +41,7 @@ Nothing is marked done here without repository evidence.
 
 ## Current exit evidence
 
-- `python3 -m pytest -q`: 90 passed.
+- `python3 -m pytest -q`: 93 passed.
 - `python3 tests/validate_rules.py`: 218 real rules, 0 failures; all seven
   fixtures behaved as expected.
 - Canonical/ledger regression subset: 12 passed unchanged.

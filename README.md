@@ -93,9 +93,10 @@ attestor/
 **Phase 0** through **Phase 7** and **Phase 9** are complete for the OS track.
 For PS26155, Cisco IOS, scoped Junos, persistent single/bulk ingestion,
 budget-capped AI-assisted training, organization-defined vendor profiles, and
-JSON/HTML/PDF plus evidence-bundle reporting are implemented and covered by the current automated
-suite. Live SSH collection remains optional and unverified because no reachable
-real device is part of the repository test environment.
+JSON/HTML/PDF plus evidence-bundle reporting and conservative same-device scan
+comparison are implemented and covered by the current automated suite. Live SSH
+collection remains optional and unverified because no reachable real device is
+part of the repository test environment.
 
 **Current blockchain integration:** Ethereum Sepolia contract
 [`0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`](https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41), using
@@ -120,6 +121,7 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | J' | Low-code vendor profile path | Complete (organization-defined assurance) | Genuine config + vendor source upload, redacted pattern confirmation, publication gate, exact fail-closed pattern audit, pass/fail corpus proof, and explicit not-Attestor-verified labels in JSON/HTML/PDF |
 | K' | Source-backed device identity facts | Complete (optional companion input) | Genuine Cisco/Junos `show version` corpus with provenance and SHA-256; optional CLI/dashboard pairing adds explicit model, serial, and software fields without changing compliance results; 89 tests pass |
 | M' | Per-scan evidence bundle | Complete | Successful built-in and organization-defined scans export JSON/HTML/PDF plus a manifest with artifact hashes, provenance, privacy, and integrity status; raw configurations are excluded |
+| N' | Same-device scan comparison | Complete (scoped) | Repeated genuine Cisco scans preserve historical artifacts and show new failures, resolved findings, score/config movement, and same-framework coverage changes; missing software facts stay not comparable |
 | G | Optional additional vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos and other vendors remain roadmap |
 | H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos scope and roadmap honestly |
 
@@ -179,13 +181,15 @@ review budget-capped AI suggestions, confirm/correct categories, and publish an
 organization-defined profile. Published profiles appear in the same upload and
 inventory workflow. Raw configuration uploads are processed locally and
 discarded; SQLite stores hashes, redacted patterns, report projections, and
-history only.
+history only. Re-scan a device with the same filename/device ID and framework
+view to see new failures, resolved findings, score movement, configuration-hash
+movement, and historical report downloads on its detail page.
 
 The NIST option is a mapped view of source-backed checks, not a separate
 NIST-native rule pack. Operator-created DISA/ISO mappings are explicitly labeled
 operator-defined and are not claimed as verified framework equivalence.
 
-Current verification gate: `90 passed`; `218` real rule YAMLs validate with no
+Current verification gate: `93 passed`; `218` real rule YAMLs validate with no
 failures; the pinned canonical hash and ledger tests pass unchanged.
 
 Requires the dependencies pinned in `requirements.txt`.

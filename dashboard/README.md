@@ -69,7 +69,11 @@ console**. The console is a local organization workspace for the current
 session: upload one or more genuine configurations, filter the inventory by
 vendor/status/search, and open any device for its compliance score, severity-
 sorted findings, evidence, remediation, scan history, JSON/HTML/PDF links, and
-the per-scan evidence bundle.
+the per-scan evidence bundle. Repeated successful scans under the same stable
+device ID and framework view show score movement, new failures, fail-to-pass
+resolutions, configuration changes, coverage changes, and historical downloads.
+Failed attempts and different framework views are never interpreted as posture
+movement.
 
 Inventory, training, knowledge-source metadata, profiles, and history persist in
 local SQLite under `dashboard/data/` (gitignored). Raw configurations and
@@ -77,3 +81,8 @@ credentials are not stored. A failed file is recorded independently and cannot
 imply success for another bulk item. Authentication, role-based access,
 background workers, and a remote multi-user fleet service remain production
 hardening work.
+
+Software-version comparison requires explicit parsed facts on both scans. The
+comparison code is covered with genuine vendor outputs, but the retained corpus
+does not contain two captures from the same physical device across an upgrade;
+that specific live observation is not claimed.

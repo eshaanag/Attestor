@@ -133,6 +133,11 @@ loop while retaining a conservative compliance core.
   only JSON/HTML/PDF plus artifact hashes, provenance, privacy, and integrity
   metadata; the raw configuration file is excluded. Included report evidence
   may contain matched command text, so bundles remain sensitive local artifacts.
+- Scan comparison: two genuine Cisco corpus configurations under one stable
+  device ID produce five new failures and five fail-to-pass resolutions while
+  preserving the first scan's JSON/HTML/PDF/ZIP bytes. Different framework
+  views and missing software facts remain explicitly not comparable. The corpus
+  does not prove a same-device software upgrade event.
 - Real Sepolia proof for a Cisco report:
   `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`.
 

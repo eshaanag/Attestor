@@ -1020,11 +1020,246 @@ def _device_detail_page(record: dict) -> str:
         f'<div class="control"><div><strong>{html.escape(str(c.get("rule_id", "unknown")))}</strong><span>{html.escape(str(c.get("title", "")))} · {html.escape(str(c.get("severity", "unknown")))} severity</span></div><span class="control-status {c.get("status", "error")}">{html.escape(str(c.get("status", "error")))}</span><p>{html.escape(str(c.get("evidence_summary", "Evidence unavailable")))}</p><details><summary>Remediation and source</summary><p>{html.escape(str(c.get("remediation", "Manual review required")))}</p><p class="source">{html.escape(str(c.get("source", "Source unavailable")))}</p></details></div>'
         for c in controls
     ) or '<div class="empty">No control results available.</div>'
-    history = "".join(f'<li><strong>{html.escape(_format_time(item.get("timestamp")))}</strong><span>pass {item.get("pass", 0)} · fail {item.get("fail", 0)} · error {item.get("error", 0)}</span></li>' for item in record.get("history", [])) or "<li>No previous scans</li>"
+    history = _scan_history_html(record)
+    comparison = _comparison_panel(record)
     urls = record.get("urls", {})
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Attestor | {html.escape(str(record.get('device_id','Device')))}</title><style>
-:root{{--ink:#10212b;--muted:#657782;--line:#dce5e9;--canvas:#f5f8fa;--surface:#fff;--blue:#1266a8;--green:#18794e;--red:#b42318;--amber:#976c00}}*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 14% 0%,rgba(22,165,160,.13),transparent 31%),linear-gradient(145deg,#edf7f8,#f8fbfc 51%,#eaf3f5);background-attachment:fixed;color:var(--ink)}}body:before{{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 70%)}}.shell{{max-width:1180px;margin:auto;padding:25px 28px 60px;position:relative;z-index:1}}.topbar,.head,.identity,.summary,.columns{{display:flex;justify-content:space-between;gap:18px}}.topbar,.identity,.panel,.sum{{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.84);box-shadow:0 16px 40px rgba(38,76,89,.08),inset 0 1px 0 rgba(255,255,255,.95);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%)}}.topbar{{align-items:center;padding:10px 12px;border-radius:14px;margin-bottom:24px}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{width:38px;height:38px;border-radius:10px;background:rgba(16,33,43,.92);color:#fff;display:grid;place-items:center;font-weight:800;box-shadow:0 8px 22px rgba(16,33,43,.2),inset 0 1px 0 rgba(255,255,255,.24)}}.brand strong{{display:block;font-size:17px}}.brand small,.muted,.identity span,.history span,.control span,.control p,.source{{color:var(--muted);font-size:12px}}.nav,.link{{color:var(--blue);font-size:12px;font-weight:750;text-decoration:none}}.eyebrow{{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}}h1{{font-size:32px;line-height:1.1}}.head{{align-items:end;margin-bottom:22px}}.actions{{display:flex;gap:8px;flex-wrap:wrap}}.button{{display:inline-block;background:rgba(16,33,43,.92);color:#fff;text-decoration:none;border-radius:8px;padding:10px 12px;font-size:12px;font-weight:750;box-shadow:0 10px 22px rgba(16,33,43,.15),inset 0 1px 0 rgba(255,255,255,.2)}}.button.alt{{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.9);color:var(--ink)}}.identity,.panel{{border-radius:10px;padding:18px}}.identity{{align-items:center;margin-bottom:14px}}.identity strong{{font-size:16px;display:block}}.identity span{{display:block;margin-top:4px}}.score{{font-size:34px;font-weight:850;color:{score_color};text-align:right}}.score small{{display:block;color:var(--muted);font-size:10px;text-transform:uppercase}}.summary{{margin-bottom:14px}}.sum{{flex:1;border-radius:9px;padding:13px}}.sum strong{{font-size:23px;display:block}}.sum span{{font-size:10px;color:var(--muted);text-transform:uppercase}}.pass strong{{color:var(--green)}}.fail strong{{color:var(--red)}}.error strong{{color:var(--amber)}}.columns{{align-items:start}}.main{{flex:1;min-width:0}}.side{{width:280px;display:grid;gap:14px}}.panel h2{{font-size:16px;margin-bottom:13px}}.control{{padding:15px 0;border-top:1px solid rgba(222,234,237,.82)}}.control:first-child{{border-top:0;padding-top:0}}.control strong{{font-size:13px;margin-right:7px}}.control-status{{float:right;border-radius:999px;padding:4px 7px!important;text-transform:uppercase;font-size:10px!important;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}}.control-status.pass{{background:#e7f6ed;color:var(--green)}}.control-status.fail{{background:#fdecea;color:var(--red)}}.control-status.error{{background:#fff5d7;color:var(--amber)}}.control p{{margin-top:8px;line-height:1.45}}details{{margin-top:9px;color:var(--blue);font-size:12px}}details p{{color:var(--ink);margin-top:6px}}.source{{word-break:break-word}}.history{{list-style:none}}.history li{{padding:10px 0;border-top:1px solid rgba(222,234,237,.82)}}.history li:first-child{{border-top:0;padding-top:0}}.history strong,.history span{{display:block}}.hash{{font-family:ui-monospace,monospace;word-break:break-all;background:rgba(241,248,249,.62);border:1px solid rgba(255,255,255,.75);padding:9px;border-radius:7px;font-size:10px;color:var(--muted);margin-top:8px}}.empty{{padding:20px;color:var(--muted);font-size:13px}}@media(max-width:820px){{.columns{{display:block}}.side{{width:auto;margin-top:14px}}.head{{display:block}}.actions{{margin-top:15px}}.identity{{align-items:flex-start;display:block}}.score{{text-align:left;margin-top:13px}}.summary{{display:grid;grid-template-columns:repeat(2,1fr)}}}}
-</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><a class="nav" href="/console">Back to console</a></header><main><div class="head"><div><div class="eyebrow">Device detail</div><h1>{html.escape(str(record.get("device_id", "Unknown device")))}</h1><p class="muted">{html.escape(str(record.get("filename", "")))}</p></div><div class="actions">{''.join(f'<a class="button alt" href="{html.escape(url)}" target="_blank">{label}</a>' for label,url in (("JSON",urls.get("json_url")),("HTML",urls.get("html_url")),("PDF",urls.get("pdf_url"))) if url)}<a class="button" href="/console#upload">New scan</a></div></div><section class="identity"><div><strong>{html.escape(str(record.get("vendor", "Unknown")))} · {html.escape(str(record.get("platform", "")))}</strong><span>Device ID: {html.escape(str(record.get("device_id", "unknown")))}</span><span>Status: {html.escape(str(record.get("status", "unknown")))} · Last scan: {html.escape(_format_time(record.get("last_scan")))}</span></div><div class="score">{score}%<small>current compliance</small></div></section><section class="summary"><div class="sum pass"><strong>{summary.get("pass", 0)}</strong><span>Pass</span></div><div class="sum fail"><strong>{summary.get("fail", 0)}</strong><span>Fail</span></div><div class="sum error"><strong>{summary.get("error", 0)}</strong><span>Error</span></div><div class="sum"><strong>{total}</strong><span>Controls evaluated</span></div></section><div class="columns"><section class="panel main"><h2>Findings and evidence</h2>{controls_html}</section><aside class="side"><section class="panel"><h2>Scan history</h2><ul class="history">{history}</ul></section><section class="panel"><h2>Integrity</h2><p class="muted">Local hash-chain status: <strong>{html.escape(str(record.get("chain_status", "Not chained")))}</strong></p><div class="hash">{html.escape(str(record.get("config_sha256", "Configuration hash unavailable")))}</div></section></aside></div></main></div></body></html>"""
+:root{{--ink:#10212b;--muted:#657782;--line:#dce5e9;--canvas:#f5f8fa;--surface:#fff;--blue:#1266a8;--green:#18794e;--red:#b42318;--amber:#976c00}}*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 14% 0%,rgba(22,165,160,.13),transparent 31%),linear-gradient(145deg,#edf7f8,#f8fbfc 51%,#eaf3f5);background-attachment:fixed;color:var(--ink)}}body:before{{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 70%)}}.shell{{max-width:1180px;margin:auto;padding:25px 28px 60px;position:relative;z-index:1}}.topbar,.head,.identity,.summary,.columns{{display:flex;justify-content:space-between;gap:18px}}.topbar,.identity,.panel,.sum{{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.84);box-shadow:0 16px 40px rgba(38,76,89,.08),inset 0 1px 0 rgba(255,255,255,.95);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%)}}.topbar{{align-items:center;padding:10px 12px;border-radius:14px;margin-bottom:24px}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{width:38px;height:38px;border-radius:10px;background:rgba(16,33,43,.92);color:#fff;display:grid;place-items:center;font-weight:800;box-shadow:0 8px 22px rgba(16,33,43,.2),inset 0 1px 0 rgba(255,255,255,.24)}}.brand strong{{display:block;font-size:17px}}.brand small,.muted,.identity span,.history span,.control span,.control p,.source{{color:var(--muted);font-size:12px}}.nav,.link{{color:var(--blue);font-size:12px;font-weight:750;text-decoration:none}}.eyebrow{{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:9px}}h1{{font-size:32px;line-height:1.1}}.head{{align-items:end;margin-bottom:22px}}.actions{{display:flex;gap:8px;flex-wrap:wrap}}.button{{display:inline-block;background:rgba(16,33,43,.92);color:#fff;text-decoration:none;border-radius:8px;padding:10px 12px;font-size:12px;font-weight:750;box-shadow:0 10px 22px rgba(16,33,43,.15),inset 0 1px 0 rgba(255,255,255,.2)}}.button.alt{{background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.9);color:var(--ink)}}.identity,.panel{{border-radius:10px;padding:18px}}.identity{{align-items:center;margin-bottom:14px}}.identity strong{{font-size:16px;display:block}}.identity span{{display:block;margin-top:4px}}.score{{font-size:34px;font-weight:850;color:{score_color};text-align:right}}.score small{{display:block;color:var(--muted);font-size:10px;text-transform:uppercase}}.summary{{margin-bottom:14px}}.sum{{flex:1;border-radius:9px;padding:13px}}.sum strong{{font-size:23px;display:block}}.sum span{{font-size:10px;color:var(--muted);text-transform:uppercase}}.pass strong{{color:var(--green)}}.fail strong{{color:var(--red)}}.error strong{{color:var(--amber)}}.comparison{{margin-bottom:14px}}.comparison-grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}}.delta{{border:1px solid rgba(222,234,237,.82);border-radius:8px;padding:11px}}.delta strong{{display:block;font-size:20px}}.delta span{{color:var(--muted);font-size:10px;text-transform:uppercase}}.delta.good strong{{color:var(--green)}}.delta.bad strong{{color:var(--red)}}.change-lists{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}}.change-list h3{{font-size:12px;margin-bottom:6px}}.change-list ul{{list-style:none}}.change-list li{{font-size:11px;padding:6px 0;border-top:1px solid rgba(222,234,237,.82)}}.comparison-meta{{color:var(--muted);font-size:11px;line-height:1.5;margin-top:12px}}.columns{{align-items:start}}.main{{flex:1;min-width:0}}.side{{width:280px;display:grid;gap:14px}}.panel h2{{font-size:16px;margin-bottom:13px}}.control{{padding:15px 0;border-top:1px solid rgba(222,234,237,.82)}}.control:first-child{{border-top:0;padding-top:0}}.control strong{{font-size:13px;margin-right:7px}}.control-status{{float:right;border-radius:999px;padding:4px 7px!important;text-transform:uppercase;font-size:10px!important;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}}.control-status.pass{{background:#e7f6ed;color:var(--green)}}.control-status.fail{{background:#fdecea;color:var(--red)}}.control-status.error{{background:#fff5d7;color:var(--amber)}}.control p{{margin-top:8px;line-height:1.45}}details{{margin-top:9px;color:var(--blue);font-size:12px}}details p{{color:var(--ink);margin-top:6px}}.source{{word-break:break-word}}.history{{list-style:none}}.history li{{padding:10px 0;border-top:1px solid rgba(222,234,237,.82)}}.history li:first-child{{border-top:0;padding-top:0}}.history strong,.history span{{display:block}}.history-links{{display:flex!important;gap:7px;margin-top:5px}}.history-links a{{font-size:10px;color:var(--blue);text-decoration:none}}.hash{{font-family:ui-monospace,monospace;word-break:break-all;background:rgba(241,248,249,.62);border:1px solid rgba(255,255,255,.75);padding:9px;border-radius:7px;font-size:10px;color:var(--muted);margin-top:8px}}.empty{{padding:20px;color:var(--muted);font-size:13px}}@media(max-width:820px){{.columns{{display:block}}.side{{width:auto;margin-top:14px}}.head{{display:block}}.actions{{margin-top:15px}}.identity{{align-items:flex-start;display:block}}.score{{text-align:left;margin-top:13px}}.summary,.comparison-grid{{display:grid;grid-template-columns:repeat(2,1fr)}}.change-lists{{grid-template-columns:1fr}}}}
+</style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><a class="nav" href="/console">Back to console</a></header><main><div class="head"><div><div class="eyebrow">Device detail</div><h1>{html.escape(str(record.get("device_id", "Unknown device")))}</h1><p class="muted">{html.escape(str(record.get("filename", "")))}</p></div><div class="actions">{''.join(f'<a class="button alt" href="{html.escape(url)}" target="_blank">{label}</a>' for label,url in (("JSON",urls.get("json_url")),("HTML",urls.get("html_url")),("PDF",urls.get("pdf_url"))) if url)}<a class="button" href="/console#upload">New scan</a></div></div><section class="identity"><div><strong>{html.escape(str(record.get("vendor", "Unknown")))} · {html.escape(str(record.get("platform", "")))}</strong><span>Device ID: {html.escape(str(record.get("device_id", "unknown")))}</span><span>Status: {html.escape(str(record.get("status", "unknown")))} · Last scan: {html.escape(_format_time(record.get("last_scan")))}</span></div><div class="score">{score}%<small>current compliance</small></div></section><section class="summary"><div class="sum pass"><strong>{summary.get("pass", 0)}</strong><span>Pass</span></div><div class="sum fail"><strong>{summary.get("fail", 0)}</strong><span>Fail</span></div><div class="sum error"><strong>{summary.get("error", 0)}</strong><span>Error</span></div><div class="sum"><strong>{total}</strong><span>Controls evaluated</span></div></section>{comparison}<div class="columns"><section class="panel main"><h2>Findings and evidence</h2>{controls_html}</section><aside class="side"><section class="panel"><h2>Scan history</h2><ul class="history">{history}</ul></section><section class="panel"><h2>Integrity</h2><p class="muted">Local hash-chain status: <strong>{html.escape(str(record.get("chain_status", "Not chained")))}</strong></p><div class="hash">{html.escape(str(record.get("config_sha256", "Configuration hash unavailable")))}</div></section></aside></div></main></div></body></html>"""
+
+
+def _summary_score(summary: dict) -> int:
+    total = sum(
+        int(summary.get(key, 0) or 0)
+        for key in ("pass", "fail", "error", "manual", "not_applicable")
+    )
+    return round(int(summary.get("pass", 0) or 0) * 100 / total) if total else 0
+
+
+def _scan_snapshot(item: dict, timestamp: str) -> dict:
+    """Return the privacy-bounded projection retained for scan comparison."""
+    device = item.get("device") or {}
+    status = "complete" if item.get("status") == "complete" else "failed"
+    summary = copy.deepcopy(item.get("summary") or {})
+    snapshot = {
+        "timestamp": timestamp,
+        "status": status,
+        "report_id": item.get("report_id"),
+        "framework_view": item.get("framework", "unknown"),
+        "benchmark": item.get("benchmark"),
+        "benchmark_version": item.get("benchmark_version"),
+        "summary": summary,
+        "score": _summary_score(summary),
+        "controls": [
+            {
+                "rule_id": control.get("rule_id"),
+                "title": control.get("title"),
+                "severity": control.get("severity"),
+                "status": control.get("status"),
+            }
+            for control in item.get("controls", [])
+        ] if status == "complete" else [],
+        "urls": {
+            key: item[key]
+            for key in ("json_url", "html_url", "pdf_url", "bundle_url")
+            if key in item
+        },
+        "config_sha256": device.get("config_sha256"),
+        "model": device.get("model"),
+        "software_version": device.get("software_version"),
+        "facts_sha256": (device.get("facts_source") or {}).get("sha256"),
+    }
+    if status != "complete":
+        snapshot["error"] = item.get("error", "scan failed")
+    return snapshot
+
+
+def _metadata_comparison(previous: dict, current: dict, key: str) -> dict:
+    before = previous.get(key)
+    after = current.get(key)
+    if not before or not after:
+        return {"status": "not_comparable", "previous": before, "current": after}
+    return {
+        "status": "changed" if before != after else "unchanged",
+        "previous": before,
+        "current": after,
+    }
+
+
+def _comparison_rule_order(rule_id: str) -> tuple:
+    parts = str(rule_id).split(".")
+    if parts and all(part.isdigit() for part in parts):
+        return (0, tuple(int(part) for part in parts))
+    return (1, str(rule_id).casefold())
+
+
+def _compare_scan_history(record: dict) -> dict:
+    complete = [
+        entry for entry in record.get("history", [])
+        if entry.get("status") == "complete"
+        and isinstance(entry.get("controls"), list)
+        and entry.get("framework_view")
+    ]
+    if not complete:
+        return {"available": False, "reason": "No comparison-capable successful scan is stored."}
+    current = complete[-1]
+    previous = next(
+        (
+            entry for entry in reversed(complete[:-1])
+            if entry.get("framework_view") == current.get("framework_view")
+        ),
+        None,
+    )
+    if previous is None:
+        return {
+            "available": False,
+            "reason": "Run another successful scan using the same framework view to establish a comparison.",
+            "current": current,
+        }
+
+    previous_controls = {
+        str(control.get("rule_id")): control
+        for control in previous.get("controls", [])
+        if control.get("rule_id")
+    }
+    current_controls = {
+        str(control.get("rule_id")): control
+        for control in current.get("controls", [])
+        if control.get("rule_id")
+    }
+    shared_ids = previous_controls.keys() & current_controls.keys()
+    new_failures = [
+        {**current_controls[rule_id], "previous_status": previous_controls[rule_id].get("status")}
+        for rule_id in sorted(shared_ids, key=_comparison_rule_order)
+        if current_controls[rule_id].get("status") == "fail"
+        and previous_controls[rule_id].get("status") != "fail"
+    ]
+    new_failures.extend(
+        {**current_controls[rule_id], "previous_status": "not_evaluated"}
+        for rule_id in sorted(
+            current_controls.keys() - previous_controls.keys(), key=_comparison_rule_order
+        )
+        if current_controls[rule_id].get("status") == "fail"
+    )
+    resolved = [
+        {**current_controls[rule_id], "previous_status": "fail"}
+        for rule_id in sorted(shared_ids, key=_comparison_rule_order)
+        if previous_controls[rule_id].get("status") == "fail"
+        and current_controls[rule_id].get("status") == "pass"
+    ]
+    persistent_failures = [
+        current_controls[rule_id]
+        for rule_id in sorted(shared_ids, key=_comparison_rule_order)
+        if previous_controls[rule_id].get("status") == "fail"
+        and current_controls[rule_id].get("status") == "fail"
+    ]
+    previous_score = int(previous.get("score", _summary_score(previous.get("summary") or {})))
+    current_score = int(current.get("score", _summary_score(current.get("summary") or {})))
+    return {
+        "available": True,
+        "framework_view": current.get("framework_view"),
+        "previous_timestamp": previous.get("timestamp"),
+        "current_timestamp": current.get("timestamp"),
+        "previous_score": previous_score,
+        "current_score": current_score,
+        "score_delta": current_score - previous_score,
+        "new_failures": new_failures,
+        "resolved": resolved,
+        "persistent_failures": persistent_failures,
+        "added_controls": sorted(
+            current_controls.keys() - previous_controls.keys(), key=_comparison_rule_order
+        ),
+        "removed_controls": sorted(
+            previous_controls.keys() - current_controls.keys(), key=_comparison_rule_order
+        ),
+        "configuration": _metadata_comparison(previous, current, "config_sha256"),
+        "software": _metadata_comparison(previous, current, "software_version"),
+    }
+
+
+def _change_items(items: list[dict], empty_text: str) -> str:
+    if not items:
+        return f'<li>{html.escape(empty_text)}</li>'
+    return "".join(
+        f'<li><strong>{html.escape(str(item.get("rule_id", "unknown")))}</strong> '
+        f'{html.escape(str(item.get("title") or "Untitled control"))}</li>'
+        for item in items
+    )
+
+
+def _comparison_panel(record: dict) -> str:
+    comparison = _compare_scan_history(record)
+    if not comparison.get("available"):
+        return (
+            '<section class="panel comparison"><h2>Change since previous comparable scan</h2>'
+            f'<p class="muted">{html.escape(str(comparison.get("reason")))}</p></section>'
+        )
+    delta = int(comparison["score_delta"])
+    delta_text = f"{delta:+d}"
+    delta_class = "good" if delta > 0 else "bad" if delta < 0 else ""
+    config = comparison["configuration"]
+    software = comparison["software"]
+    config_label = {
+        "changed": "Changed", "unchanged": "Unchanged", "not_comparable": "Unavailable"
+    }[config["status"]]
+    software_label = {
+        "changed": "Changed", "unchanged": "Unchanged", "not_comparable": "Unavailable"
+    }[software["status"]]
+    software_detail = ""
+    if software["status"] == "changed":
+        software_detail = (
+            f' ({html.escape(str(software["previous"]))} to '
+            f'{html.escape(str(software["current"]))})'
+        )
+    coverage_note = (
+        f'{len(comparison["added_controls"])} control(s) added; '
+        f'{len(comparison["removed_controls"])} removed.'
+    )
+    return (
+        '<section class="panel comparison"><h2>Change since previous comparable scan</h2>'
+        f'<p class="muted">Framework view: {html.escape(str(comparison["framework_view"]))} · '
+        f'{html.escape(_format_time(comparison["previous_timestamp"]))} to '
+        f'{html.escape(_format_time(comparison["current_timestamp"]))}</p>'
+        '<div class="comparison-grid">'
+        f'<div class="delta {delta_class}"><strong>{delta_text}</strong><span>Score movement</span></div>'
+        f'<div class="delta bad"><strong>{len(comparison["new_failures"])}</strong><span>New failures</span></div>'
+        f'<div class="delta good"><strong>{len(comparison["resolved"])}</strong><span>Resolved findings</span></div>'
+        f'<div class="delta"><strong>{config_label}</strong><span>Configuration</span></div></div>'
+        '<div class="change-lists"><div class="change-list"><h3>New failures</h3><ul>'
+        f'{_change_items(comparison["new_failures"], "No new failures")}</ul></div>'
+        '<div class="change-list"><h3>Resolved findings</h3><ul>'
+        f'{_change_items(comparison["resolved"], "No resolved findings")}</ul></div></div>'
+        f'<p class="comparison-meta">Persistent failures: {len(comparison["persistent_failures"])} · '
+        f'Software facts: {software_label}{software_detail} · {coverage_note}</p></section>'
+    )
+
+
+def _scan_history_html(record: dict) -> str:
+    entries = []
+    for item in reversed(record.get("history", [])):
+        summary = item.get("summary") or item
+        status = str(item.get("status", "legacy"))
+        framework = str(item.get("framework_view") or "legacy view")
+        urls = item.get("urls") or {}
+        links = "".join(
+            f'<a href="{html.escape(str(url))}" target="_blank">{label}</a>'
+            for label, url in (
+                ("JSON", urls.get("json_url")),
+                ("HTML", urls.get("html_url")),
+                ("PDF", urls.get("pdf_url")),
+                ("Bundle", urls.get("bundle_url")),
+            )
+            if url
+        )
+        entries.append(
+            f'<li><strong>{html.escape(_format_time(item.get("timestamp")))}</strong>'
+            f'<span>{html.escape(status)} · {html.escape(framework)} · '
+            f'pass {summary.get("pass", 0)} · fail {summary.get("fail", 0)} · '
+            f'error {summary.get("error", 0)}</span>'
+            + (f'<span class="history-links">{links}</span>' if links else "")
+            + '</li>'
+        )
+    return "".join(entries) or "<li>No previous scans</li>"
 
 
 def _safe_upload_name(filename: str | None) -> str:
@@ -1175,6 +1410,9 @@ async def _audit_network_upload(
         "record_id": record_id,
         "filename": display_name,
         "status": "complete",
+        "report_id": viewed.get("report_id"),
+        "benchmark": viewed.get("benchmark"),
+        "benchmark_version": viewed.get("benchmark_version"),
         "device": viewed.get("device", {}),
         "summary": viewed.get("summary", {}),
         "controls": viewed.get("controls", []),
@@ -1339,8 +1577,7 @@ def _record_network_items(items: list[dict]) -> None:
         })
         if item.get("status") != "complete":
             record["error"] = item.get("error", "scan failed")
-        summary = item.get("summary", {})
-        record.setdefault("history", []).append({"timestamp": now, "pass": summary.get("pass", 0), "fail": summary.get("fail", 0), "error": summary.get("error", 0)})
+        record.setdefault("history", []).append(_scan_snapshot(item, now))
         if existing and queued_record:
             DEVICE_RECORDS.pop(queued_record["record_id"], None)
             STORE.delete_device_record(queued_record["record_id"])
@@ -1852,6 +2089,9 @@ async def audit_custom_vendor_profile(
             "record_id": record_id,
             "filename": display_name,
             "status": "complete",
+            "report_id": results.get("report_id"),
+            "benchmark": results.get("benchmark"),
+            "benchmark_version": results.get("benchmark_version"),
             "device": results["device"],
             "summary": results["summary"],
             "controls": results["controls"],

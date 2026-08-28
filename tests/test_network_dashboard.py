@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 
 import dashboard.app as dashboard
 from dashboard.store import DashboardStore
+from engines.network.device_facts import load_device_facts
 
 
 CORPUS = Path("tests/fixtures/network/cisco_ios")
@@ -355,3 +356,106 @@ def test_repeat_scan_updates_one_device_history(tmp_path, monkeypatch):
     detail = client.get(f'/console/devices/{record["record_id"]}')
     assert detail.status_code == 200
     assert detail.text.count("pass 5 · fail 9 · error 0") == 2
+    assert "Change since previous comparable scan" in detail.text
+    assert "Unchanged" in detail.text
+    comparison = dashboard._compare_scan_history(record)
+    assert comparison["available"] is True
+    assert comparison["score_delta"] == 0
+    assert comparison["new_failures"] == []
+    assert comparison["resolved"] == []
+    assert comparison["configuration"]["status"] == "unchanged"
+
+
+def test_repeat_scan_compares_genuine_control_state_changes(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    before = CORPUS / "c4geeks_base_router_iosv.txt"
+    after = CORPUS / "c4geeks_snmp_syslog_router_ios152.txt"
+
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files={"files": ("edge-router.cfg", before.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+    first_record = next(iter(dashboard.DEVICE_RECORDS.values()))
+    first_artifacts = {
+        key: (dashboard.RESULTS_DIR / Path(url).name).read_bytes()
+        for key, url in first_record["history"][0]["urls"].items()
+    }
+
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files={"files": ("edge-router.cfg", after.read_bytes(), "text/plain")},
+    )
+    assert response.status_code == 200
+
+    assert len(dashboard.DEVICE_RECORDS) == 1
+    record = next(iter(dashboard.DEVICE_RECORDS.values()))
+    comparison = dashboard._compare_scan_history(record)
+    assert comparison["available"] is True
+    assert comparison["configuration"]["status"] == "changed"
+    assert comparison["new_failures"]
+    assert comparison["resolved"]
+    for key, url in record["history"][0]["urls"].items():
+        assert (dashboard.RESULTS_DIR / Path(url).name).read_bytes() == first_artifacts[key]
+
+    previous = {item["rule_id"]: item["status"] for item in record["history"][0]["controls"]}
+    current = {item["rule_id"]: item["status"] for item in record["history"][1]["controls"]}
+    assert {item["rule_id"] for item in comparison["new_failures"]} == {
+        rule_id for rule_id, status in current.items()
+        if status == "fail" and previous.get(rule_id) != "fail"
+    }
+    assert {item["rule_id"] for item in comparison["resolved"]} == {
+        rule_id for rule_id, status in current.items()
+        if status == "pass" and previous.get(rule_id) == "fail"
+    }
+
+    detail = client.get(f'/console/devices/{record["record_id"]}')
+    assert detail.status_code == 200
+    assert "New failures" in detail.text
+    assert "Resolved findings" in detail.text
+    assert "Configuration" in detail.text
+    assert detail.text.count("Bundle") >= 2
+
+
+def test_comparison_requires_same_framework_view_and_survives_reload(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    source = CORPUS / "c4geeks_snmp_syslog_router_ios152.txt"
+    for framework in ("all", "nist"):
+        response = client.post(
+            "/api/network/audit",
+            data={"framework": framework, "vendor": "cisco_ios"},
+            files={"files": ("stable-router.cfg", source.read_bytes(), "text/plain")},
+        )
+        assert response.status_code == 200
+
+    record_id = next(iter(dashboard.DEVICE_RECORDS))
+    record = dashboard.DEVICE_RECORDS[record_id]
+    assert dashboard._compare_scan_history(record)["available"] is False
+    assert all(entry["urls"]["bundle_url"] for entry in record["history"])
+
+    dashboard.DEVICE_RECORDS.clear()
+    dashboard.DEVICE_RECORDS.update(dashboard.STORE.load_device_records())
+    restored = dashboard.DEVICE_RECORDS[record_id]
+    assert len(restored["history"]) == 2
+    assert restored["history"][0]["framework_view"] == "all"
+    assert restored["history"][1]["framework_view"] == "nist"
+    detail = client.get(f"/console/devices/{record_id}")
+    assert "same framework view" in detail.text
+
+
+def test_software_comparison_uses_explicit_genuine_parsed_facts_only():
+    older = load_device_facts(
+        DEVICE_FACTS / "cisco_ios_catalyst4948_show_version.txt", "cisco_ios"
+    )
+    newer = load_device_facts(
+        DEVICE_FACTS / "cisco_iosxe_catalyst3850_stack_show_version.txt", "cisco_ios"
+    )
+    comparison = dashboard._metadata_comparison(older, newer, "software_version")
+    assert comparison == {
+        "status": "changed",
+        "previous": "12.2(54)SG1",
+        "current": "03.06.05E",
+    }
+    assert dashboard._metadata_comparison(older, {}, "software_version")["status"] == "not_comparable"

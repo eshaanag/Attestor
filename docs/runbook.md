@@ -170,12 +170,17 @@ http://127.0.0.1:8000
    uploaded device and open its persistent inventory/detail record. The ZIP
    contains report hashes and provenance but not the raw configuration file.
    Treat it as sensitive because report evidence may contain matched commands.
-7. For an unfamiliar vendor, open **Training Studio**, upload a genuine config
+7. Upload a later configuration using the same filename/device ID and framework
+   view. Open the device detail to review new failures, resolved findings,
+   score/configuration movement, and the unchanged historical report downloads.
+   Software movement is shown only when both scans include explicit parsed
+   `show version` facts.
+8. For an unfamiliar vendor, open **Training Studio**, upload a genuine config
    plus text/PDF vendor documentation, and review the redacted patterns.
-8. Dry-run is automatic. The page shows the estimated Haiku-tier cost before an
+9. Dry-run is automatic. The page shows the estimated Haiku-tier cost before an
    optional real suggestion action. Real suggestions require
    `ANTHROPIC_API_KEY` and a hard `max_calls` cap.
-9. Confirm or correct a pattern, create a draft profile, add a source-referenced
+10. Confirm or correct a pattern, create a draft profile, add a source-referenced
    rule, publish it, and select it from the main console upload selector.
 
 The same optional identity input is available from the CLI:
