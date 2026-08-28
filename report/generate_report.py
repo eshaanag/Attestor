@@ -97,8 +97,14 @@ footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border
     {% if device %}
     <dt>Audited device</dt><dd>{{ device.device_id }}{% if device.hostname %} ({{ device.hostname }}){% endif %}</dd>
     <dt>Vendor / platform</dt><dd>{{ device.vendor }} / {{ device.platform }}</dd>
+    <dt>Model</dt><dd>{{ device.model or "not exposed" }}</dd>
+    <dt>Software version</dt><dd>{{ device.software_version or "not exposed" }}</dd>
+    <dt>Serial number</dt><dd>{{ device.serial_number or "not exposed" }}{% if device.serial_numbers and (device.serial_numbers | length) > 1 %} ({{ device.serial_numbers | length }} observed){% endif %}</dd>
     <dt>Device roles</dt><dd>{{ (device.roles | join(", ")) if device.roles else "not recorded" }}</dd>
     <dt>Config source</dt><dd>{{ device.config_source }}{% if device.config_sha256 %} (SHA-256 {{ device.config_sha256 }}){% endif %}</dd>
+    {% if device.facts_source %}
+    <dt>Device facts source</dt><dd>{{ device.facts_source.command }} via {{ device.facts_source.parser }} (SHA-256 {{ device.facts_source.sha256 }})</dd>
+    {% endif %}
     {% endif %}
     <dt>Host</dt><dd>{{ host.hostname }}</dd>
     <dt>OS</dt><dd>{{ host.os_name }} {{ host.os_version }}</dd>

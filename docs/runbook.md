@@ -161,17 +161,34 @@ http://127.0.0.1:8000
 1. For a local OS audit, select the OS target and level, then click **Run Audit**.
 2. For a built-in network audit, choose `Cisco IOS / IOS-XE` or `Juniper Junos`,
    then select one or more genuine saved configuration files.
-3. Select source-backed, NIST-mapped, or combined report presentation.
-4. Click **Upload and audit**.
-5. Download the JSON, offline HTML, or PDF output for each uploaded device and
+3. Optionally select one matching `show version` text file per configuration.
+   Companion files pair by selection order and are used only for model, serial,
+   and software identity. A mismatch fails only that paired item.
+4. Select source-backed, NIST-mapped, or combined report presentation.
+5. Click **Upload and audit**.
+6. Download the JSON, offline HTML, or PDF output for each uploaded device and
    open its persistent inventory/detail record.
-6. For an unfamiliar vendor, open **Training Studio**, upload a genuine config
+7. For an unfamiliar vendor, open **Training Studio**, upload a genuine config
    plus text/PDF vendor documentation, and review the redacted patterns.
-7. Dry-run is automatic. The page shows the estimated Haiku-tier cost before an
+8. Dry-run is automatic. The page shows the estimated Haiku-tier cost before an
    optional real suggestion action. Real suggestions require
    `ANTHROPIC_API_KEY` and a hard `max_calls` cap.
-8. Confirm or correct a pattern, create a draft profile, add a source-referenced
+9. Confirm or correct a pattern, create a draft profile, add a source-referenced
    rule, publish it, and select it from the main console upload selector.
+
+The same optional identity input is available from the CLI:
+
+```bash
+python3 engines/network/run_audit.py \
+  --config running-config.txt \
+  --device-facts show-version.txt \
+  --output results.json
+
+python3 engines/network/run_junos_audit.py \
+  --config configuration.conf \
+  --device-facts show-version.txt \
+  --output results.json
+```
 
 The NIST option shows documented mappings attached to source-backed checks; it
 does not claim a separate NIST-native rule pack. Uploaded configurations are

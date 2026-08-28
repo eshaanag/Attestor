@@ -1,0 +1,69 @@
+{
+  "corpus": "Network to Code ntc-templates show version fixtures",
+  "repository": "https://github.com/networktocode/ntc-templates",
+  "commit": "c6dca50ea10fe5a23e750748582fddda263fb053",
+  "license": "Apache-2.0",
+  "retrieved_at": "2026-08-28",
+  "redistribution": "Retained unmodified under the upstream Apache License 2.0.",
+  "files": [
+    {
+      "filename": "cisco_ios_catalyst4948_show_version.txt",
+      "vendor": "Cisco",
+      "platform": "IOS",
+      "command": "show version",
+      "source_path": "tests/cisco_ios/show_version/cisco_ios_show_version.raw",
+      "source_url": "https://raw.githubusercontent.com/networktocode/ntc-templates/c6dca50ea10fe5a23e750748582fddda263fb053/tests/cisco_ios/show_version/cisco_ios_show_version.raw",
+      "sha256": "84a1de953028fd7339674e009bf98f645e9f596c3f377a5153975c52506e48cf"
+    },
+    {
+      "filename": "cisco_iosxe_catalyst3850_stack_show_version.txt",
+      "vendor": "Cisco",
+      "platform": "IOS-XE",
+      "command": "show version",
+      "source_path": "tests/cisco_ios/show_version/cisco_ios_show_version1.raw",
+      "source_url": "https://raw.githubusercontent.com/networktocode/ntc-templates/c6dca50ea10fe5a23e750748582fddda263fb053/tests/cisco_ios/show_version/cisco_ios_show_version1.raw",
+      "sha256": "c547ec5d440afea8c53e88e0611f7fcb35838dad2aab82acbf97775d9e5ca7a6"
+    },
+    {
+      "filename": "juniper_junos_mx240_show_version.txt",
+      "vendor": "Juniper",
+      "platform": "Junos",
+      "command": "show version",
+      "source_path": "tests/juniper_junos/show_version/juniper_junos_show_version.raw",
+      "source_url": "https://raw.githubusercontent.com/networktocode/ntc-templates/c6dca50ea10fe5a23e750748582fddda263fb053/tests/juniper_junos/show_version/juniper_junos_show_version.raw",
+      "sha256": "b2bf2ebd12cdd473d4e5e6c63b6f03c1f557dd02426b2e6735d36a4fbba7e3c5"
+    },
+    {
+      "filename": "juniper_junos_qfx5100_show_version.txt",
+      "vendor": "Juniper",
+      "platform": "Junos",
+      "command": "show version",
+      "source_path": "tests/juniper_junos/show_version/juniper_junos_show_version_qfx5100.raw",
+      "source_url": "https://raw.githubusercontent.com/networktocode/ntc-templates/c6dca50ea10fe5a23e750748582fddda263fb053/tests/juniper_junos/show_version/juniper_junos_show_version_qfx5100.raw",
+      "sha256": "6eefaf30975fd893507da5816d4d07daff50069867a3865997a95609bad4c3ac"
+    },
+    {
+      "filename": "juniper_junos_nfx250_show_version.txt",
+      "vendor": "Juniper",
+      "platform": "Junos",
+      "command": "show version",
+      "source_path": "tests/juniper_junos/show_version/juniper_junos_show_version_vmhost.raw",
+      "source_url": "https://raw.githubusercontent.com/networktocode/ntc-templates/c6dca50ea10fe5a23e750748582fddda263fb053/tests/juniper_junos/show_version/juniper_junos_show_version_vmhost.raw",
+      "sha256": "23a4cc0ab4555d1f34b6eea072db66efe8198758b6e9ffab272a5c5ca9b25c82"
+    }
+  ],
+  "integration_config": {
+    "filename": "cisco_router1_running_config_redacted.txt",
+    "vendor": "Cisco",
+    "platform": "IOS",
+    "purpose": "Hostname-matched device-facts integration only; not new control verification evidence.",
+    "repository": "https://github.com/GrrrDog/TacoTaco",
+    "commit": "e8eb41b1b7aa1b2ce1348ced2f141b094af97785",
+    "license": "MIT",
+    "source_path": "Samples/R1.cfg",
+    "source_url": "https://raw.githubusercontent.com/GrrrDog/TacoTaco/e8eb41b1b7aa1b2ce1348ced2f141b094af97785/Samples/R1.cfg",
+    "source_sha256": "a080808b5d92a4b08dc28914362543d04c7fc263980b85db1392c45fbace1f63",
+    "fixture_sha256": "e3e43b3349fa14baad6193e1f8e68a99dfb4d92e7efb4e337ca60396a99d5b25",
+    "transformation": "Replaced enable-password, local-user password, and TACACS key values with the literal <REDACTED>; no security command was added or removed."
+  }
+}

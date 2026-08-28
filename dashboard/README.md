@@ -17,6 +17,13 @@ Juniper Junos config files and returns JSON, standalone HTML, and PDF reports
 for each file. Uploads are processed in an isolated temporary directory and
 are not retained.
 
+Built-in Cisco and Junos uploads may include one optional `show version` file
+per configuration, paired by multipart order. The parser records only explicit
+hostname/model/serial/software labels and the command-output SHA-256. A count
+mismatch, wrong-vendor file, malformed text, or hostname mismatch fails only
+the paired item. Custom profiles reject device-facts files because they do not
+have a verified hardware parser.
+
 The console preserves the established Windows/Linux local audit and adds a
 persistent network workspace. Built-in adapters cover the verified Cisco IOS
 scope and the four-control Junos subset. Published organization-defined profiles

@@ -22,10 +22,15 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from engines.network.junos import parse_config, statement_matches  # noqa: E402
+from engines.network.device_facts import (  # noqa: E402
+    DeviceFactsError,
+    apply_device_facts,
+    load_device_facts,
+)
 from engines.network.normalize_junos import normalize_junos  # noqa: E402
 from tests.validate_rules import format_errors, load_validator  # noqa: E402
 
-ENGINE_VERSION = "0.1.0"
+ENGINE_VERSION = "0.2.0"
 NOW_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
@@ -78,6 +83,11 @@ def check_rule(rule: dict[str, Any], statements) -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Attestor — offline Juniper Junos configuration audit")
     parser.add_argument("--config", required=True)
+    parser.add_argument(
+        "--device-facts",
+        default=None,
+        help="optional saved Junos show version output used only for device identity",
+    )
     parser.add_argument("--device-id", default=None)
     parser.add_argument("--rules-dir", default=str(REPO_ROOT / "rules" / "juniper_junos"))
     parser.add_argument("--output", "-o", default="results.json")
@@ -95,7 +105,17 @@ def main(argv: list[str] | None = None) -> int:
         print("ERROR: no valid Junos rules remain", file=sys.stderr)
         return 2
     hostname = normalize_junos(statements)["fields"]["hostname"]["value"]
-    device_id = args.device_id or hostname
+    device_facts = None
+    if args.device_facts:
+        try:
+            device_facts = load_device_facts(args.device_facts, "juniper_junos")
+            apply_device_facts({}, device_facts, hostname)
+        except DeviceFactsError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
+    device_id = args.device_id or hostname or (
+        device_facts.get("hostname") if device_facts else None
+    )
     if not device_id:
         print("ERROR: no Junos host-name; provide --device-id", file=sys.stderr)
         return 2
@@ -103,13 +123,29 @@ def main(argv: list[str] | None = None) -> int:
     summary = {key: 0 for key in ("pass", "fail", "error", "manual", "not_applicable")}
     for control in controls:
         summary[control["status"]] += 1
+    device = {
+        "device_id": device_id,
+        "hostname": hostname,
+        "vendor": "Juniper",
+        "platform": "Junos",
+        "model": None,
+        "roles": [],
+        "config_source": "file",
+        "config_sha256": hashlib.sha256(raw).hexdigest(),
+    }
+    if device_facts is not None:
+        try:
+            device = apply_device_facts(device, device_facts, hostname)
+        except DeviceFactsError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
     results = {
         "attestor_format_version": "1.0",
         "report_id": str(uuid.uuid4()),
         "target": "juniper_junos",
         "benchmark": "Juniper Junos Security Baseline (vendor documentation)",
         "benchmark_version": "2026-08",
-        "device": {"device_id": device_id, "hostname": hostname, "vendor": "Juniper", "platform": "Junos", "model": None, "roles": [], "config_source": "file", "config_sha256": hashlib.sha256(raw).hexdigest()},
+        "device": device,
         "host": {"hostname": socket.gethostname(), "os_name": platform.system() or "unknown", "os_version": platform.version() or "unknown", "os_id": (platform.system() or "unknown").lower(), "kernel": platform.release() or "unknown", "arch": platform.machine() or "unknown", "environment": "container" if Path("/.dockerenv").exists() else "native", "elevated": bool(getattr(os, "geteuid", lambda: -1)() == 0), "user": getpass.getuser() or "unknown"},
         "run": {"started_at": now(), "finished_at": now(), "complete": not load_errors and len(controls) == len(rules), "total_controls": len(rules), "evaluated": len(controls), "engine": "network-junos", "engine_version": ENGINE_VERSION},
         "summary": summary,

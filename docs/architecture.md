@@ -90,6 +90,10 @@ grows into the fleet dashboard (stretch).
    up to a per-control status (all checks must pass → control passes; any error
    → control = error; `automated:false` → `manual`), plus host metadata and
    counts, into **`results.json`**.
+   Built-in network adapters may also parse a separately supplied, source-backed
+   `show version` output. Those explicit identity facts enrich only the top-level
+   device metadata; they never create or change a control result. Hostname
+   mismatch, wrong-vendor output, or malformed text fails that input association.
 5. **results.json → hashed + chained.** The ledger canonicalizes `results.json`
    (see §4), computes SHA-256, and appends `{prev_hash, this_hash, timestamp,
    host_id}` to that host's chain.
@@ -227,7 +231,9 @@ that opens offline.
 
 For the additive PS26155 track, the same local dashboard provides bounded
 single/bulk ingestion for saved Cisco IOS/IOS-XE or Juniper Junos configs plus
-published organization-defined profiles. Uploads remain temporary; SQLite
+published organization-defined profiles. Built-in adapters optionally accept a
+paired `show version` file for model, serial, and software identity. Uploads
+remain temporary; SQLite
 stores only hashes, redacted training patterns, profile metadata, report
 projections, and scan history. Cisco has 14 CIS-backed controls; Junos has four
 source-backed vendor-baseline controls. Framework selection is a report view

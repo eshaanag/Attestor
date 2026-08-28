@@ -82,7 +82,12 @@ def build_pdf(
     device_id = escape(str(device.get("device_id", "not recorded")))
     hostname = escape(str(device.get("hostname") or "hostname unavailable"))
     serial = escape(str(device.get("serial") or device.get("serial_number") or "not exposed by config"))
+    model_name = escape(str(device.get("model") or "not exposed"))
+    software_version = escape(str(device.get("software_version") or "not exposed"))
+    facts_source = device.get("facts_source") or {}
     story += [Paragraph(f"<b>Device:</b> {device_id} ({hostname})", styles["BodyText"]),
+              Paragraph(f"<b>Model:</b> {model_name}", styles["BodyText"]),
+              Paragraph(f"<b>Software version:</b> {software_version}", styles["BodyText"]),
               Paragraph(f"<b>Serial:</b> {serial}", styles["BodyText"]),
               Paragraph(f"<b>Vendor / platform:</b> {escape(str(device.get('vendor', 'unknown')))} / {escape(str(device.get('platform', 'unknown')))}", styles["BodyText"]),
               Paragraph(
@@ -92,6 +97,13 @@ def build_pdf(
               ),
               Paragraph(f"<b>Config SHA-256:</b> {escape(str(device.get('config_sha256', 'not recorded')))}", styles["Small"]),
               Paragraph(f"<b>Runner:</b> {escape(str(host.get('hostname', 'unknown')))} | <b>Report ID:</b> {escape(str(results.get('report_id', 'unknown')))}", styles["Small"]), Spacer(1, 10)]
+    if facts_source:
+        story.insert(-1, Paragraph(
+            f"<b>Device facts:</b> {escape(str(facts_source.get('command', 'unknown command')))} "
+            f"via {escape(str(facts_source.get('parser', 'unknown parser')))} | "
+            f"<b>SHA-256:</b> {escape(str(facts_source.get('sha256', 'not recorded')))}",
+            styles["Small"],
+        ))
     summary = results.get("summary", {})
     story.append(Table([["PASS", "FAIL", "ERROR", "MANUAL", "N/A"], [summary.get("pass", 0), summary.get("fail", 0), summary.get("error", 0), summary.get("manual", 0), summary.get("not_applicable", 0)]], style=TableStyle([("GRID", (0,0), (-1,-1), .5, colors.grey), ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#eef2f6")), ("ALIGN", (0,0), (-1,-1), "CENTER")]), colWidths=[1.25*inch]*5))
     story.append(Spacer(1, 12))

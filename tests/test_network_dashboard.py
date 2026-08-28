@@ -11,6 +11,7 @@ from dashboard.store import DashboardStore
 
 
 CORPUS = Path("tests/fixtures/network/cisco_ios")
+DEVICE_FACTS = Path("tests/fixtures/network/device_facts")
 
 
 def _client(tmp_path, monkeypatch) -> TestClient:
@@ -117,6 +118,110 @@ def test_junos_upload_uses_verified_engine_and_shared_reports(tmp_path, monkeypa
     results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
     assert results["device"]["vendor"] == "Juniper"
     assert results["target"] == "juniper_junos"
+
+
+def test_dashboard_pairs_cisco_config_and_show_version_into_all_reports(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    config = DEVICE_FACTS / "cisco_router1_running_config_redacted.txt"
+    facts = DEVICE_FACTS / "cisco_ios_catalyst4948_show_version.txt"
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files=[
+            ("files", (config.name, config.read_bytes(), "text/plain")),
+            ("facts_files", (facts.name, facts.read_bytes(), "text/plain")),
+        ],
+    )
+    assert response.status_code == 200
+    assert "WS-C4948E" in response.text
+    results_path = next(dashboard.RESULTS_DIR.glob("*.json"))
+    results = json.loads(results_path.read_text(encoding="utf-8"))
+    assert results["device"]["model"] == "WS-C4948E"
+    assert results["device"]["serial_number"] == "CAT1451S15C"
+    assert results["device"]["software_version"] == "12.2(54)SG1"
+    html_report = next(dashboard.RESULTS_DIR.glob("*.html")).read_text(encoding="utf-8")
+    assert "Device facts source" in html_report
+    assert "cisco_show_version_v1" in html_report
+
+    record = next(iter(dashboard.DEVICE_RECORDS.values()))
+    assert record["model"] == "WS-C4948E"
+    detail = client.get(f'/console/devices/{record["record_id"]}')
+    assert detail.status_code == 200
+    assert "Model: WS-C4948E" in detail.text
+    assert "Serial: CAT1451S15C" in detail.text
+    assert "cisco_show_version_v1" in detail.text
+
+
+def test_dashboard_requires_one_facts_file_per_config(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    configs = [
+        DEVICE_FACTS / "cisco_router1_running_config_redacted.txt",
+        CORPUS / "c4geeks_base_router_iosv.txt",
+    ]
+    facts = DEVICE_FACTS / "cisco_ios_catalyst4948_show_version.txt"
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files=[
+            *(('files', (path.name, path.read_bytes(), 'text/plain')) for path in configs),
+            ("facts_files", (facts.name, facts.read_bytes(), "text/plain")),
+        ],
+    )
+    assert response.status_code == 400
+    assert "exactly one show version file per configuration" in response.text
+    assert not list(dashboard.RESULTS_DIR.iterdir())
+
+
+def test_dashboard_bulk_device_facts_isolates_hostname_mismatch(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    matching = DEVICE_FACTS / "cisco_router1_running_config_redacted.txt"
+    mismatched = CORPUS / "c4geeks_base_router_iosv.txt"
+    facts = DEVICE_FACTS / "cisco_ios_catalyst4948_show_version.txt"
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "cisco_ios"},
+        files=[
+            ("files", (matching.name, matching.read_bytes(), "text/plain")),
+            ("files", (mismatched.name, mismatched.read_bytes(), "text/plain")),
+            ("facts_files", (facts.name, facts.read_bytes(), "text/plain")),
+            ("facts_files", (facts.name, facts.read_bytes(), "text/plain")),
+        ],
+    )
+    assert response.status_code == 200
+    assert response.text.count("HTML report") == 1
+    assert "does not match" in response.text
+    assert len(list(dashboard.RESULTS_DIR.glob("*.json"))) == 1
+    statuses = sorted(record["status"] for record in dashboard.DEVICE_RECORDS.values())
+    assert statuses == ["complete", "failed"]
+
+
+def test_dashboard_pairs_junos_facts_and_rejects_facts_for_custom_profiles(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+    config = Path("tests/fixtures/network/junos/junos_example.conf")
+    facts = DEVICE_FACTS / "juniper_junos_nfx250_show_version.txt"
+    response = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "juniper_junos"},
+        files=[
+            ("files", (config.name, config.read_bytes(), "text/plain")),
+            ("facts_files", (facts.name, facts.read_bytes(), "text/plain")),
+        ],
+    )
+    assert response.status_code == 200
+    results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
+    assert results["device"]["model"] == "nfx250_att_s1_10_t"
+    assert results["device"]["software_version"] is None
+
+    custom = client.post(
+        "/api/network/audit",
+        data={"framework": "all", "vendor": "custom:not-used"},
+        files=[
+            ("files", (config.name, config.read_bytes(), "text/plain")),
+            ("facts_files", (facts.name, facts.read_bytes(), "text/plain")),
+        ],
+    )
+    assert custom.status_code == 400
+    assert "only for built-in Cisco and Junos adapters" in custom.text
 
 
 def test_console_inventory_and_device_detail_after_bulk_upload(tmp_path, monkeypatch):

@@ -30,11 +30,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from tests.validate_rules import format_errors, load_validator  # noqa: E402
+from engines.network.device_facts import (  # noqa: E402
+    DeviceFactsError,
+    apply_device_facts,
+    load_device_facts,
+)
 from engines.network.normalize import normalize_config  # noqa: E402
 
 
 ENGINE_NAME = "network"
-ENGINE_VERSION = "0.3.0"
+ENGINE_VERSION = "0.4.0"
 ATTESTOR_FORMAT_VERSION = "1.0"
 VALID_STATUSES = {"pass", "fail", "error", "manual", "not_applicable"}
 WRAPPER_COMMANDS = {"enable", "configure terminal", "end", "write memory"}
@@ -504,6 +509,7 @@ def build_results(
     device_id: str,
     started_at: str,
     controls: list[dict[str, Any]],
+    device_facts: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     names = {rule["benchmark"] for rule in rules}
     versions = {rule["benchmark_version"] for rule in rules}
@@ -519,22 +525,25 @@ def build_results(
     platforms = {rule["device"]["platform"] for rule in rules}
     roles = sorted({role for rule in rules for role in rule["device"].get("roles", [])})
     parsed_hostname = config.hostname
+    device = {
+        "device_id": device_id,
+        "hostname": parsed_hostname,
+        "vendor": "Cisco",
+        "platform": next(iter(platforms), "IOS") if len(platforms) <= 1 else "IOS/IOS-XE",
+        "model": None,
+        "roles": roles,
+        "config_source": "file",
+        "config_sha256": config.sha256,
+    }
+    if device_facts is not None:
+        device = apply_device_facts(device, device_facts, parsed_hostname)
     return {
         "attestor_format_version": ATTESTOR_FORMAT_VERSION,
         "report_id": str(uuid.uuid4()),
         "target": "cisco_ios",
         "benchmark": benchmark,
         "benchmark_version": benchmark_version,
-        "device": {
-            "device_id": device_id,
-            "hostname": parsed_hostname,
-            "vendor": "Cisco",
-            "platform": next(iter(platforms), "IOS") if len(platforms) <= 1 else "IOS/IOS-XE",
-            "model": None,
-            "roles": roles,
-            "config_source": "file",
-            "config_sha256": config.sha256,
-        },
+        "device": device,
         "host": gather_host(),
         "run": {
             "started_at": started_at,
@@ -567,6 +576,11 @@ def main(argv: list[str] | None = None) -> int:
         description="Attestor — offline Cisco IOS configuration audit engine (Phase C/D)."
     )
     parser.add_argument("--config", required=True, help="saved Cisco IOS/IOS-XE config file")
+    parser.add_argument(
+        "--device-facts",
+        default=None,
+        help="optional saved Cisco show version output used only for device identity",
+    )
     parser.add_argument("--device-id", default=None, help="stable device ID; defaults to parsed hostname")
     parser.add_argument("--rules-dir", default=None, help="rule directory (default: rules/cisco_ios)")
     parser.add_argument("--rule", action="append", help="explicit rule file; repeatable")
@@ -593,7 +607,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
-    device_id = args.device_id or config.hostname
+    device_facts = None
+    if args.device_facts:
+        try:
+            device_facts = load_device_facts(args.device_facts, "cisco_ios")
+            apply_device_facts({}, device_facts, config.hostname)
+        except DeviceFactsError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
+
+    device_id = args.device_id or config.hostname or (
+        device_facts.get("hostname") if device_facts else None
+    )
     if not device_id:
         print("ERROR: no hostname in config; provide --device-id", file=sys.stderr)
         return 2
@@ -603,7 +628,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.flush()
 
     controls = [evaluate_rule(rule, config, emit) for rule in rules]
-    results = build_results(rules, load_errors, config, device_id, started_at, controls)
+    results = build_results(
+        rules, load_errors, config, device_id, started_at, controls, device_facts
+    )
     if args.format == "json":
         output = Path(args.output)
         output.write_text(json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

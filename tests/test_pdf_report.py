@@ -33,6 +33,28 @@ def test_pdf_renders_failed_control_and_dry_run_remediation(tmp_path):
     assert "DRY-RUN" in result["remediations"][0]["reasoning"]
 
 
+def test_pdf_renders_device_facts_identity_and_source(tmp_path):
+    results = _results()
+    results["device"].update({
+        "model": "WS-C4948E",
+        "serial_number": "CAT1451S15C",
+        "serial_numbers": ["CAT1451S15C"],
+        "software_version": "12.2(54)SG1",
+        "facts_source": {
+            "command": "show version",
+            "sha256": "b" * 64,
+            "parser": "cisco_show_version_v1",
+        },
+    })
+    output = tmp_path / "facts.pdf"
+    build_pdf(results, output, state_dir=tmp_path / "state")
+    text = "\n".join(page.extract_text() or "" for page in PdfReader(output).pages)
+    assert "WS-C4948E" in text
+    assert "CAT1451S15C" in text
+    assert "12.2(54)SG1" in text
+    assert "cisco_show_version_v1" in text
+
+
 def test_organization_defined_pdf_uses_operator_remediation_without_ai(tmp_path):
     results = _results()
     results["verification_status"] = "organization_defined"

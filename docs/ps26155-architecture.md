@@ -13,6 +13,8 @@ Attestor delivers a competition-ready, evidence-first prototype:
 - Juniper Junos: four vendor-documentation-backed baseline controls. This is a
   scoped subset, not full Junos benchmark coverage.
 - Single and bulk saved-configuration upload with independent failure handling.
+- Optional source-backed Cisco/Junos `show version` companion input for explicit
+  model, serial, and software identity.
 - Persistent local device inventory, scan history, device detail, and
   JSON/standalone HTML/PDF exports.
 - A privacy-safe Training Studio for unfamiliar vendor syntax.
@@ -28,7 +30,7 @@ outside the current evidence boundary.
 ## Runtime architecture
 
 ```text
-Saved configuration(s)
+Saved configuration(s) + optional paired show version output
         |
         v
 Local ingestion boundary
@@ -71,6 +73,11 @@ The deterministic engine is authoritative. AI classification is discovery
 metadata only and cannot create or change a compliance pass. Unreadable,
 ambiguous, draft, unsourced, or unsupported input fails closed.
 
+Device facts are identity metadata only. They are parsed from explicit vendor
+labels, checked against the configuration hostname when both expose one, and
+included in the existing report hash. Missing values remain unknown; no model,
+serial, or version is inferred from filenames or vendor selection.
+
 ## Training and privacy boundary
 
 Raw uploaded configuration bytes are hashed, processed temporarily, and
@@ -105,13 +112,16 @@ loop while retaining a conservative compliance core.
 
 ## Verified evidence
 
-- `76` automated tests pass.
+- `89` automated tests pass.
 - `218` real rule YAMLs validate; all negative fixtures fail as expected.
 - Pinned canonical hash and ledger contracts pass unchanged.
 - Cisco: ten source-backed configs; all 14 included controls have pass and fail
   evidence.
 - Junos: six source-derived redacted configs; all four included controls have
   pass and fail evidence.
+- Device identity: five unmodified Apache-2.0 `show version` fixtures plus one
+  source-derived hostname-matched Cisco integration config; manifest hashes and
+  parser/report/dashboard behavior are covered by tests.
 - Custom-profile workflow: genuine Cisco corpus train/confirm/publish plus one
   pass and one fail, with organization-defined labels in JSON, HTML, and PDF.
 - Real Sepolia proof for a Cisco report:

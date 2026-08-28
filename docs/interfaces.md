@@ -255,6 +255,62 @@ The organizational dashboard persists local product state in SQLite. The
 database is an implementation detail under `dashboard/data/` and is never part
 of a report hash or committed repository evidence.
 
+### 3d. Optional device-facts companion input (Phase K')
+
+Built-in network adapters may accept a separate, optional vendor command-output
+file containing device identity facts. The initial supported command is
+`show version` for Cisco IOS/IOS-XE and Juniper Junos. This file is metadata
+input only: it cannot create, remove, or change a compliance control result.
+
+CLI contract:
+
+- Cisco: `engines/network/run_audit.py --config <running-config>
+  --device-facts <show-version.txt>`
+- Junos: `engines/network/run_junos_audit.py --config <configuration>
+  --device-facts <show-version.txt>`
+
+Dashboard multipart contract:
+
+- `files`: required configuration files, unchanged from section 3a.
+- `facts_files`: optional command-output files. If present, the count must equal
+  `files`; entries pair by multipart order. A malformed/mismatched facts file
+  fails only its paired audit item, while other bulk pairs continue normally.
+- Companion facts are supported only for built-in Cisco/Junos adapters in this
+  phase. Organization-defined profiles have no verified hardware parser and
+  must reject `facts_files` explicitly rather than guessing.
+
+When facts are supplied and parsed successfully, the existing top-level
+`device` object may add these fields:
+
+```jsonc
+{
+  "model": "WS-C4948E",              // string|null
+  "serial_number": "CAT1451S15C",    // primary string|null
+  "serial_numbers": ["CAT1451S15C"], // all observed chassis/member serials
+  "software_version": "12.2(54)SG1", // string|null
+  "facts_source": {
+    "command": "show version",
+    "sha256": "64 lowercase hexadecimal characters",
+    "parser": "cisco_show_version_v1"
+  }
+}
+```
+
+Rules:
+
+- Raw command output is read from a temporary file and discarded after report
+  generation. Only parsed identity fields and its SHA-256 may enter results or
+  SQLite projections.
+- If configuration and facts both expose a hostname, they must match
+  case-insensitively. A mismatch is an input-association error, never silently
+  accepted.
+- Missing model, serial, or software fields remain `null`; no value is inferred
+  from filenames or vendor selection.
+- Supplying an unreadable, non-UTF-8, wrong-vendor, or unsupported facts file is
+  an explicit error. Omitting `--device-facts` remains fully backward-compatible.
+- These additive fields participate in the existing canonical report hash. No
+  canonicalization or ledger code changes are permitted.
+
 Persisted entity boundaries are:
 
 - `device_records`: the latest inventory projection and scan history for a

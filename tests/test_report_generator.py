@@ -18,6 +18,15 @@ def test_network_report_renders_device_and_dual_framework_mapping():
             "roles": ["router"],
             "config_source": "file",
             "config_sha256": "a" * 64,
+            "model": "WS-C4948E",
+            "serial_number": "CAT1451S15C",
+            "serial_numbers": ["CAT1451S15C"],
+            "software_version": "12.2(54)SG1",
+            "facts_source": {
+                "command": "show version",
+                "sha256": "b" * 64,
+                "parser": "cisco_show_version_v1",
+            },
         },
         "host": {
             "hostname": "runner",
@@ -68,6 +77,10 @@ def test_network_report_renders_device_and_dual_framework_mapping():
     html = render(results)
     assert "Audited device" in html
     assert "Cisco / IOS" in html
+    assert "WS-C4948E" in html
+    assert "CAT1451S15C" in html
+    assert "12.2(54)SG1" in html
+    assert "cisco_show_version_v1" in html
     assert "NIST SP 800-53" in html
     assert "SC-8" in html
     assert "direct" in html
