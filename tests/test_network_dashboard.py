@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -11,6 +12,7 @@ from fastapi.testclient import TestClient
 import dashboard.app as dashboard
 from dashboard.store import DashboardStore
 from engines.network.device_facts import load_device_facts
+from engines.network.netmiko_collector import CollectionError, CollectionResult
 
 
 CORPUS = Path("tests/fixtures/network/cisco_ios")
@@ -35,6 +37,16 @@ def test_dashboard_home_explains_both_audit_tracks():
     assert "Juniper Junos" in response.text
     assert "Fortinet FortiOS" in response.text
     assert "Hash-only proof" in response.text
+
+
+def test_console_exposes_live_collection_without_arbitrary_command_input(tmp_path, monkeypatch):
+    response = _client(tmp_path, monkeypatch).get("/console")
+    assert response.status_code == 200
+    assert "Collect from a live device" in response.text
+    assert 'action="/api/network/collect"' in response.text
+    assert 'name="password"' in response.text
+    assert 'name="secret"' in response.text
+    assert 'name="command"' not in response.text
 
 
 def test_network_single_upload_generates_json_html_and_pdf(tmp_path, monkeypatch):
@@ -194,6 +206,97 @@ def test_fortios_rejects_unimplemented_companion_facts(tmp_path, monkeypatch):
     )
     assert response.status_code == 400
     assert "not implemented for the scoped FortiOS adapter" in response.text
+
+
+def test_live_cisco_collection_reuses_existing_audit_pipeline_without_persisting_credentials(
+    tmp_path, monkeypatch
+):
+    client = _client(tmp_path, monkeypatch)
+    config = DEVICE_FACTS / "cisco_router1_running_config_redacted.txt"
+    facts = DEVICE_FACTS / "cisco_ios_catalyst4948_show_version.txt"
+    config_text = config.read_text(encoding="utf-8")
+    facts_text = facts.read_text(encoding="utf-8")
+    observed = {}
+
+    def fake_collect(request):
+        observed["request"] = request
+        return CollectionResult(
+            vendor=request.vendor,
+            host=request.host,
+            port=request.port,
+            config_command="show running-config",
+            config_text=config_text,
+            config_sha256=hashlib.sha256(config_text.encode()).hexdigest(),
+            facts_command="show version",
+            facts_text=facts_text,
+            facts_sha256=hashlib.sha256(facts_text.encode()).hexdigest(),
+            collected_at=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+
+    monkeypatch.setattr(dashboard, "collect_running_config", fake_collect)
+    response = client.post(
+        "/api/network/collect",
+        data={
+            "vendor": "cisco_ios",
+            "host": "router1.example.test",
+            "port": "22",
+            "username": "auditor",
+            "password": "do-not-persist-password",
+            "secret": "do-not-persist-enable",
+            "framework": "all",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "HTML report" in response.text
+    assert observed["request"].password == "do-not-persist-password"
+    results = json.loads(next(dashboard.RESULTS_DIR.glob("*.json")).read_text())
+    assert results["device"]["config_source"] == "netmiko-ssh"
+    assert results["collection"]["method"] == "netmiko-ssh"
+    assert results["collection"]["host"] == "router1.example.test"
+    assert results["device"]["model"] == "WS-C4948E"
+    serialized = json.dumps(results)
+    assert "do-not-persist-password" not in serialized
+    assert "do-not-persist-enable" not in serialized
+    assert "auditor" not in results["collection"]
+    for path in tmp_path.rglob("*"):
+        if path.is_file():
+            content = path.read_bytes()
+            assert b"do-not-persist-password" not in content
+            assert b"do-not-persist-enable" not in content
+
+
+def test_live_collection_failure_is_recorded_without_report_or_secret(tmp_path, monkeypatch):
+    client = _client(tmp_path, monkeypatch)
+
+    def fail_collection(_request):
+        raise CollectionError("SSH authentication failed")
+
+    monkeypatch.setattr(dashboard, "collect_running_config", fail_collection)
+    response = client.post(
+        "/api/network/collect",
+        data={
+            "vendor": "cisco_ios",
+            "host": "router1.example.test",
+            "port": "22",
+            "username": "auditor",
+            "password": "failure-password",
+            "secret": "failure-enable",
+            "framework": "all",
+        },
+    )
+
+    assert response.status_code == 200
+    assert "SSH authentication failed" in response.text
+    assert not list(dashboard.RESULTS_DIR.iterdir())
+    record = next(iter(dashboard.DEVICE_RECORDS.values()))
+    assert record["status"] == "failed"
+    assert record["error"] == "SSH authentication failed"
+    for path in tmp_path.rglob("*"):
+        if path.is_file():
+            content = path.read_bytes()
+            assert b"failure-password" not in content
+            assert b"failure-enable" not in content
 
 
 def test_dashboard_pairs_cisco_config_and_show_version_into_all_reports(tmp_path, monkeypatch):

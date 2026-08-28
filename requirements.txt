@@ -8,3 +8,4 @@ python-dotenv==1.0.1
 reportlab==4.2.5
 python-multipart==0.0.32
 pypdf==6.14.2
+netmiko==4.7.0

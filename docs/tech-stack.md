@@ -128,6 +128,12 @@ disabled by default. The Junos and FortiOS adapters are intentionally narrow,
 vendor-documentation-backed subsets with four and three controls respectively;
 broader vendor and control coverage remains roadmap.
 
+Netmiko 4.7 provides the optional live SSH transport for the three built-in
+network adapters. Vendor commands are fixed in code; credentials remain in
+request memory; collected output is bounded and temporary before entering the
+existing file-based engine. Automated tests cover safety and handoff, while a
+reachable real device is still required for live verification.
+
 SQLite now persists local device projections/history, training sessions,
 redacted patterns, bounded source excerpts, API usage accounting, and published
 organization-defined profiles. It does not retain raw uploaded configs.

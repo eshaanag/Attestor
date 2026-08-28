@@ -26,8 +26,8 @@ Attestor delivers a competition-ready, evidence-first prototype:
   bonus integrity proof, not the compliance decision engine.
 
 Native DISA STIG and ISO/IEC 27001 rule packs, full coverage for the vendors in
-the PS list, multi-user authentication, and verified live SSH collection remain
-outside the current evidence boundary. The current official Cisco IOS Router
+the PS list, multi-user authentication, and real-device verification of the
+implemented Netmiko collector remain outside the current evidence boundary. The current official Cisco IOS Router
 and Switch STIG packages have been inspected, but no mapping was accepted
 because the genuine corpus does not prove a complete pass and fail for the
 applicable XCCDF checks. See `docs/disa-stig-evidence.md`.
@@ -120,7 +120,7 @@ loop while retaining a conservative compliance core.
 
 ## Verified evidence
 
-- `103` automated tests pass.
+- `121` automated tests pass.
 - `221` real rule YAMLs validate; all negative fixtures fail as expected.
 - Pinned canonical hash and ledger contracts pass unchanged.
 - Cisco: ten source-backed configs; all 14 included controls have pass and fail
@@ -129,6 +129,9 @@ loop while retaining a conservative compliance core.
   pass and fail evidence.
 - FortiOS: eight licensed public captures; all three included controls have
   pass and fail evidence, while missing required sections remain errors.
+- Live collection: fixed read-only Netmiko profiles, bounded output,
+  credential non-persistence, error translation, and existing-engine handoff
+  are tested. No successful real SSH collection is claimed yet.
 - Device identity: five unmodified Apache-2.0 `show version` fixtures plus one
   source-derived hostname-matched Cisco integration config; manifest hashes and
   parser/report/dashboard behavior are covered by tests.

@@ -45,6 +45,12 @@ PDF remediation remains dry-run by default for built-in adapters and makes no
 provider call. Organization-defined reports bypass AI remediation and show the
 operator-authored, source-referenced remediation instead.
 
+The console also includes an additive Netmiko SSH workflow for the three
+built-in vendors. It accepts one device, uses fixed read-only commands, keeps
+credentials in request memory, and feeds bounded temporary output into the same
+saved-file adapter. Automated tests cover safety and handoff, but the transport
+remains live-unverified until exercised against a reachable real device.
+
 ## Training Studio
 
 `/training` accepts an unfamiliar genuine configuration plus optional text/PDF

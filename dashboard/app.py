@@ -20,6 +20,7 @@ import asyncio
 import copy
 import hashlib
 import html
+import io
 import json
 import os
 import re
@@ -54,6 +55,12 @@ from ai.vendor_training import (  # noqa: E402
     extract_knowledge_text,
 )
 from engines.network.custom import CustomProfileError, audit_custom_profile  # noqa: E402
+from engines.network.netmiko_collector import (  # noqa: E402
+    CollectionError,
+    CollectionRequest,
+    CollectionResult,
+    collect_running_config,
+)
 
 RESULTS_DIR = REPO_ROOT / "reports"
 RESULTS_DIR.mkdir(exist_ok=True)
@@ -68,6 +75,29 @@ MAX_NETWORK_CONFIG_BYTES = 2 * 1024 * 1024
 MAX_KNOWLEDGE_SOURCE_BYTES = 5 * 1024 * 1024
 FRAMEWORK_VIEWS = {"all", "cis", "nist"}
 DEVICE_RECORDS: dict[str, dict] = STORE.load_device_records()
+
+LIVE_COLLECTION_STYLE = """
+.live-grid{display:grid;grid-template-columns:170px minmax(160px,1fr) 86px minmax(140px,1fr) minmax(140px,1fr) minmax(130px,1fr) 170px auto;gap:10px;align-items:end;margin-top:16px}
+@media(max-width:1200px){.live-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:560px){.live-grid{display:flex;align-items:stretch;flex-direction:column}}
+"""
+
+LIVE_COLLECTION_PANEL = """
+<section class="upload" id="live-device">
+  <div class="upload-header"><div><h2>Collect from a live device</h2><p>Connect over SSH, run fixed read-only commands, and audit the temporary output with the same adapter.</p></div><span class="scope-chip">Netmiko SSH · one device</span></div>
+  <form class="live-grid" action="/api/network/collect" method="post">
+    <div><label for="live-vendor">Vendor</label><select id="live-vendor" name="vendor"><option value="cisco_ios">Cisco IOS / IOS-XE</option><option value="juniper_junos">Juniper Junos</option><option value="fortinet_fortios">Fortinet FortiOS</option></select></div>
+    <div><label for="live-host">Host / IP</label><input id="live-host" name="host" required autocomplete="off" placeholder="192.0.2.10"></div>
+    <div><label for="live-port">Port</label><input id="live-port" name="port" type="number" min="1" max="65535" value="22" required></div>
+    <div><label for="live-user">Username</label><input id="live-user" name="username" required autocomplete="username"></div>
+    <div><label for="live-password">Password</label><input id="live-password" name="password" type="password" required autocomplete="current-password"></div>
+    <div><label for="live-secret">Enable secret</label><input id="live-secret" name="secret" type="password" autocomplete="off" placeholder="Cisco only"></div>
+    <div><label for="live-framework">Framework view</label><select id="live-framework" name="framework"><option value="all">Source-backed + mapped</option><option value="cis">Source-backed only</option><option value="nist">NIST mapped</option></select></div>
+    <button class="button" type="submit">Connect and audit</button>
+  </form>
+  <div class="upload-note"><span>Credentials stay in memory</span><span>Fixed read-only commands</span><span>Raw collection is temporary</span><span>Failures never become passes</span></div>
+</section>
+"""
 
 # ─────────────────────── HTML Template (inline, self-contained) ───────────────
 
@@ -1002,6 +1032,12 @@ def _console_page(search: str = "", vendor: str = "all", status: str = "all") ->
 :root{{--ink:#10212b;--muted:#657782;--line:#d8e4e8;--canvas:#f4f9fa;--surface:#fff;--blue:#0b6b8f;--teal:#16a5a0;--green:#18794e;--red:#b42318;--amber:#976c00}}*{{box-sizing:border-box;margin:0;padding:0}}body{{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 0%,rgba(22,165,160,.14),transparent 31%),linear-gradient(145deg,#edf7f8,#f8fbfc 51%,#eaf3f5);background-attachment:fixed}}body:before{{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.22) 1px,transparent 1px);background-size:46px 46px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.45),transparent 70%)}}.shell{{max-width:1340px;margin:auto;padding:24px 30px 64px;position:relative;z-index:1}}.topbar,.metric,.upload,.device-list{{border:1px solid rgba(255,255,255,.84);box-shadow:0 16px 40px rgba(38,76,89,.08),inset 0 1px 0 rgba(255,255,255,.95);backdrop-filter:blur(18px) saturate(145%);-webkit-backdrop-filter:blur(18px) saturate(145%)}}.topbar{{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:14px;margin-bottom:25px;background:rgba(255,255,255,.5)}}.brand{{display:flex;align-items:center;gap:11px}}.mark{{display:grid;place-items:center;width:39px;height:39px;border-radius:10px;background:rgba(16,33,43,.92);color:#fff;font-weight:800;box-shadow:0 8px 22px rgba(16,33,43,.2),inset 0 1px 0 rgba(255,255,255,.24)}}.brand strong{{display:block;font-size:17px}}.brand small,.sub,.device-row span,.metric small{{color:var(--muted);font-size:11px}}.nav{{display:flex;gap:19px;align-items:center}}.nav a{{color:var(--muted);font-size:13px;text-decoration:none}}.nav .active{{color:var(--ink);font-weight:750}}.workspace-head{{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:22px}}.eyebrow{{color:var(--blue);font-size:11px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;margin-bottom:9px}}h1{{font-size:34px;line-height:1.1}}.sub{{display:block;font-size:13px;margin-top:8px}}.top-actions,.filters{{display:flex;gap:9px;flex-wrap:wrap}}.button{{border:1px solid rgba(255,255,255,.25);border-radius:8px;background:rgba(16,33,43,.92);color:#fff;padding:11px 14px;font:inherit;font-size:12px;font-weight:750;text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(16,33,43,.15),inset 0 1px 0 rgba(255,255,255,.2)}}.button.alt{{background:rgba(255,255,255,.58);border-color:rgba(255,255,255,.9);color:var(--ink)}}.overview{{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.7fr);gap:14px;margin-bottom:14px}}.metrics{{display:grid;grid-template-columns:repeat(4,1fr);gap:11px}}.metric{{position:relative;overflow:hidden;background:rgba(255,255,255,.58);border-radius:10px;padding:17px;min-height:105px}}.metric strong{{font-size:28px;display:block;font-variant-numeric:tabular-nums}}.metric span{{display:block;color:var(--muted);font-size:10px;margin-top:4px;text-transform:uppercase;letter-spacing:.06em}}.metric small{{display:block;margin-top:11px}}.metric.good strong{{color:var(--green)}}.metric.bad strong{{color:var(--red)}}.network-card{{position:relative;overflow:hidden;background:rgba(16,33,43,.92);color:#fff;border-radius:10px;padding:17px;min-height:105px;box-shadow:0 16px 36px rgba(16,33,43,.2),inset 0 1px 0 rgba(255,255,255,.22)}}.network-card strong{{display:block;font-size:14px}}.network-card span{{display:block;color:#b9d1d8;font-size:11px;margin-top:5px;max-width:190px}}.network-nodes{{position:absolute;right:21px;bottom:18px;display:flex;gap:18px;align-items:center}}.network-nodes i{{display:block;width:9px;height:9px;background:var(--teal);border-radius:50%;box-shadow:0 0 0 5px rgba(22,165,160,.16)}}.network-nodes i:nth-child(2){{width:15px;height:15px;background:#fff;box-shadow:0 0 0 6px rgba(255,255,255,.12)}}.upload{{background:rgba(255,255,255,.58);border-radius:10px;padding:20px;margin-bottom:14px}}.upload-header,.inventory-head{{display:flex;justify-content:space-between;align-items:start;gap:20px}}.upload h2,.inventory-head h2{{font-size:17px}}.upload p,.inventory-head p{{color:var(--muted);font-size:12px;margin-top:5px}}.scope-chip{{background:rgba(222,247,248,.72);border:1px solid rgba(255,255,255,.82);color:var(--blue);border-radius:999px;padding:6px 9px;font-size:10px;font-weight:800;white-space:nowrap}}.upload-grid{{display:grid;grid-template-columns:190px 230px minmax(250px,1fr) auto;gap:10px;align-items:end;margin-top:16px}}label{{display:block;font-size:11px;font-weight:750;margin-bottom:6px}}.upload input,.upload select,.filters input,.filters select{{width:100%;border:1px solid rgba(255,255,255,.92);border-radius:7px;padding:10px 11px;font:inherit;font-size:12px;background:rgba(255,255,255,.68);color:var(--ink);box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}}.upload input[type=file]{{padding:8px}}.upload-note{{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-top:12px}}.upload-note span:before{{content:"✓";color:var(--green);font-weight:800;margin-right:5px}}.inventory-head{{align-items:end;margin:24px 0 11px}}.filters{{align-items:center}}.filters input{{min-width:210px}}.device-list{{background:rgba(255,255,255,.58);border-radius:10px;overflow:hidden}}.list-head,.device-row{{display:grid;grid-template-columns:minmax(250px,1.45fr) 110px minmax(200px,1fr) minmax(145px,.7fr);gap:18px;align-items:center}}.list-head{{padding:11px 18px;background:rgba(248,252,253,.55);border-bottom:1px solid var(--line);color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}}.device-row{{padding:16px 18px;border-bottom:1px solid rgba(223,235,238,.8);text-decoration:none;color:inherit;transition:transform .16s ease-out,background .16s ease-out}}.device-row:last-child{{border-bottom:0}}.device-row:hover{{background:rgba(255,255,255,.5);transform:translateX(2px)}}.device-identity{{display:flex;align-items:center;gap:11px}}.device-icon{{display:grid!important;place-items:center;width:36px;height:36px;border-radius:9px;background:rgba(222,247,248,.72);border:1px solid rgba(255,255,255,.82);color:var(--blue)!important;font-size:12px!important;font-weight:850;margin:0!important}}.device-row strong{{font-size:13px;display:block}}.row-score{{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}}.row-score span{{font-size:9px;font-weight:600;text-transform:uppercase}}.row-summary{{display:flex;gap:9px;flex-wrap:wrap}}.row-summary span{{display:inline-block!important;margin:0!important}}.mini-pass{{color:var(--green)!important}}.mini-fail{{color:var(--red)!important}}.state{{display:inline-block!important;width:max-content;border-radius:999px;padding:5px 8px;font-size:9px!important;font-weight:800;text-transform:uppercase;margin:0!important}}.state.good{{background:#e7f6ed;color:var(--green)}}.state.bad{{background:#fdecea;color:var(--red)}}.state.pending{{background:#fff5d7;color:var(--amber)}}.last-scan{{font-size:10px!important}}.empty{{padding:46px;text-align:center;color:var(--muted);font-size:12px}}.empty-icon{{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:rgba(222,247,248,.72);color:var(--blue);font-size:21px;margin:0 auto 11px}}.empty strong,.empty span{{display:block}}.empty strong{{color:var(--ink);font-size:14px}}.empty span{{margin-top:5px}}.empty a{{display:inline-block;color:var(--blue);font-weight:750;text-decoration:none;margin-top:12px}}@media(max-width:1000px){{.overview{{grid-template-columns:1fr}}.upload-grid{{grid-template-columns:1fr 1fr}}}}@media(max-width:820px){{.metrics{{grid-template-columns:repeat(2,1fr)}}.inventory-head{{display:block}}.filters{{margin-top:12px}}.list-head{{display:none}}.device-row{{grid-template-columns:1fr 80px;gap:10px}}.row-summary{{grid-column:1/-1}}.device-row>div:last-child{{text-align:right}}}}@media(max-width:560px){{.shell{{padding:20px 16px 45px}}.workspace-head{{display:block}}.top-actions{{margin-top:16px}}.filters,.upload-grid{{display:flex;align-items:stretch;flex-direction:column}}.filters input{{width:100%;min-width:0}}.upload-header{{display:block}}.scope-chip{{display:inline-block;margin-top:10px}}}}@media(prefers-reduced-motion:reduce){{.device-row{{transition:none}}}}
 </style></head><body><div class="shell"><header class="topbar"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><nav class="nav"><a class="active" href="/console">Console</a><a href="/training">Training Studio</a><a href="/profiles">Vendor profiles</a><a href="/">Overview</a></nav></header><main><section class="workspace-head"><div><div class="eyebrow">Organization workspace / local</div><h1>Security posture operations</h1><p class="sub">Evaluate saved network state, isolate device-level findings, and produce evidence-ready reports.</p></div><div class="top-actions"><a class="button alt" href="/profiles">Manage profiles</a><a class="button" href="/console#upload">Add configuration</a></div></section><section class="overview"><div class="metrics"><div class="metric"><strong>{counts["total"]}</strong><span>Devices tracked</span><small>Persistent local inventory</small></div><div class="metric good"><strong>{counts["complete"]}</strong><span>Completed scans</span><small>Evidence available</small></div><div class="metric bad"><strong>{aggregate["fail"]}</strong><span>Failed controls</span><small>Require remediation</small></div><div class="metric"><strong>{aggregate["error"]}</strong><span>Errors requiring review</span><small>Fail-closed results</small></div></div><aside class="network-card"><strong>Adapter surface</strong><span>Cisco IOS / IOS-XE, scoped Juniper Junos, and scoped Fortinet FortiOS are built in. Published low-code profiles remain organization-defined.</span><div class="network-nodes" aria-hidden="true"><i></i><i></i><i></i></div></aside></section><section class="upload" id="upload"><div class="upload-header"><div><h2>Add network configurations</h2><p>Upload genuine saved configurations. Each file becomes an independent scan and report set.</p></div><span class="scope-chip">Up to 20 files · 2 MiB each</span></div><form class="upload-grid" action="/api/network/audit" method="post" enctype="multipart/form-data"><div><label for="vendor">Vendor adapter / profile</label><select id="vendor" name="vendor"><optgroup label="Attestor built-in adapters"><option value="cisco_ios">Cisco IOS / IOS-XE</option><option value="juniper_junos">Juniper Junos</option><option value="fortinet_fortios">Fortinet FortiOS</option></optgroup>{f'<optgroup label="Organization-defined profiles">{custom_upload_options}</optgroup>' if custom_upload_options else ''}</select></div><div><label for="framework">Framework view</label><select id="framework" name="framework"><option value="all">Source-backed + mapped controls</option><option value="cis">Source-backed controls</option><option value="nist">NIST mapped view</option></select></div><div><label for="files">Configuration files</label><input id="files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div><button class="button" type="submit">Queue scans</button></form><div class="upload-note"><span>Processed locally</span><span>Temporary upload workspace</span><span>JSON, HTML and PDF per device</span><span>Custom profiles are operator-defined</span></div></section><section class="inventory-head"><div><h2>Device inventory</h2><p>Open a device to review evidence, severity, remediation, report exports, and integrity state.</p></div><form class="filters" method="get" action="/console"><input name="search" value="{html.escape(search)}" placeholder="Search device or file" aria-label="Search device or file"><select name="vendor" aria-label="Filter by vendor"><option value="all">All adapters</option><option value="cisco_ios" {"selected" if vendor == "cisco_ios" else ""}>Cisco IOS / IOS-XE</option><option value="juniper_junos" {"selected" if vendor == "juniper_junos" else ""}>Juniper Junos</option><option value="fortinet_fortios" {"selected" if vendor == "fortinet_fortios" else ""}>Fortinet FortiOS</option>{custom_filter_options}</select><select name="status" aria-label="Filter by status"><option value="all">All statuses</option><option value="queued" {"selected" if status == "queued" else ""}>Queued</option><option value="running" {"selected" if status == "running" else ""}>Running</option><option value="complete" {"selected" if status == "complete" else ""}>Completed</option><option value="failed" {"selected" if status == "failed" else ""}>Failed</option><option value="error" {"selected" if status == "error" else ""}>Error</option></select><button class="button alt" type="submit">Filter</button></form></section><section class="device-list"><div class="list-head"><span>Device / platform</span><span>Posture</span><span>Control summary</span><span>Scan state</span></div>{device_rows}</section></main></div></body></html>"""
     return page.replace(
+        "</style>", LIVE_COLLECTION_STYLE + "</style>", 1
+    ).replace(
+        '<section class="inventory-head">',
+        LIVE_COLLECTION_PANEL + '<section class="inventory-head">',
+        1,
+    ).replace(
         '<div><label for="files">Configuration files</label><input id="files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div>',
         '<div><label for="files">Configuration files</label><input id="files" name="files" type="file" accept=".txt,.cfg,.conf,text/plain" multiple required></div>'
         '<div><label for="facts-files">Optional show version files</label><input id="facts-files" name="facts_files" type="file" accept=".txt,text/plain" multiple></div>',
@@ -1307,6 +1343,8 @@ async def _audit_network_upload(
     vendor: str,
     work_dir: Path,
     record_id: str | None = None,
+    config_source: str = "file",
+    collection_metadata: dict | None = None,
 ) -> dict:
     display_name = _safe_upload_name(upload.filename)
     if record_id and record_id in DEVICE_RECORDS:
@@ -1383,6 +1421,9 @@ async def _audit_network_upload(
 
     try:
         results = json.loads(results_path.read_text(encoding="utf-8"))
+        results.setdefault("device", {})["config_source"] = config_source
+        if collection_metadata:
+            results["collection"] = copy.deepcopy(collection_metadata)
         viewed = _apply_framework_view(results, framework)
         results_path.write_text(json.dumps(viewed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         html_path.write_text(render(viewed), encoding="utf-8")
@@ -1541,6 +1582,101 @@ async def audit_network_configs(
         ]
     _record_network_items(items)
     return HTMLResponse(_apple_glass(_network_results_page(items, framework)))
+
+
+@app.post("/api/network/collect", response_class=HTMLResponse)
+async def collect_and_audit_network_device(
+    vendor: str = Form(...),
+    host: str = Form(...),
+    port: int = Form(22),
+    username: str = Form(...),
+    password: str = Form(...),
+    secret: str = Form(""),
+    framework: str = Form("all"),
+):
+    if framework not in FRAMEWORK_VIEWS:
+        return HTMLResponse("Invalid framework view", status_code=400)
+    try:
+        request = CollectionRequest(
+            vendor=vendor,
+            host=host,
+            port=port,
+            username=username,
+            password=password,
+            secret=secret or None,
+        )
+    except ValueError as exc:
+        return HTMLResponse(html.escape(str(exc)), status_code=400)
+
+    record_id = uuid.uuid4().hex[:12]
+    safe_host = _safe_upload_name(request.host).replace(".", "_")
+    display_name = f"live_{safe_host}.cfg"
+    vendor_name = (
+        "Juniper" if vendor == "juniper_junos"
+        else "Fortinet" if vendor == "fortinet_fortios"
+        else "Cisco"
+    )
+    platform_name = (
+        "Junos" if vendor == "juniper_junos"
+        else "FortiOS" if vendor == "fortinet_fortios"
+        else "IOS/IOS-XE"
+    )
+    DEVICE_RECORDS[record_id] = {
+        "record_id": record_id,
+        "device_id": request.host,
+        "filename": display_name,
+        "vendor_key": vendor,
+        "vendor": vendor_name,
+        "platform": platform_name,
+        "status": "running",
+        "summary": {},
+        "controls": [],
+        "history": [],
+        "last_scan": None,
+        "chain_status": "Not chained (local report only)",
+    }
+    STORE.upsert_device_record(DEVICE_RECORDS[record_id])
+
+    try:
+        collection: CollectionResult = await asyncio.to_thread(
+            collect_running_config, request
+        )
+    except CollectionError as exc:
+        item = {
+            "record_id": record_id,
+            "filename": display_name,
+            "status": "error",
+            "error": str(exc),
+            "vendor": vendor,
+            "vendor_key": vendor,
+        }
+        _record_network_items([item])
+        return HTMLResponse(_apple_glass(_network_results_page([item], framework)))
+
+    config_upload = UploadFile(
+        filename=display_name,
+        file=io.BytesIO(collection.config_text.encode("utf-8")),
+    )
+    facts_upload = None
+    if collection.facts_text is not None:
+        facts_upload = UploadFile(
+            filename=f"live_{safe_host}_show_version.txt",
+            file=io.BytesIO(collection.facts_text.encode("utf-8")),
+        )
+    with tempfile.TemporaryDirectory(prefix="attestor-live-collection-") as temp_name:
+        item = await _audit_network_upload(
+            config_upload,
+            facts_upload,
+            framework,
+            vendor,
+            Path(temp_name),
+            record_id,
+            config_source="netmiko-ssh",
+            collection_metadata=collection.public_metadata(),
+        )
+    item["vendor_key"] = vendor
+    _record_network_items([item])
+    return HTMLResponse(_apple_glass(_network_results_page([item], framework)))
 
 
 def _record_network_items(items: list[dict]) -> None:

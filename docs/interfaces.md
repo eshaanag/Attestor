@@ -257,7 +257,43 @@ The organizational dashboard persists local product state in SQLite. The
 database is an implementation detail under `dashboard/data/` and is never part
 of a report hash or committed repository evidence.
 
-### 3d. Optional device-facts companion input (Phase K')
+### 3d. Live SSH collection contract (Phase P')
+
+Live collection is an additive input transport for the existing built-in
+network adapters. It does not evaluate controls and cannot override an engine
+result. `POST /api/network/collect` accepts one device at a time:
+
+- `vendor`: `cisco_ios`, `juniper_junos`, or `fortinet_fortios`;
+- `host`: an IP address or DNS hostname, without a URL scheme or path;
+- `port`: integer `1..65535`, default `22`;
+- `username` and `password`: required SSH credentials;
+- `secret`: optional Cisco enable secret;
+- `framework`: `all`, `cis`, or `nist`, with the same presentation-only
+  semantics as saved-file ingestion.
+
+The server selects a fixed Netmiko device type and fixed read-only commands:
+
+| Vendor key | Netmiko type | Configuration command | Facts command |
+|---|---|---|---|
+| `cisco_ios` | `cisco_ios` | `show running-config` | `show version` |
+| `juniper_junos` | `juniper_junos` | `show configuration | no-more` | `show version | no-more` |
+| `fortinet_fortios` | `fortinet` | `show full-configuration` | none |
+
+Arbitrary commands are not accepted from the browser or CLI. Netmiko output is
+bounded to the same 2 MiB configuration limit, must decode as UTF-8, and is
+written only inside the existing temporary audit workspace. Cisco/Junos facts
+use the existing companion-facts parser. The collected bytes then enter the
+same engine/report pipeline as a saved upload.
+
+Passwords and enable secrets are never written to SQLite, reports, logs,
+command arguments, filenames, or collection metadata. Persistent metadata is
+limited to transport type (`netmiko-ssh`), vendor, host, port, fixed command,
+collection timestamp, and output hashes. Authentication, timeout, privilege,
+command, decoding, size, and downstream parser failures produce an explicit
+failed scan with no report artifacts. No live vendor is marked verified until
+the full path succeeds against a reachable real device.
+
+### 3e. Optional device-facts companion input (Phase K')
 
 Built-in network adapters may accept a separate, optional vendor command-output
 file containing device identity facts. The initial supported command is

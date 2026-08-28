@@ -184,6 +184,37 @@ http://127.0.0.1:8000
 10. Confirm or correct a pattern, create a draft profile, add a source-referenced
    rule, publish it, and select it from the main console upload selector.
 
+### Collect and audit a real network device
+
+1. Ensure the machine running Attestor can reach the device's SSH port.
+2. Open **Collect from a live device** in the console.
+3. Select the vendor and enter host/IP, port, username, password, and the Cisco
+   enable secret only when the account needs `enable` for `show running-config`.
+4. Select the framework view and click **Connect and audit**.
+5. The fixed commands are Cisco `show running-config` + `show version`, Junos
+   `show configuration | no-more` + `show version | no-more`, or FortiOS
+   `show full-configuration`. There is no arbitrary-command field.
+6. A successful Cisco verification requires the results page, a report with
+   `device.config_source` equal to `netmiko-ssh`, parsed device facts where the
+   device exposes them, and downloadable JSON/HTML/PDF/ZIP artifacts.
+
+Credentials are never written to SQLite or report artifacts. Collected raw
+configuration is temporary. Until the above succeeds against a reachable real
+device, describe the connector as implemented and tested, not live-verified.
+
+The standalone collector is available when an explicit owner-only capture is
+needed for troubleshooting. Passwords are prompted or read from dedicated
+environment variables, never command-line flags:
+
+```bash
+export ATTESTOR_DEVICE_PASSWORD='your-device-password'
+export ATTESTOR_DEVICE_SECRET='optional-cisco-enable-secret'
+python3 engines/network/netmiko_collector.py \
+  --vendor cisco_ios --host 192.0.2.10 --port 22 --username auditor \
+  --output running-config.txt --facts-output show-version.txt
+unset ATTESTOR_DEVICE_PASSWORD ATTESTOR_DEVICE_SECRET
+```
+
 The same optional identity input is available from the CLI:
 
 ```bash
@@ -206,12 +237,13 @@ The NIST option shows documented mappings attached to source-backed checks; it
 does not claim a separate NIST-native rule pack. Uploaded configurations are
 processed locally and discarded. SQLite retains hashes, redacted patterns,
 profiles, report projections, and scan history, not raw configs. The dashboard
-does not simulate SSH or DevNet collection. Cisco IOS provides 14 CIS-backed
+uses real Netmiko SSH collection when the live form is submitted; it does not
+simulate DevNet or device output. Cisco IOS provides 14 CIS-backed
 controls; Junos provides four vendor-documentation-backed controls; FortiOS
 provides three vendor-documentation-backed controls. Other vendors may use
 organization-defined flat profiles, but are not claimed as
-Attestor-verified coverage. Native DISA/ISO packs and verified live SSH
-collection remain roadmap.
+Attestor-verified coverage. Native DISA/ISO packs remain roadmap, while live
+collection awaits real-device verification.
 
 ### ⚠️ GUI requirements:
 - `python3 -m pip install -r requirements.txt` must be completed
@@ -290,7 +322,7 @@ cd /Users/eshaanog/Documents/SIH/Attestor
 # Validate all 221 current real rules and negative fixtures
 python3 tests/validate_rules.py
 
-# Run the full test suite (current verified gate: 103 passed)
+# Run the full test suite (current verified gate: 121 passed)
 python3 -m pytest -q
 
 # Show help

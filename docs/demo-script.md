@@ -77,7 +77,7 @@ Windows controls. Reports can be hash-chained, and a real Cisco report hash was
 anchored on Ethereum Sepolia. Only the SHA-256 hash is public, never the report
 or configuration."
 
-Close with the evidence: `103` tests, `221` validated rules, three built-in vendor
+Close with the evidence: `121` tests, `221` validated rules, three built-in vendor
 adapters, a reusable human training loop, and offline JSON/HTML/PDF reporting.
 
 ## Judge questions
@@ -95,9 +95,9 @@ adapters, a reusable human training loop, and offline JSON/HTML/PDF reporting.
   profile UI lets operators record sourced mappings, but native verified
   DISA/ISO packs are roadmap and are not claimed today.
 - **Why blockchain?** It is an optional integrity seal. Only hashes are public.
-- **Why no live SSH demo?** Saved configuration is the common audit contract.
-  Netmiko collection is an optional input adapter and is not claimed verified
-  without a reachable real device.
+- **Is live SSH implemented?** Yes. Netmiko runs fixed read-only commands and
+  feeds temporary output into the same engine. Call it live-verified only after
+  the presentation device completes the full collection/report path.
 
 ## Fallback
 

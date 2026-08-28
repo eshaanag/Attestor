@@ -94,9 +94,9 @@ attestor/
 For PS26155, Cisco IOS, scoped Junos, persistent single/bulk ingestion,
 budget-capped AI-assisted training, organization-defined vendor profiles, and
 JSON/HTML/PDF plus evidence-bundle reporting and conservative same-device scan
-comparison are implemented and covered by the current automated suite. Live SSH
-collection remains optional and unverified because no reachable real device is
-part of the repository test environment.
+comparison are implemented and covered by the current automated suite. A
+Netmiko SSH input adapter is implemented for the three built-in vendors, but
+live-device verification remains open until a reachable real device is tested.
 
 **Current blockchain integration:** Ethereum Sepolia contract
 [`0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`](https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41), using
@@ -124,6 +124,7 @@ See [`reports/sample-report.html`](reports/sample-report.html) for an example re
 | N' | Same-device scan comparison | Complete (scoped) | Repeated genuine Cisco scans preserve historical artifacts and show new failures, resolved findings, score/config movement, and same-framework coverage changes; missing software facts stay not comparable |
 | G | Optional second vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos coverage remains roadmap |
 | O' | Fortinet FortiOS third-vendor subset | Complete (scoped) | Eight licensed public captures, narrow `config/edit/next/end` parser, and three Fortinet-documentation baseline controls; every included rule has genuine pass and fail states; CIS FortiGate coverage is not claimed |
+| P' | Netmiko live collection | Implemented; live verification pending | Fixed read-only Cisco/Junos/FortiOS commands, bounded temporary output, credential non-persistence, fail-closed errors, and existing-engine handoff are tested; no real SSH success is claimed yet |
 | H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos/FortiOS scope and roadmap honestly |
 
 The verified Phase C/D/E network track is limited to source-backed Cisco IOS
@@ -137,8 +138,9 @@ onboarded through an organization-defined exact-pattern profile, but those
 profiles are not presented as Attestor-verified benchmark coverage. Official
 Cisco IOS DISA STIG packages have been inspected, but native DISA coverage is
 deferred because the genuine corpus does not prove complete pass/fail states;
-see `docs/disa-stig-evidence.md`. ISO/IEC 27001 packs, broader Junos coverage,
-and live SSH collection remain roadmap. AI classification is discovery metadata only: deterministic
+see `docs/disa-stig-evidence.md`. ISO/IEC 27001 packs and broader Junos coverage
+remain roadmap. Live SSH collection is implemented but awaits real-device
+verification. AI classification is discovery metadata only: deterministic
 compliance results remain authoritative, credentials are redacted before
 provider use, and dry-run remains the default.
 
@@ -188,11 +190,19 @@ history only. Re-scan a device with the same filename/device ID and framework
 view to see new failures, resolved findings, score movement, configuration-hash
 movement, and historical report downloads on its detail page.
 
+The console also provides **Collect from a live device**. Enter the built-in
+vendor, host, SSH port, username, password, and optional Cisco enable secret.
+Attestor runs only fixed read-only configuration/version commands, keeps the
+credentials in request memory, audits the collected bytes in a temporary
+workspace, and stores only report artifacts, hashes, and non-secret transport
+metadata. This path is implemented but must not be presented as live-verified
+until it succeeds against a reachable real device.
+
 The NIST option is a mapped view of source-backed checks, not a separate
 NIST-native rule pack. Operator-created DISA/ISO mappings are explicitly labeled
 operator-defined and are not claimed as verified framework equivalence.
 
-Current verification gate: `103 passed`; `221` real rule YAMLs validate with no
+Current verification gate: `121 passed`; `221` real rule YAMLs validate with no
 failures; the pinned canonical hash and ledger tests pass unchanged.
 
 Requires the dependencies pinned in `requirements.txt`.

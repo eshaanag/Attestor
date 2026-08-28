@@ -16,7 +16,7 @@ Nothing is marked done here without repository evidence.
 | Per-device report | JSON, standalone HTML, ReportLab PDF, and evidence-bundle ZIP; identity when observable, severity, evidence, remediation, hashes, provenance | done: report and dashboard tests; raw configuration excluded from bundles |
 | Device-specific remediation | Cached, clearly labeled AI advisory for built-in failed controls; operator-authored remediation for custom profiles | done (advisory): known invalid AI phrase retained to prove human review boundary |
 | Persistent organization view | Local SQLite inventory, immutable scan projections, conservative same-framework comparison, filters, details, profile/training state | done: genuine repeated-scan, artifact-preservation, persistence/reload, and framework-mismatch tests |
-| Live collection via Netmiko/NAPALM | Same file input can consume a real exported running config; connector not verified without a reachable device | not claimed; optional next input adapter |
+| Live collection via Netmiko/NAPALM | Netmiko connector for Cisco/Junos/FortiOS uses fixed commands, temporary bounded output, credential non-persistence, and the existing engines | implemented; automated safety/handoff tests pass, real-device verification pending |
 | Vendor-agnostic scalability | Shared adapter/result/report contracts plus low-code onboarding | done as prototype architecture, not universal grammar coverage |
 
 ## Trust and privacy
@@ -41,7 +41,7 @@ Nothing is marked done here without repository evidence.
 
 ## Current exit evidence
 
-- `python3 -m pytest -q`: 103 passed.
+- `python3 -m pytest -q`: 121 passed.
 - `python3 tests/validate_rules.py`: 221 real rules, 0 failures; all seven
   fixtures behaved as expected.
 - Canonical/ledger regression subset: 12 passed unchanged.
@@ -49,7 +49,7 @@ Nothing is marked done here without repository evidence.
 
 ## Honest roadmap
 
-1. Verify a Netmiko collector against a reachable real Cisco device.
+1. Complete the implemented Netmiko connector's evidence gate against a reachable real Cisco device.
 2. Add native DISA STIG controls only after the official-XCCDF and both-state
    corpus gate in `docs/disa-stig-evidence.md`; apply the same source discipline
    to ISO/IEC 27001.

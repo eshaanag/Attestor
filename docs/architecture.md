@@ -239,7 +239,10 @@ stores only hashes, redacted training patterns, profile metadata, report
 projections, and scan history. Cisco has 14 CIS-backed controls; Junos has four
 source-backed vendor-baseline controls. Framework selection is a report view
 over deterministic results; NIST is mapped, not a native second rule engine.
-No sandbox/SSH connector is simulated.
+The Netmiko collector is an additive transport adapter: it runs fixed read-only
+commands, keeps credentials in memory, and hands temporary output to the same
+saved-file engines. Its validation and failure behavior are tested; a successful
+real SSH path is not claimed until a reachable device is exercised.
 
 The AI layer is advisory discovery only. Training Studio classifies genuinely
 unmatched, already-redacted syntax after showing a cost estimate and enforcing
@@ -252,6 +255,6 @@ pass/fail result. The optional Sepolia anchor publishes only report hashes.
 **Explicitly out of current verified scope:** RHEL 8/9, Windows 11 Enterprise,
 Ubuntu 20.04/Server, all Level 2 controls, broader Junos controls, native
 DISA/ISO packs, full vendor grammars, authenticated multi-user deployment, and
-verified live SSH collection. Additional vendors can be organization-defined
+real-device verification of live SSH collection. Additional vendors can be organization-defined
 through the flat-profile path without being mislabeled as verified. Sepolia is
 an optional hash-only differentiator, not the compliance engine's authority.

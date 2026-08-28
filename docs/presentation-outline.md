@@ -39,7 +39,7 @@ Key point: AI is an onboarding assistant, never the compliance authority.
   severity/evidence/remediation, and JSON/HTML/PDF exports.
 - Training Studio: redaction, dry-run, pre-call cost, hard cap, cache, human
   confirmation, source attachment, draft/publish lifecycle.
-- 103 automated tests; 221 validated rule files.
+- 121 automated tests; 221 validated rule files.
 
 Scope label: custom profiles are organization-defined, not Attestor-verified.
 
@@ -63,7 +63,7 @@ bounded uploads, same result/report contract for every adapter.
 
 **Next verified increments:**
 
-1. Real Netmiko collection against a reserved device.
+1. Real-device verification of the implemented Netmiko collection path.
 2. Native source-backed DISA STIG and ISO/IEC 27001 packs.
 3. Additional vendor adapters promoted only after corpus and pass/fail gates.
 4. Authentication, RBAC, background jobs, encrypted secret handling, and
