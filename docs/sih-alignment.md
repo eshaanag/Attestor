@@ -12,7 +12,7 @@ Nothing is marked done here without repository evidence.
 | AI/NLP for unfamiliar syntax | Redacted pattern discovery, dry-run default, pre-call estimate, explicit cap, cache reuse, actual usage accounting | done: Training Studio and classifier tests; AI remains discovery metadata |
 | Interactive training loop | Human confirm/correct, persistent vendor/platform mapping, genuine source upload | done: SQLite-backed `/training` workflow |
 | No backend redeployment for every syntax change | Draft/publish organization-defined profiles with exact redacted-line rules | done (bounded): flat syntax only; hierarchical ambiguity stays unsupported/manual |
-| Multi-framework engine | Cisco CIS controls with NIST SP 800-53 mappings; operator-defined sourced mapping fields for custom profiles | done (scoped): NIST is a mapped view; native DISA/ISO packs remain roadmap |
+| Multi-framework engine | Cisco CIS controls with NIST SP 800-53 mappings; operator-defined sourced mapping fields for custom profiles | done (scoped): NIST is a mapped view; official Cisco IOS DISA packages were inspected but native DISA/ISO packs remain gated on complete corpus evidence |
 | Per-device report | JSON, standalone HTML, ReportLab PDF; identity when observable, severity, evidence, remediation | done: report and dashboard tests |
 | Device-specific remediation | Cached, clearly labeled AI advisory for built-in failed controls; operator-authored remediation for custom profiles | done (advisory): known invalid AI phrase retained to prove human review boundary |
 | Persistent organization view | Local SQLite device inventory, scan history, filters, details, profile/training state | done: persistence/reload/history tests |
@@ -49,7 +49,9 @@ Nothing is marked done here without repository evidence.
 ## Honest roadmap
 
 1. Verify a Netmiko collector against a reachable real Cisco device.
-2. Add native source-backed DISA STIG and ISO/IEC 27001 rule packs.
+2. Add native DISA STIG controls only after the official-XCCDF and both-state
+   corpus gate in `docs/disa-stig-evidence.md`; apply the same source discipline
+   to ISO/IEC 27001.
 3. Promote additional vendors only after corpus, source, parser, and pass/fail
    evidence gates.
 4. Add authentication, RBAC, background jobs, encrypted secret handling, and a

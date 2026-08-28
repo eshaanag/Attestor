@@ -25,7 +25,10 @@ Attestor delivers a competition-ready, evidence-first prototype:
 
 Native DISA STIG and ISO/IEC 27001 rule packs, full coverage for the vendors in
 the PS list, multi-user authentication, and verified live SSH collection remain
-outside the current evidence boundary.
+outside the current evidence boundary. The current official Cisco IOS Router
+and Switch STIG packages have been inspected, but no mapping was accepted
+because the genuine corpus does not prove a complete pass and fail for the
+applicable XCCDF checks. See `docs/disa-stig-evidence.md`.
 
 ## Runtime architecture
 

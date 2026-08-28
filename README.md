@@ -129,9 +129,11 @@ fail states. VTY/unused-interface checks are not claimed as verified. The
 built-in network scope is Cisco IOS (14 source-backed CIS controls) and Juniper
 Junos (four source-backed vendor-baseline controls). Other vendors can be
 onboarded through an organization-defined exact-pattern profile, but those
-profiles are not presented as Attestor-verified benchmark coverage. Native DISA
-STIG and ISO/IEC 27001 packs, broader Junos coverage, and live SSH collection
-remain roadmap. AI classification is discovery metadata only: deterministic
+profiles are not presented as Attestor-verified benchmark coverage. Official
+Cisco IOS DISA STIG packages have been inspected, but native DISA coverage is
+deferred because the genuine corpus does not prove complete pass/fail states;
+see `docs/disa-stig-evidence.md`. ISO/IEC 27001 packs, broader Junos coverage,
+and live SSH collection remain roadmap. AI classification is discovery metadata only: deterministic
 compliance results remain authoritative, credentials are redacted before
 provider use, and dry-run remains the default.
 
