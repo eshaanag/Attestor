@@ -198,7 +198,7 @@ body { font-family: "SF Pro Display", "SF Pro Text", "Avenir Next", -apple-syste
 
 <div id="results"></div>
 <div id="report-section" class="hidden">
-  <a id="report-link" class="report-link" href="#" target="_blank">📄 View Full Report</a>
+  <a id="report-link" class="report-link" href="#" target="_blank">View full report</a>
 </div>
 
 <script>
@@ -214,7 +214,7 @@ function startAudit() {
   const reportSection = document.getElementById('report-section');
 
   btn.disabled = true;
-  btn.textContent = '⏳ Running...';
+  btn.textContent = 'Running audit...';
   results.innerHTML = '';
   counts = {pass: 0, fail: 0, error: 0};
   statusBar.className = 'status-bar';
@@ -244,7 +244,7 @@ function startAudit() {
     const data = JSON.parse(e.data);
     evtSource.close();
     btn.disabled = false;
-    btn.textContent = '▶ Run Audit';
+    btn.textContent = 'Run live audit';
     statusBar.textContent = 'Audit complete — ' + data.total + ' controls evaluated';
     statusBar.className = 'status-bar complete';
     if (data.report_url) {
@@ -256,7 +256,7 @@ function startAudit() {
   evtSource.addEventListener('error', function(e) {
     evtSource.close();
     btn.disabled = false;
-    btn.textContent = '▶ Run Audit';
+    btn.textContent = 'Run live audit';
     statusBar.textContent = 'Connection lost or audit failed';
     statusBar.className = 'status-bar';
   });
@@ -290,7 +290,7 @@ body{background:radial-gradient(circle at 14% 8%,rgba(31,183,187,.19),transparen
 </style></head><body><div class="wrap"><nav class="nav"><div class="brand"><div class="mark">A</div><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><div class="navlinks"><a href="#coverage">Coverage</a><a href="#trust">Trust model</a><a class="navbtn" href="/console">Open console</a></div></nav>
 <main><section class="hero"><div><div class="eyebrow">Configuration assurance / 2026</div><h1>Turn device state into evidence your organization can defend.</h1><p>Upload a saved configuration, evaluate source-backed controls, and give your team a precise path from finding to remediation—without sending device evidence to a remote dashboard.</p><div class="actions"><a class="btn primary" href="/console">Open audit console</a><a class="btn secondary" href="#coverage">Explore coverage</a></div></div><div class="topology" aria-label="Illustration of a monitored enterprise network"><div class="scene"><div class="plane"></div><div class="scene-label">posture graph / local workspace</div><div class="link l1"></div><div class="link l2"></div><div class="link l3"></div><div class="link l4"></div><div class="signal s1"></div><div class="signal s2"></div><div class="node n-core"><strong>Attestor</strong><span>policy engine</span></div><div class="node n-edge"><strong>Branch edge</strong><span>Cisco IOS</span></div><div class="node n-router"><strong>Core router</strong><span>Junos</span></div><div class="node n-firewall"><strong>Firewall</strong><span>configuration</span></div><div class="node n-cloud"><strong>Reports</strong><span>offline evidence</span></div></div></div></section>
 <section class="metrics" aria-label="Verified product scope"><div class="metric"><strong>83</strong><span>Verified controls</span></div><div class="metric"><strong>4</strong><span>Supported targets</span></div><div class="metric"><strong class="accent">100%</strong><span>Offline report ready</span></div><div class="metric"><strong>0</strong><span>Config bytes on-chain</span></div></section>
-<aside class="trust" id="trust"><h2>Built for accountable decisions</h2><div class="trustrow"><div class="icon">✓</div><div><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trustrow"><div class="icon">◎</div><div><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trustrow"><div class="icon">↗</div><div><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trustrow"><div class="icon">#</div><div><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></aside>
+<aside class="trust" id="trust"><h2>Built for accountable decisions</h2><div class="trustrow"><div class="icon">01</div><div><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trustrow"><div class="icon">02</div><div><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trustrow"><div class="icon">03</div><div><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trustrow"><div class="icon">04</div><div><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></aside>
 <section class="band" id="coverage"><div class="bandhead"><div><h2>Verified coverage</h2><p>Start with controls that have real corpus or VM evidence behind them.</p></div><a class="btn secondary" href="/console">Start a scan</a></div><div class="cards"><div class="card"><strong>Windows 11 Standalone</strong><p>Native PowerShell checks against the verified Level 1 rule pack.</p><span class="pill">30 controls</span></div><div class="card"><strong>Ubuntu 22.04 Desktop</strong><p>Python checks for kernel, sysctl, services, packages, and permissions.</p><span class="pill">35 controls</span></div><div class="card"><strong>Cisco IOS / IOS-XE</strong><p>Flat and block-aware configuration checks with CIS and NIST mappings.</p><span class="pill">14 controls</span></div><div class="card"><strong>Juniper Junos</strong><p>Source-backed vendor baseline for common service and logging controls.</p><span class="pill">4 controls</span></div><div class="card"><strong>Reports</strong><p>Per-device JSON, standalone HTML, and PDF outputs for review and handoff.</p><span class="pill">Offline-ready</span></div><div class="card"><strong>Roadmap</strong><p>Other vendors, broader Junos coverage, live collection, and fleet storage.</p><span class="pill">Clearly scoped</span></div></div><p class="footer-note">Current workspace: local and single-operator. Uploads are discarded after processing; persistent organizations and live collection are roadmap items.</p></section></main></div></body></html>"""
 
 APPLE_GLASS_STYLE = """<style>
@@ -313,9 +313,511 @@ body{overflow-x:hidden}.wrap,.shell{width:min(100%,1340px);max-width:100%;overfl
 </style>"""
 
 
+ENTERPRISE_UI_STYLE = """<style>
+:root {
+  --ui-ink: #0b1726;
+  --ui-ink-soft: #26384b;
+  --ui-muted: #5b6b7c;
+  --ui-line: rgba(82, 105, 129, .2);
+  --ui-line-strong: rgba(60, 84, 110, .32);
+  --ui-canvas: #edf2f6;
+  --ui-surface: rgba(255, 255, 255, .82);
+  --ui-surface-solid: #ffffff;
+  --ui-surface-subtle: rgba(246, 249, 252, .88);
+  --ui-navy: #10283f;
+  --ui-navy-hover: #173b59;
+  --ui-blue: #1668b2;
+  --ui-blue-soft: #e8f2fb;
+  --ui-cyan: #168c9e;
+  --ui-green: #157347;
+  --ui-red: #b42318;
+  --ui-amber: #8a6100;
+  --ui-shadow-sm: 0 8px 24px rgba(25, 43, 62, .07);
+  --ui-shadow-md: 0 18px 54px rgba(25, 43, 62, .11);
+  --ui-focus: 0 0 0 3px rgba(22, 104, 178, .2);
+}
+
+html { color-scheme: light; background: var(--ui-canvas); }
+html, body, button, input, select, textarea {
+  font-family: "Avenir Next", Avenir, "Segoe UI", -apple-system,
+    BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
+}
+* { letter-spacing: 0 !important; }
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ui-ink) !important;
+  background:
+    linear-gradient(rgba(255, 255, 255, .72), rgba(255, 255, 255, .72)),
+    linear-gradient(90deg, rgba(79, 107, 133, .055) 1px, transparent 1px),
+    linear-gradient(rgba(79, 107, 133, .055) 1px, transparent 1px),
+    var(--ui-canvas) !important;
+  background-size: auto, 48px 48px, 48px 48px, auto !important;
+  background-attachment: fixed !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body::before, body::after { display: none !important; }
+a { color: var(--ui-blue); }
+p, .sub, .muted, .helper, .panel-kicker, .metric-note, .field-help,
+.device-row span, .profile span, .pattern span, .pattern p, .rule span,
+.rule p, .card p, .trustrow span, .history span, .source,
+.brand small, .brand-subtitle {
+  color: var(--ui-muted) !important;
+}
+h1, h2, h3, strong, .brand-name, .brand strong, .device-row strong,
+.control strong, .metric strong, .score, .row-score {
+  color: var(--ui-ink) !important;
+}
+h1, h2, h3 {
+  text-wrap: balance;
+  line-height: 1.15;
+}
+h1 { font-weight: 700 !important; }
+h2, h3 { font-weight: 650 !important; }
+
+.wrap, .shell {
+  width: min(100%, 1360px) !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+  padding: 24px 30px 64px !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+main, section, aside, form, div { min-width: 0; }
+
+.nav, .topbar {
+  min-height: 64px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 20px !important;
+  padding: 10px 12px !important;
+  margin-bottom: 28px !important;
+  border: 1px solid rgba(255, 255, 255, .9) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, .78) !important;
+  box-shadow: var(--ui-shadow-sm), inset 0 1px 0 #fff !important;
+  backdrop-filter: blur(18px) saturate(130%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
+}
+.nav::before, .nav::after, .topbar::before, .topbar::after {
+  display: none !important;
+}
+.brand { display: flex !important; align-items: center !important; gap: 11px !important; }
+.mark, .brand-mark {
+  width: 40px !important;
+  height: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex: 0 0 40px;
+  border: 1px solid rgba(255, 255, 255, .16) !important;
+  border-radius: 9px !important;
+  color: #fff !important;
+  background: var(--ui-navy) !important;
+  box-shadow: 0 8px 20px rgba(16, 40, 63, .2) !important;
+}
+.brand strong, .brand-name { display: block; font-size: 16px !important; font-weight: 700 !important; }
+.brand small, .brand-subtitle { display: block; margin-top: 1px; font-size: 11px !important; }
+.navlinks, .topbar .nav, .navlinks, .top-actions, .actions, .filters,
+.form-actions, .row-summary {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+.topbar .nav, a.nav {
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.nav a, .topbar .nav a, .navlinks a {
+  min-height: 40px;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 10px !important;
+  border-radius: 7px;
+  color: var(--ui-muted) !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  text-decoration: none !important;
+  transition: background-color .18s ease, color .18s ease;
+}
+.nav a:hover, .topbar .nav a:hover, .navlinks a:hover,
+.nav a.active, .topbar .nav a.active {
+  color: var(--ui-ink) !important;
+  background: rgba(16, 40, 63, .065) !important;
+}
+.navbtn { color: #fff !important; background: var(--ui-navy) !important; }
+
+.button, .btn, .navbtn, .report-link {
+  min-height: 44px;
+  max-width: 100%;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 10px 15px !important;
+  border: 1px solid var(--ui-navy) !important;
+  border-radius: 8px !important;
+  color: #fff !important;
+  background: var(--ui-navy) !important;
+  box-shadow: 0 7px 18px rgba(16, 40, 63, .16) !important;
+  text-shadow: none !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease,
+    box-shadow .18s ease, transform .18s ease;
+}
+.button:hover, .btn:hover, .navbtn:hover, .report-link:hover {
+  color: #fff !important;
+  background: var(--ui-navy-hover) !important;
+  border-color: var(--ui-navy-hover) !important;
+  box-shadow: 0 10px 22px rgba(16, 40, 63, .2) !important;
+  transform: translateY(-1px);
+}
+.button.alt, .button-secondary, .secondary {
+  color: var(--ui-navy) !important;
+  background: rgba(255, 255, 255, .82) !important;
+  border-color: var(--ui-line-strong) !important;
+  box-shadow: 0 5px 15px rgba(25, 43, 62, .07) !important;
+}
+.button.alt:hover, .button-secondary:hover, .secondary:hover {
+  color: var(--ui-navy) !important;
+  background: #fff !important;
+  border-color: rgba(16, 40, 63, .42) !important;
+}
+.button:disabled { opacity: .58; cursor: not-allowed; transform: none; }
+
+input, select, textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px !important;
+  border: 1px solid var(--ui-line-strong) !important;
+  border-radius: 8px !important;
+  color: var(--ui-ink) !important;
+  background: rgba(255, 255, 255, .9) !important;
+  box-shadow: inset 0 1px 2px rgba(25, 43, 62, .035) !important;
+  font-size: 13px !important;
+}
+input[type=file] { padding: 8px !important; max-width: 100%; }
+textarea { min-height: 112px; resize: vertical; }
+input::placeholder, textarea::placeholder { color: #718092 !important; opacity: 1; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--ui-blue) !important;
+  outline-offset: 2px !important;
+  box-shadow: var(--ui-focus) !important;
+}
+label { color: var(--ui-ink-soft) !important; font-size: 12px !important; font-weight: 700 !important; }
+
+.panel, .upload, .device-list, .identity, .sum, .result-card, .trust,
+.metric, .card, .hero-copy, .hero-metric, .pattern {
+  border: 1px solid rgba(255, 255, 255, .92) !important;
+  background: var(--ui-surface) !important;
+  box-shadow: var(--ui-shadow-sm), inset 0 1px 0 #fff !important;
+  backdrop-filter: blur(16px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
+}
+.panel, .upload, .device-list, .identity, .result-card, .hero-copy,
+.hero-metric, .trust, .pattern { border-radius: 12px !important; }
+.metric, .sum, .card { border-radius: 10px !important; }
+.panel, .upload, .identity, .result-card { padding: 22px !important; }
+.panel::after, .upload::after, .identity::after, .hero-copy::after,
+.topbar::after, .nav::after { display: none !important; }
+
+.eyebrow {
+  color: var(--ui-blue) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: .1em !important;
+  text-transform: uppercase;
+}
+.tag, .pill, .scope-chip, .status-pill {
+  border: 1px solid rgba(22, 104, 178, .18) !important;
+  border-radius: 999px !important;
+  color: #175c92 !important;
+  background: rgba(232, 242, 251, .86) !important;
+  box-shadow: none !important;
+}
+.state, .badge, .control-status {
+  border: 1px solid transparent;
+  font-weight: 800 !important;
+}
+.state.good, .badge-pass, .control-status.pass {
+  color: var(--ui-green) !important;
+  background: #e8f5ee !important;
+  border-color: #c8e5d4 !important;
+}
+.state.bad, .badge-fail, .control-status.fail {
+  color: var(--ui-red) !important;
+  background: #fdeeed !important;
+  border-color: #f2cfcb !important;
+}
+.state.pending, .badge-error, .control-status.error {
+  color: var(--ui-amber) !important;
+  background: #fff5db !important;
+  border-color: #eadcae !important;
+}
+
+/* Landing page */
+body:has(.topology) { background: #f2f5f8 !important; }
+body:has(.topology) .wrap { max-width: 1280px !important; }
+body:has(.topology) .nav { position: sticky; top: 16px; z-index: 20; }
+body:has(.topology) .hero {
+  min-height: min(720px, calc(100vh - 112px));
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.02fr) minmax(460px, .98fr) !important;
+  align-items: center !important;
+  gap: 54px !important;
+  padding: 62px 0 54px !important;
+}
+body:has(.topology) .hero h1 {
+  max-width: 700px;
+  color: var(--ui-ink) !important;
+  font-size: clamp(42px, 5.2vw, 70px) !important;
+  line-height: 1.01 !important;
+}
+body:has(.topology) .hero p {
+  max-width: 640px;
+  color: var(--ui-muted) !important;
+  font-size: 17px !important;
+  line-height: 1.68 !important;
+}
+.topology {
+  min-height: 450px !important;
+  overflow: hidden !important;
+  isolation: isolate;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.topology::before {
+  content: "";
+  position: absolute;
+  inset: 9% 4% 7%;
+  z-index: -1;
+  border: 1px solid rgba(255, 255, 255, .95);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(222,233,242,.55));
+  box-shadow: var(--ui-shadow-md), inset 0 1px 0 #fff;
+}
+.scene { max-width: 100% !important; animation: ui-float 7s ease-in-out infinite; }
+.plane, .node {
+  border-color: rgba(255, 255, 255, .95) !important;
+  background: rgba(255, 255, 255, .88) !important;
+  box-shadow: 10px 14px 0 rgba(16, 40, 63, .07), 0 18px 34px rgba(25, 43, 62, .13) !important;
+}
+.n-core {
+  color: #fff !important;
+  background: var(--ui-navy) !important;
+}
+.n-core strong { color: #fff !important; }
+.n-core span { color: #c5d4e2 !important; }
+.link, .signal { background: var(--ui-cyan) !important; box-shadow: none !important; }
+.trustrow .icon {
+  width: 34px !important;
+  height: 34px !important;
+  border: 1px solid rgba(22, 104, 178, .15) !important;
+  border-radius: 8px !important;
+  color: var(--ui-blue) !important;
+  background: var(--ui-blue-soft) !important;
+}
+.metrics { gap: 12px !important; }
+.metric { min-height: 108px; }
+.cards { gap: 14px !important; }
+.card { min-height: 154px !important; }
+.card:hover { border-color: rgba(22, 104, 178, .26) !important; box-shadow: var(--ui-shadow-md) !important; }
+
+/* Console and operational pages */
+.workspace-head, .head, .inventory-head, .upload-header, .bandhead {
+  color: var(--ui-ink) !important;
+}
+.workspace-head h1, .head h1, .inventory-head h2, .workspace-head .sub,
+.head > .muted, .inventory-head p {
+  color: inherit !important;
+  text-shadow: none !important;
+}
+.overview { gap: 14px !important; }
+.network-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12) !important;
+  border-radius: 10px !important;
+  color: #fff !important;
+  background: linear-gradient(145deg, #10283f, #173b59) !important;
+  box-shadow: 0 16px 36px rgba(16, 40, 63, .18) !important;
+}
+.network-card strong { color: #fff !important; }
+.network-card span { color: #c6d7e5 !important; }
+.network-nodes i { background: #6dd1d8 !important; }
+.device-list { overflow: hidden; }
+.inventory-head {
+  display: grid !important;
+  grid-template-columns: minmax(260px, .8fr) minmax(560px, 1.2fr) !important;
+  align-items: end !important;
+  gap: 24px !important;
+}
+.filters {
+  display: grid !important;
+  grid-template-columns: minmax(190px, 1.3fr) minmax(130px, .8fr)
+    minmax(130px, .8fr) auto !important;
+  align-items: end !important;
+}
+.filters > * { min-width: 0 !important; width: 100% !important; }
+.filters .button { width: auto !important; }
+.list-head { color: var(--ui-muted) !important; background: #f4f7fa !important; }
+.device-row {
+  min-height: 74px;
+  transition: background-color .18s ease, box-shadow .18s ease !important;
+}
+.device-row:hover {
+  transform: none !important;
+  background: #f5f9fc !important;
+  box-shadow: inset 3px 0 0 var(--ui-blue);
+}
+.device-icon, .empty-icon {
+  border: 1px solid rgba(22, 104, 178, .16) !important;
+  border-radius: 8px !important;
+  color: var(--ui-blue) !important;
+  background: var(--ui-blue-soft) !important;
+}
+.row-score, .metric strong, .score, .count { font-variant-numeric: tabular-nums; }
+.mini-pass { color: var(--ui-green) !important; }
+.mini-fail { color: var(--ui-red) !important; }
+.hash, code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.control, .rule, .pattern, .training-row, .profile, .history > div {
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.control:hover, .rule:hover, .pattern:hover, .training-row:hover,
+.profile:hover { background-color: rgba(244, 248, 251, .8) !important; }
+.training-row, .profile { min-height: 68px; }
+.notice {
+  border: 1px solid rgba(22, 104, 178, .18) !important;
+  border-radius: 8px !important;
+  color: var(--ui-ink-soft) !important;
+  background: var(--ui-blue-soft) !important;
+}
+.status-bar { color: #175c92 !important; background: var(--ui-blue-soft) !important; }
+.status-bar.complete { color: var(--ui-green) !important; background: #e8f5ee !important; }
+.result-card { overflow: hidden; }
+.report-link { margin-top: 12px !important; }
+.result-evidence, .source, .device-row strong, .device-row span {
+  overflow-wrap: anywhere;
+}
+
+@keyframes ui-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@media (max-width: 1024px) {
+  body:has(.topology) .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(390px, .85fr) !important;
+    gap: 28px !important;
+  }
+  .list-head { display: none !important; }
+  .device-row { grid-template-columns: minmax(0, 1fr) 96px !important; }
+  .row-summary { grid-column: 1 / -1; }
+  .inventory-head { display: block !important; }
+  .filters {
+    grid-template-columns: minmax(180px, 1.2fr) minmax(130px, .8fr)
+      minmax(130px, .8fr) auto !important;
+    margin-top: 14px;
+  }
+}
+
+@media (max-width: 820px) {
+  .wrap, .shell { padding: 18px 18px 48px !important; }
+  .nav, .topbar { align-items: flex-start !important; }
+  .topbar .nav, .navlinks { justify-content: flex-end; }
+  body:has(.topology) .hero {
+    min-height: auto;
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 38px 0 44px !important;
+  }
+  .topology { order: -1; min-height: 340px !important; }
+  .scene { transform: scale(.83) rotateX(54deg) rotateZ(-24deg) !important; }
+  .metrics, .summary { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .workspace-head, .head, .upload-header, .bandhead { display: block !important; }
+  .workspace-head .top-actions, .head .actions, .upload-header .scope-chip,
+  .bandhead .btn { margin-top: 14px !important; }
+  .filters, .upload-grid, .vm-controls { align-items: stretch !important; }
+  .upload-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+
+@media (max-width: 620px) {
+  .wrap, .shell { padding: 14px 12px 40px !important; }
+  .nav, .topbar { display: block !important; }
+  .navlinks, .topbar .nav { justify-content: flex-start !important; margin-top: 10px !important; }
+  .navlinks a:not(.navbtn) { display: none !important; }
+  .topbar .nav a { min-height: 38px; padding-inline: 8px !important; }
+  body:has(.topology) .hero h1 { font-size: 40px !important; }
+  body:has(.topology) .hero p { font-size: 16px !important; }
+  .topology { min-height: 285px !important; }
+  .scene { transform: scale(.68) rotateX(54deg) rotateZ(-24deg) !important; }
+  .cards, .metrics, .summary { grid-template-columns: minmax(0, 1fr) !important; }
+  .button, .btn, .navbtn { width: 100%; }
+  .top-actions, .actions, .form-actions { width: 100%; display: grid !important; }
+  .filters, .upload-grid, .vm-controls, .confirm-form, .two {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .filters > *, .upload-grid > *, .vm-controls > *, .confirm-form > *, .two > * {
+    width: 100% !important;
+    flex: 0 0 auto !important;
+  }
+  .filters .button { width: 100% !important; }
+  .device-row { grid-template-columns: minmax(0, 1fr) !important; }
+  .device-row > div:last-child { text-align: left !important; }
+  .row-score, .row-summary { grid-column: 1 / -1; }
+  .training-row, .profile, .pattern-head { display: block !important; }
+  .training-row > div:last-child, .profile > div:last-child {
+    margin-top: 9px;
+    text-align: left !important;
+  }
+  .training-row .state, .profile .state { margin-left: 0 !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav, .topbar, .panel, .upload, .device-list, .identity, .sum,
+  .result-card, .trust, .metric, .card, .hero-copy, .hero-metric, .pattern {
+    background: var(--ui-surface-solid) !important;
+  }
+}
+</style>"""
+
+
 def _apple_glass(page: str) -> str:
-    """Apply one presentation-only material system without changing page behavior."""
-    return page.replace("</head>", APPLE_GLASS_STYLE + "</head>", 1)
+    """Apply the shared presentation layer without changing page behavior."""
+    return page.replace("</head>", ENTERPRISE_UI_STYLE + "</head>", 1)
 
 
 # ─────────────────────── Routes ───────────────────────────
