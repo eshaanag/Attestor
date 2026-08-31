@@ -1,0 +1,62 @@
+# ui_config.yaml - Default display settings for the Attestor dashboard UI.
+#
+# This file defines sensible defaults for the local web dashboard (Phase 7).
+# Values here are consumed by the Jinja2 templates and dashboard helpers.
+# Edit this file to customise the dashboard for your environment.
+# Do not add secrets, credentials, URLs, or machine-specific paths.
+
+# ---------------------------------------------------------------------------
+# Application display
+# ---------------------------------------------------------------------------
+# Text shown in the browser tab and at the top of the dashboard.
+page_title: "ATTESTOR - CIS Benchmark Audit Dashboard"
+dashboard_subtitle: "CIS Benchmark Compliance Report"
+
+# ---------------------------------------------------------------------------
+# Auto-refresh
+# ---------------------------------------------------------------------------
+# When enabled, the results page reloads automatically after each audit run.
+# auto_refresh_seconds controls the polling interval in seconds.
+auto_refresh_enabled: false
+auto_refresh_seconds: 30
+
+# ---------------------------------------------------------------------------
+# Result display
+# ---------------------------------------------------------------------------
+# default_status_filter: show only controls matching this status on load.
+#   Accepted values: "All", "Pass", "Fail", "Error"
+default_status_filter: "All"
+
+# default_severity_filter: show only controls matching this severity on load.
+#   Accepted values: "All", "High", "Medium", "Low"
+default_severity_filter: "All"
+
+# Show the remediation guidance for failed and errored controls.
+show_remediation: true
+
+# Show the full description text for each control row.
+show_control_descriptions: true
+
+# ---------------------------------------------------------------------------
+# Pagination
+# ---------------------------------------------------------------------------
+# Number of control rows displayed per page in the results table.
+controls_per_page: 25
+
+# ---------------------------------------------------------------------------
+# Accessibility
+# ---------------------------------------------------------------------------
+# Announce incoming live results to screen readers via an ARIA live region.
+announce_live_results: true
+
+# Display status as text alongside the coloured badge (improves readability).
+show_status_text: true
+
+# ---------------------------------------------------------------------------
+# Presentation
+# ---------------------------------------------------------------------------
+# compact_mode: reduce row padding for higher information density.
+compact_mode: false
+
+# show_summary_cards: display pass / fail / error count cards at the top.
+show_summary_cards: true
