@@ -1,0 +1,162 @@
+{
+    "audit_id": "ATT-2026-001",
+    "platform": "Windows",
+    "benchmark": "CIS Microsoft Windows Benchmark",
+    "benchmark_version": "1.0",
+    "timestamp": "2026-08-30T10:30:00",
+    "hostname": "WIN-AUDIT-01",
+    "summary": {
+        "total": 20,
+        "passed": 14,
+        "failed": 5,
+        "errors": 1
+    },
+    "controls": [
+        {
+            "id": "1.1.1",
+            "title": "Password policy requirement",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks whether the required password policy is configured."
+        },
+        {
+            "id": "1.1.2",
+            "title": "Minimum password length",
+            "status": "Pass",
+            "severity": "Medium",
+            "description": "Checks the configured minimum password length."
+        },
+        {
+            "id": "2.1.1",
+            "title": "Account lockout threshold",
+            "status": "Fail",
+            "severity": "High",
+            "description": "Checks whether an appropriate account lockout threshold is configured.",
+            "remediation": "Configure the account lockout threshold according to the selected CIS benchmark."
+        },
+        {
+            "id": "2.2.1",
+            "title": "Guest account status",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks whether the guest account is disabled."
+        },
+        {
+            "id": "3.1.1",
+            "title": "Firewall configuration",
+            "status": "Fail",
+            "severity": "High",
+            "description": "Checks whether the host firewall is enabled.",
+            "remediation": "Enable the host firewall and verify the required firewall policies."
+        },
+        {
+            "id": "3.2.1",
+            "title": "Audit policy configuration",
+            "status": "Pass",
+            "severity": "Medium",
+            "description": "Checks the system audit policy configuration."
+        },
+        {
+            "id": "4.1.1",
+            "title": "Remote access configuration",
+            "status": "Fail",
+            "severity": "High",
+            "description": "Checks whether remote access settings follow the benchmark.",
+            "remediation": "Review and restrict remote access according to organizational policy."
+        },
+        {
+            "id": "5.1.1",
+            "title": "Security event logging",
+            "status": "Pass",
+            "severity": "Medium",
+            "description": "Checks whether security event logging is enabled."
+        },
+        {
+            "id": "5.2.1",
+            "title": "Log retention configuration",
+            "status": "Fail",
+            "severity": "Medium",
+            "description": "Checks whether event log retention meets the required configuration.",
+            "remediation": "Increase event log retention according to the applicable CIS requirement."
+        },
+        {
+            "id": "6.1.1",
+            "title": "System update configuration",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks whether automatic security updates are configured."
+        },
+        {
+            "id": "6.2.1",
+            "title": "Unused services",
+            "status": "Pass",
+            "severity": "Medium",
+            "description": "Checks for unnecessary services."
+        },
+        {
+            "id": "6.3.1",
+            "title": "Administrative privileges",
+            "status": "Fail",
+            "severity": "High",
+            "description": "Checks whether unnecessary administrative privileges exist.",
+            "remediation": "Review local administrator membership and remove unnecessary privileges."
+        },
+        {
+            "id": "7.1.1",
+            "title": "Screen lock policy",
+            "status": "Pass",
+            "severity": "Low",
+            "description": "Checks whether automatic screen locking is configured."
+        },
+        {
+            "id": "7.2.1",
+            "title": "USB device policy",
+            "status": "Pass",
+            "severity": "Medium",
+            "description": "Checks removable device configuration."
+        },
+        {
+            "id": "8.1.1",
+            "title": "Antivirus configuration",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks whether antivirus protection is enabled."
+        },
+        {
+            "id": "8.2.1",
+            "title": "Antivirus updates",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks whether antivirus definitions are updated."
+        },
+        {
+            "id": "9.1.1",
+            "title": "Network security settings",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks important network security settings."
+        },
+        {
+            "id": "9.2.1",
+            "title": "Encryption configuration",
+            "status": "Pass",
+            "severity": "High",
+            "description": "Checks whether required encryption settings are enabled."
+        },
+        {
+            "id": "10.1.1",
+            "title": "Security service availability",
+            "status": "Error",
+            "severity": "Medium",
+            "description": "The required security service could not be queried.",
+            "remediation": "Verify that the required service exists and that the audit process has sufficient permissions."
+        },
+        {
+            "id": "10.2.1",
+            "title": "System configuration integrity",
+            "status": "Pass",
+            "severity": "Medium",
+            "description": "Checks important system configuration values."
+        }
+    ]
+}
