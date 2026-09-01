@@ -747,9 +747,9 @@ main, section, aside, form, div { min-width: 0; }
   color: var(--ui-ink) !important;
   background: rgba(16, 40, 63, .065) !important;
 }
-.navbtn { color: #fff !important; background: var(--ui-navy) !important; }
+.navbtn, .navlinks a.navbtn { color: #fff !important; background: var(--ui-navy) !important; }
 
-.button, .btn, .navbtn, .report-link {
+.button, .btn, .navbtn, .navlinks a.navbtn, .report-link {
   min-height: 44px;
   max-width: 100%;
   display: inline-flex !important;
@@ -770,7 +770,7 @@ main, section, aside, form, div { min-width: 0; }
   transition: background-color .18s ease, border-color .18s ease,
     box-shadow .18s ease, transform .18s ease;
 }
-.button:hover, .btn:hover, .navbtn:hover, .report-link:hover {
+.button:hover, .btn:hover, .navbtn:hover, .navlinks a.navbtn:hover, .report-link:hover {
   color: #fff !important;
   background: var(--ui-navy-hover) !important;
   border-color: var(--ui-navy-hover) !important;
