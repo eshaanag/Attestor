@@ -77,9 +77,25 @@ FRAMEWORK_VIEWS = {"all", "cis", "nist"}
 DEVICE_RECORDS: dict[str, dict] = STORE.load_device_records()
 
 LIVE_COLLECTION_STYLE = """
-.live-grid{display:grid;grid-template-columns:170px minmax(160px,1fr) 86px minmax(140px,1fr) minmax(140px,1fr) minmax(130px,1fr) 170px auto;gap:10px;align-items:end;margin-top:16px}
-@media(max-width:1200px){.live-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:560px){.live-grid{display:flex;align-items:stretch;flex-direction:column}}
+.live-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 24px 20px !important;
+  align-items: end !important;
+  margin-top: 28px !important;
+}
+.live-grid > div {
+  flex: 1 1 calc(33.333% - 14px) !important;
+  min-width: 180px !important;
+}
+.live-grid button {
+  width: 100% !important;
+  padding: 16px !important;
+  font-size: 15px !important;
+  font-weight: 750 !important;
+  margin-top: 8px !important;
+  border-radius: 10px !important;
+}
 """
 
 LIVE_COLLECTION_PANEL = """
@@ -323,7 +339,7 @@ body{background:radial-gradient(circle at 14% 8%,rgba(0,0,0,.03),transparent 28%
 <main><section class="hero"><div><h1>Turn device state into evidence your organization can defend.</h1><p>Upload a saved configuration, evaluate source-backed controls, and give your team a precise path from finding to remediation—without sending device evidence to a remote dashboard.</p><div class="actions"><a class="btn primary" href="/console">Open audit console</a><a class="btn secondary" href="#coverage">Explore coverage</a></div></div><div class="cobe-container" id="cobe-container"><canvas id="cobe" class="cobe-canvas"></canvas><div id="cobe-markers-container"></div><div id="cobe-traffic-container"></div></div></section>
 <section class="metrics" aria-label="Verified product scope"><div class="metric"><strong>86</strong><span>Verified controls</span></div><div class="metric"><strong>5</strong><span>Supported targets</span></div><div class="metric"><strong class="accent">100%</strong><span>Offline report ready</span></div><div class="metric"><strong>0</strong><span>Config bytes on-chain</span></div></section>
 <section class="trust-section" id="trust"><div class="trust-header"><span class="eyebrow">Enterprise Grade</span><h2>Built for accountable decisions</h2></div><div class="trust-grid"><div class="trust-card"><div class="watermark-number">01</div><div class="trust-content"><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trust-card"><div class="watermark-number">02</div><div class="trust-content"><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trust-card"><div class="watermark-number">03</div><div class="trust-content"><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trust-card"><div class="watermark-number">04</div><div class="trust-content"><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></div></section>
-<section class="band" id="coverage"><div class="bandhead"><div><h2>Verified coverage</h2><p>Start with controls that have real corpus or VM evidence behind them.</p></div><a class="btn secondary" href="/console">Start a scan</a></div><div class="cards"><div class="card"><strong>Windows 11 Standalone</strong><p>Native PowerShell checks against the verified Level 1 rule pack.</p><span class="pill">30 controls</span></div><div class="card"><strong>Ubuntu 22.04 Desktop</strong><p>Python checks for kernel, sysctl, services, packages, and permissions.</p><span class="pill">35 controls</span></div><div class="card"><strong>Cisco IOS / IOS-XE</strong><p>Flat and block-aware configuration checks with CIS and NIST mappings.</p><span class="pill">14 controls</span></div><div class="card"><strong>Juniper Junos</strong><p>Source-backed vendor baseline for common service and logging controls.</p><span class="pill">4 controls</span></div><div class="card"><strong>Fortinet FortiOS</strong><p>Source-backed firewall baseline for management access and administrator exposure.</p><span class="pill">3 controls</span></div><div class="card"><strong>Reports</strong><p>Per-device JSON, standalone HTML, and PDF outputs for review and handoff.</p><span class="pill">Offline-ready</span></div><div class="card"><strong>Roadmap</strong><p>Broader vendor controls, live collection, and fleet deployment remain evidence-gated.</p><span class="pill">Clearly scoped</span></div></div><p class="footer-note">Current workspace: local and single-operator. Uploads are discarded after processing; persistent organizations and live collection are roadmap items.</p></section></main></div>
+<section class="band" id="coverage"><div class="bandhead"><div><h2>Verified coverage</h2><p>Start with controls that have real corpus or VM evidence behind them.</p></div><a class="btn secondary" href="/console">Start a scan</a></div><div class="cards"><div class="card"><div class="card-header"><strong>Windows 11 Standalone</strong><span class="pill">30 controls</span></div><p>Native PowerShell checks against the verified Level 1 rule pack.</p></div><div class="card"><div class="card-header"><strong>Ubuntu 22.04 Desktop</strong><span class="pill">35 controls</span></div><p>Python checks for kernel, sysctl, services, packages, and permissions.</p></div><div class="card"><div class="card-header"><strong>Cisco IOS / IOS-XE</strong><span class="pill">14 controls</span></div><p>Flat and block-aware configuration checks with CIS and NIST mappings.</p></div><div class="card"><div class="card-header"><strong>Juniper Junos</strong><span class="pill">4 controls</span></div><p>Source-backed vendor baseline for common service and logging controls.</p></div><div class="card"><div class="card-header"><strong>Fortinet FortiOS</strong><span class="pill">3 controls</span></div><p>Source-backed firewall baseline for management access and administrator exposure.</p></div><div class="card"><div class="card-header"><strong>Reports</strong><span class="pill">Offline-ready</span></div><p>Per-device JSON, standalone HTML, and PDF outputs for review and handoff.</p></div><div class="card"><div class="card-header"><strong>Roadmap</strong><span class="pill">Clearly scoped</span></div><p>Broader vendor controls, live collection, and fleet deployment remain evidence-gated.</p></div></div><p class="footer-note">Current workspace: local and single-operator. Uploads are discarded after processing; persistent organizations and live collection are roadmap items.</p></section></main></div>
 <style>
   @keyframes pyramid-spin {
     0% { transform: rotateX(20deg) rotateY(0deg); }
@@ -940,16 +956,8 @@ body:has(.topology) .hero p {
   gap: 16px !important;
   padding: 40px 32px !important;
   min-height: 240px !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e6ea !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
-}
-.trust-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, .06) !important;
-  border-color: #d0d5da !important;
 }
 .trust-card .watermark-number {
   position: absolute !important;
@@ -982,9 +990,128 @@ body:has(.topology) .hero p {
 }
 .metrics { gap: 12px !important; }
 .metric { min-height: 108px; }
-.cards { gap: 14px !important; }
-.card { min-height: 154px !important; }
-.card:hover { border-color: rgba(22, 104, 178, .26) !important; box-shadow: var(--ui-shadow-md) !important; }
+/* Minimal Coverage Cards */
+.cards {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  gap: 20px !important;
+}
+.card {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 28px !important;
+  border-radius: 16px !important;
+  min-height: auto !important;
+}
+.card:before { display: none !important; }
+.card-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  margin-bottom: 12px !important;
+  gap: 12px !important;
+}
+.card-header strong {
+  font-size: 16px !important;
+  color: #111 !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+.card p {
+  color: #4a5568 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  margin: 0 !important;
+}
+.card .pill {
+  margin: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  color: #10212b !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  white-space: nowrap !important;
+}
+
+/* Pure Liquid Glass Master Class */
+.metric, .trust-card, .card, .upload, .device-list {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(40px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(40px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease !important;
+}
+.metric:hover, .trust-card:hover, .card:hover, .upload:hover, .device-list:hover {
+  transform: translateY(-4px) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Fix upload grid layout for 5 items */
+.upload-grid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 24px 20px !important;
+  align-items: end !important;
+  margin-top: 28px !important;
+}
+.upload-grid > div {
+  flex: 1 1 calc(50% - 10px) !important;
+  min-width: 250px !important;
+}
+.upload-grid button {
+  width: 100% !important;
+  padding: 16px !important;
+  font-size: 15px !important;
+  font-weight: 750 !important;
+  margin-top: 8px !important;
+  border-radius: 10px !important;
+}
+.upload label {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #111 !important;
+  margin-bottom: 8px !important;
+}
+.upload input, .upload select {
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #111 !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.03) !important;
+  transition: all 0.2s ease !important;
+}
+.upload input:hover, .upload select:hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.2) !important;
+}
+.upload input:focus, .upload select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+.upload select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23111' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 12px 8px !important;
+  padding-right: 40px !important;
+}
+.upload input[type=file] {
+  padding: 9px 12px !important;
+}
 
 /* Console and operational pages */
 .workspace-head, .head, .inventory-head, .upload-header, .bandhead {
