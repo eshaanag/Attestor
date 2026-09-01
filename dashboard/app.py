@@ -938,9 +938,11 @@ body:has(.topology) .hero p {
   display: flex !important;
   align-items: flex-start !important;
   gap: 16px !important;
-  padding: 32px 28px !important;
+  padding: 40px 32px !important;
+  min-height: 240px !important;
   background: #ffffff !important;
   border: 1px solid #e2e6ea !important;
+  border-radius: 16px !important;
   overflow: hidden !important;
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
 }
@@ -951,11 +953,11 @@ body:has(.topology) .hero p {
 }
 .trust-card .watermark-number {
   position: absolute !important;
-  top: 10px !important;
+  bottom: 0px !important;
   right: 15px !important;
-  font-size: 130px !important;
+  font-size: 180px !important;
   font-weight: 800 !important;
-  line-height: 1 !important;
+  line-height: 0.8 !important;
   color: #f2f4f6 !important;
   z-index: 0 !important;
   pointer-events: none !important;
