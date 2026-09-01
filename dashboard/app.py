@@ -322,7 +322,7 @@ body{background:radial-gradient(circle at 14% 8%,rgba(0,0,0,.03),transparent 28%
 </style></head><body><div class="wrap"><nav class="nav"><div class="brand"><img src="/logo.jpg" style="width:40px; height:40px; border-radius:8px; object-fit:contain;" alt="Attestor"><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><div class="navlinks"><a href="#coverage">Coverage</a><a href="#trust">Trust model</a><a class="navbtn" href="/console">Open console</a></div></nav>
 <main><section class="hero"><div><h1>Turn device state into evidence your organization can defend.</h1><p>Upload a saved configuration, evaluate source-backed controls, and give your team a precise path from finding to remediation—without sending device evidence to a remote dashboard.</p><div class="actions"><a class="btn primary" href="/console">Open audit console</a><a class="btn secondary" href="#coverage">Explore coverage</a></div></div><div class="cobe-container" id="cobe-container"><canvas id="cobe" class="cobe-canvas"></canvas><div id="cobe-markers-container"></div><div id="cobe-traffic-container"></div></div></section>
 <section class="metrics" aria-label="Verified product scope"><div class="metric"><strong>86</strong><span>Verified controls</span></div><div class="metric"><strong>5</strong><span>Supported targets</span></div><div class="metric"><strong class="accent">100%</strong><span>Offline report ready</span></div><div class="metric"><strong>0</strong><span>Config bytes on-chain</span></div></section>
-<aside class="trust" id="trust"><h2>Built for accountable decisions</h2><div class="trustrow"><div class="icon">01</div><div><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trustrow"><div class="icon">02</div><div><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trustrow"><div class="icon">03</div><div><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trustrow"><div class="icon">04</div><div><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></aside>
+<section class="trust-section" id="trust"><div class="trust-header"><span class="eyebrow">Enterprise Grade</span><h2>Built for accountable decisions</h2></div><div class="trust-grid"><div class="trust-card"><div class="icon">01</div><div class="trust-content"><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trust-card"><div class="icon">02</div><div class="trust-content"><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trust-card"><div class="icon">03</div><div class="trust-content"><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trust-card"><div class="icon">04</div><div class="trust-content"><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></div></section>
 <section class="band" id="coverage"><div class="bandhead"><div><h2>Verified coverage</h2><p>Start with controls that have real corpus or VM evidence behind them.</p></div><a class="btn secondary" href="/console">Start a scan</a></div><div class="cards"><div class="card"><strong>Windows 11 Standalone</strong><p>Native PowerShell checks against the verified Level 1 rule pack.</p><span class="pill">30 controls</span></div><div class="card"><strong>Ubuntu 22.04 Desktop</strong><p>Python checks for kernel, sysctl, services, packages, and permissions.</p><span class="pill">35 controls</span></div><div class="card"><strong>Cisco IOS / IOS-XE</strong><p>Flat and block-aware configuration checks with CIS and NIST mappings.</p><span class="pill">14 controls</span></div><div class="card"><strong>Juniper Junos</strong><p>Source-backed vendor baseline for common service and logging controls.</p><span class="pill">4 controls</span></div><div class="card"><strong>Fortinet FortiOS</strong><p>Source-backed firewall baseline for management access and administrator exposure.</p><span class="pill">3 controls</span></div><div class="card"><strong>Reports</strong><p>Per-device JSON, standalone HTML, and PDF outputs for review and handoff.</p><span class="pill">Offline-ready</span></div><div class="card"><strong>Roadmap</strong><p>Broader vendor controls, live collection, and fleet deployment remain evidence-gated.</p><span class="pill">Clearly scoped</span></div></div><p class="footer-note">Current workspace: local and single-operator. Uploads are discarded after processing; persistent organizations and live collection are roadmap items.</p></section></main></div>
 <style>
   @keyframes pyramid-spin {
@@ -588,8 +588,8 @@ body{background:radial-gradient(circle at 14% 8%,rgba(0,0,0,.03),transparent 28%
 APPLE_GLASS_STYLE = """<style>
 html,body,button,input,select{font-family:"SF Pro Text","Avenir Next",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif!important}
 html{background:#087dd7}body{position:relative;min-height:100vh;color:#12202d!important;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;background:radial-gradient(ellipse at 16% 22%,rgba(104,226,255,.94) 0%,rgba(19,154,241,.78) 18%,transparent 42%),radial-gradient(ellipse at 78% 12%,rgba(172,235,255,.74) 0%,rgba(39,132,239,.6) 25%,transparent 48%),radial-gradient(ellipse at 74% 88%,rgba(3,50,190,.92) 0%,rgba(6,98,225,.78) 34%,transparent 62%),linear-gradient(135deg,#83d8fa 0%,#1992ef 35%,#0759cf 68%,#062f9c 100%)!important;background-attachment:fixed!important}body:before{content:"";position:fixed;inset:-18%;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 18% 64%,transparent 0 27%,rgba(195,244,255,.68) 28% 31%,rgba(27,152,238,.42) 32% 40%,transparent 41%),radial-gradient(ellipse at 75% 36%,transparent 0 25%,rgba(174,239,255,.5) 26% 30%,rgba(7,91,213,.42) 31% 41%,transparent 42%);transform:rotate(-9deg);opacity:.88}body:after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(115deg,rgba(255,255,255,.16),transparent 28%,rgba(255,255,255,.07) 46%,transparent 65%)}.wrap,.shell{position:relative!important;z-index:1!important}
-.nav,.topbar,.hero-copy,.hero-metric,.trust,.metric,.card,.panel,.upload,.device-list,.identity,.sum,.result-card{position:relative;background:linear-gradient(135deg,rgba(244,253,255,.66),rgba(211,242,252,.38))!important;border:1px solid rgba(255,255,255,.76)!important;box-shadow:0 28px 70px rgba(0,30,92,.22),inset 0 1px 1px rgba(255,255,255,.98),inset 0 -1px 1px rgba(29,111,166,.12)!important;backdrop-filter:blur(28px) saturate(165%)!important;-webkit-backdrop-filter:blur(28px) saturate(165%)!important}.nav:after,.topbar:after,.hero-copy:after,.trust:after,.panel:after,.upload:after,.identity:after{content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;border-top:1px solid rgba(255,255,255,.86);mask-image:linear-gradient(90deg,#000,transparent 72%)}
-.nav,.topbar{min-height:62px;padding-left:88px!important;border-radius:22px!important;background:linear-gradient(135deg,rgba(237,252,255,.68),rgba(199,235,249,.42))!important}.nav:before,.topbar:before{content:"";position:absolute;left:23px;top:25px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 #febc2e,40px 0 #28c840;z-index:3}.hero-copy,.hero-metric,.trust,.panel,.upload,.device-list,.identity,.result-card{border-radius:22px!important}.metric,.sum,.card{border-radius:18px!important}.topology{border-radius:32px!important;background:linear-gradient(145deg,rgba(226,249,255,.52),rgba(108,190,245,.26))!important;border:1px solid rgba(255,255,255,.7)!important;box-shadow:0 38px 90px rgba(0,35,110,.28),inset 0 1px 1px rgba(255,255,255,.94)!important;backdrop-filter:blur(30px) saturate(170%)!important;-webkit-backdrop-filter:blur(30px) saturate(170%)!important}.plane,.node{background:linear-gradient(145deg,rgba(248,254,255,.82),rgba(170,224,249,.54))!important;border-color:rgba(255,255,255,.86)!important;box-shadow:0 18px 40px rgba(0,50,130,.24),inset 0 1px 1px rgba(255,255,255,.98)!important}.n-core{background:linear-gradient(145deg,rgba(20,83,204,.96),rgba(17,49,158,.94))!important}.link,.signal{background:#eaffff!important;box-shadow:0 0 0 1px rgba(255,255,255,.7),0 0 15px rgba(119,237,255,.9)!important}
+.nav,.topbar,.hero-copy,.hero-metric,.trust-card,.metric,.card,.panel,.upload,.device-list,.identity,.sum,.result-card{position:relative;background:linear-gradient(135deg,rgba(244,253,255,.66),rgba(211,242,252,.38))!important;border:1px solid rgba(255,255,255,.76)!important;box-shadow:0 28px 70px rgba(0,30,92,.22),inset 0 1px 1px rgba(255,255,255,.98),inset 0 -1px 1px rgba(29,111,166,.12)!important;backdrop-filter:blur(28px) saturate(165%)!important;-webkit-backdrop-filter:blur(28px) saturate(165%)!important}.nav:after,.topbar:after,.hero-copy:after,.trust-card:after,.panel:after,.upload:after,.identity:after{content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;border-top:1px solid rgba(255,255,255,.86);mask-image:linear-gradient(90deg,#000,transparent 72%)}
+.nav,.topbar{min-height:62px;padding-left:88px!important;border-radius:22px!important;background:linear-gradient(135deg,rgba(237,252,255,.68),rgba(199,235,249,.42))!important}.nav:before,.topbar:before{content:"";position:absolute;left:23px;top:25px;width:12px;height:12px;border-radius:50%;background:#ff5f57;box-shadow:20px 0 #febc2e,40px 0 #28c840;z-index:3}.hero-copy,.hero-metric,.trust-card,.panel,.upload,.device-list,.identity,.result-card{border-radius:22px!important}.metric,.sum,.card{border-radius:18px!important}.topology{border-radius:32px!important;background:linear-gradient(145deg,rgba(226,249,255,.52),rgba(108,190,245,.26))!important;border:1px solid rgba(255,255,255,.7)!important;box-shadow:0 38px 90px rgba(0,35,110,.28),inset 0 1px 1px rgba(255,255,255,.94)!important;backdrop-filter:blur(30px) saturate(170%)!important;-webkit-backdrop-filter:blur(30px) saturate(170%)!important}.plane,.node{background:linear-gradient(145deg,rgba(248,254,255,.82),rgba(170,224,249,.54))!important;border-color:rgba(255,255,255,.86)!important;box-shadow:0 18px 40px rgba(0,50,130,.24),inset 0 1px 1px rgba(255,255,255,.98)!important}.n-core{background:linear-gradient(145deg,rgba(20,83,204,.96),rgba(17,49,158,.94))!important}.link,.signal{background:#eaffff!important;box-shadow:0 0 0 1px rgba(255,255,255,.7),0 0 15px rgba(119,237,255,.9)!important}
 .button,.btn,.navbtn{border-radius:999px!important;border:1px solid rgba(255,255,255,.68)!important;background:linear-gradient(180deg,rgba(25,121,234,.95),rgba(5,77,201,.98))!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,28,96,.45);box-shadow:0 9px 22px rgba(0,54,161,.28),inset 0 1px 1px rgba(255,255,255,.48)!important}.button.alt,.secondary,.button-secondary{background:linear-gradient(180deg,rgba(250,254,255,.72),rgba(203,235,248,.55))!important;color:#12344c!important;text-shadow:none;border-color:rgba(255,255,255,.86)!important}.mark,.brand-mark{border-radius:14px!important;background:linear-gradient(145deg,#188df5,#0735b7)!important;border:1px solid rgba(255,255,255,.58)!important;box-shadow:0 12px 28px rgba(0,49,161,.3),inset 0 1px 1px rgba(255,255,255,.52)!important}
 input,select{background:linear-gradient(180deg,rgba(251,255,255,.8),rgba(219,242,250,.62))!important;border:1px solid rgba(255,255,255,.88)!important;border-radius:13px!important;color:#132b3d!important;box-shadow:inset 0 1px 1px rgba(255,255,255,.98),0 7px 18px rgba(0,55,124,.1)!important}input::placeholder{color:#506c7d!important;opacity:1}select option{color:#132b3d;background:#effaff}
 h1,h2,h3,.brand-name,.brand strong{font-family:"SF Pro Display","Avenir Next",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif!important}body,button,input,select,p,span,label,a{font-family:"SF Pro Text","Avenir Next",-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif!important}h1{font-weight:720!important}h2,h3{font-weight:680!important}h1,h2{letter-spacing:-.035em!important;text-wrap:balance}h3{letter-spacing:-.018em!important}h1,h2,h3,strong,.brand-name,.brand strong,.device-row strong,.control strong{color:#102a3c!important}p,.sub,.hero-copy p,.panel-kicker,.metric-note,.helper,.muted,.device-row span,.metric small,.card p,.trustrow span,.brand-subtitle,.brand small,.result-evidence,.source,.history span{color:#405b6b!important}label,.field label{color:#18384c!important}a,.nav a,.link,.report-link,details,details summary,.empty a{color:#075fae!important}.eyebrow{color:#0a659d!important}.tag,.pill,.scope-chip{color:#075fae!important;background:rgba(224,249,255,.58)!important;border-color:rgba(255,255,255,.72)!important}.metric strong,.score,.count,.row-score{font-variant-numeric:tabular-nums}.status-pill{color:#38576a!important;background:rgba(231,250,255,.54)!important}.status-bar{color:#075fae!important}.status-bar.complete{color:#0d7043!important}.badge-pass,.control-status.pass,.state.good{color:#0d7043!important}.badge-fail,.control-status.fail,.state.bad{color:#a32621!important}.badge-error,.control-status.error,.state.pending{color:#805400!important}.network-card,.network-card strong,.n-core,.n-core strong{color:#fff!important}.network-card span,.n-core span{color:#d6f4ff!important}.device-row:hover{background:rgba(225,249,255,.5)!important}.list-head{background:rgba(219,244,252,.42)!important}
@@ -599,9 +599,9 @@ body{overflow-x:hidden}.wrap,.shell{width:min(100%,1340px);max-width:100%;overfl
 @media(max-width:960px){.list-head{display:none!important}.device-row{grid-template-columns:minmax(0,1fr) 90px!important}.row-summary{grid-column:1/-1}.device-row>div:last-child{text-align:right}.inventory-head{display:block!important}.filters{margin-top:14px!important}.filters input{flex:1 1 220px!important}.filters select{flex:1 1 160px!important}}
 @media(max-width:700px){.wrap,.shell{padding-left:14px!important;padding-right:14px!important}.workspace-head,.head,.upload-header,.bandhead{display:block!important}.workspace-head .top-actions,.head .actions,.upload-header .scope-chip,.bandhead .btn{margin-top:14px!important}.metrics,.summary{grid-template-columns:repeat(2,minmax(0,1fr))!important}.hero{grid-template-columns:minmax(0,1fr)!important}.topology{min-height:290px!important}.scene{transform:scale(.72) rotateX(54deg) rotateZ(-24deg)!important}.device-row{grid-template-columns:minmax(0,1fr)!important}.device-row>div:last-child{text-align:left}.row-score,.row-summary{grid-column:1/-1}.filters,.upload-grid,.vm-controls{display:flex!important;flex-direction:column!important;align-items:stretch!important}.filters>* ,.upload-grid>* ,.vm-controls>*{width:100%!important}.topbar{gap:12px!important}.topbar .brand{flex:1 1 180px}.topbar .nav{justify-content:flex-end!important}}
 @media(max-width:430px){.metrics,.summary{grid-template-columns:minmax(0,1fr)!important}.navlinks a:not(.navbtn){display:none!important}.hero h1{font-size:38px!important}.topology{min-height:250px!important}.scene{transform:scale(.61) rotateX(54deg) rotateZ(-24deg)!important}.button,.btn,.navbtn{width:100%!important}.top-actions,.actions,.form-actions{display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100%}.topbar{display:block!important}.topbar .nav{justify-content:flex-start!important;margin-top:12px!important}}
-@media(max-width:700px){.nav,.topbar{padding-left:18px!important}.nav:before,.topbar:before{display:none}.hero-copy,.hero-metric,.trust,.panel,.upload,.device-list,.identity,.result-card{border-radius:18px!important}}
+@media(max-width:700px){.nav,.topbar{padding-left:18px!important}.nav:before,.topbar:before{display:none}.hero-copy,.hero-metric,.trust-card,.panel,.upload,.device-list,.identity,.result-card{border-radius:18px!important}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.nav,.topbar,.hero-copy,.hero-metric,.trust,.metric,.card,.panel,.upload,.device-list,.identity,.sum,.result-card{background:#dff4fb!important}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.nav,.topbar,.hero-copy,.hero-metric,.trust-card,.metric,.card,.panel,.upload,.device-list,.identity,.sum,.result-card{background:#dff4fb!important}}
 </style>"""
 
 
@@ -653,7 +653,7 @@ body::before, body::after { display: none !important; }
 a { color: var(--ui-blue); }
 p, .sub, .muted, .helper, .panel-kicker, .metric-note, .field-help,
 .device-row span, .profile span, .pattern span, .pattern p, .rule span,
-.rule p, .card p, .trustrow span, .history span, .source,
+.rule p, .card p, .trust-content span, .history span, .source,
 .brand small, .brand-subtitle {
   color: var(--ui-muted) !important;
 }
@@ -813,7 +813,7 @@ textarea:focus-visible, summary:focus-visible {
 }
 label { color: var(--ui-ink-soft) !important; font-size: 12px !important; font-weight: 700 !important; }
 
-.panel, .upload, .device-list, .identity, .sum, .result-card, .trust,
+.panel, .upload, .device-list, .identity, .sum, .result-card, .trust-card,
 .metric, .card, .hero-copy, .hero-metric, .pattern {
   border: 1px solid rgba(255, 255, 255, .92) !important;
   background: var(--ui-surface) !important;
@@ -822,7 +822,7 @@ label { color: var(--ui-ink-soft) !important; font-size: 12px !important; font-w
   -webkit-backdrop-filter: blur(16px) saturate(120%) !important;
 }
 .panel, .upload, .device-list, .identity, .result-card, .hero-copy,
-.hero-metric, .trust, .pattern { border-radius: 12px !important; }
+.hero-metric, .trust-card, .pattern { border-radius: 12px !important; }
 .metric, .sum, .card { border-radius: 10px !important; }
 .panel, .upload, .identity, .result-card { padding: 22px !important; }
 .panel::after, .upload::after, .identity::after, .hero-copy::after,
@@ -920,14 +920,48 @@ body:has(.topology) .hero p {
 .n-core strong { color: #fff !important; }
 .n-core span { color: #c5d4e2 !important; }
 .link, .signal { background: var(--ui-cyan) !important; box-shadow: none !important; }
-.trustrow .icon {
-  width: 34px !important;
-  height: 34px !important;
+.trust-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 24px !important;
+  margin-top: 32px !important;
+}
+.trust-header { text-align: center !important; }
+.trust-header h2 { font-size: 28px !important; margin-top: 4px !important; }
+.trust-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+.trust-card {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  padding: 24px !important;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
+}
+.trust-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--ui-shadow-md) !important;
+  border-color: rgba(22, 104, 178, .26) !important;
+}
+.trust-card .icon {
+  width: 38px !important;
+  height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   border: 1px solid rgba(22, 104, 178, .15) !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   color: var(--ui-blue) !important;
   background: var(--ui-blue-soft) !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  flex-shrink: 0 !important;
 }
+.trust-content { display: flex !important; flex-direction: column !important; gap: 4px !important; }
+.trust-content strong { font-size: 15px !important; }
+.trust-content span { font-size: 13px !important; line-height: 1.4 !important; }
 .metrics { gap: 12px !important; }
 .metric { min-height: 108px; }
 .cards { gap: 14px !important; }
@@ -1068,7 +1102,7 @@ body:has(.topology) .hero p {
   body:has(.topology) .hero p { font-size: 16px !important; }
   .topology { min-height: 285px !important; }
   .scene { transform: scale(.68) rotateX(54deg) rotateZ(-24deg) !important; }
-  .cards, .metrics, .summary { grid-template-columns: minmax(0, 1fr) !important; }
+  .cards, .metrics, .summary, .trust-grid { grid-template-columns: minmax(0, 1fr) !important; }
   .button, .btn, .navbtn { width: 100%; }
   .top-actions, .actions, .form-actions { width: 100%; display: grid !important; }
   .filters, .upload-grid, .vm-controls, .confirm-form, .two {
