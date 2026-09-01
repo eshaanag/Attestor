@@ -322,7 +322,7 @@ body{background:radial-gradient(circle at 14% 8%,rgba(0,0,0,.03),transparent 28%
 </style></head><body><div class="wrap"><nav class="nav"><div class="brand"><img src="/logo.jpg" style="width:40px; height:40px; border-radius:8px; object-fit:contain;" alt="Attestor"><div><strong>Attestor</strong><small>Security compliance operations</small></div></div><div class="navlinks"><a href="#coverage">Coverage</a><a href="#trust">Trust model</a><a class="navbtn" href="/console">Open console</a></div></nav>
 <main><section class="hero"><div><h1>Turn device state into evidence your organization can defend.</h1><p>Upload a saved configuration, evaluate source-backed controls, and give your team a precise path from finding to remediation—without sending device evidence to a remote dashboard.</p><div class="actions"><a class="btn primary" href="/console">Open audit console</a><a class="btn secondary" href="#coverage">Explore coverage</a></div></div><div class="cobe-container" id="cobe-container"><canvas id="cobe" class="cobe-canvas"></canvas><div id="cobe-markers-container"></div><div id="cobe-traffic-container"></div></div></section>
 <section class="metrics" aria-label="Verified product scope"><div class="metric"><strong>86</strong><span>Verified controls</span></div><div class="metric"><strong>5</strong><span>Supported targets</span></div><div class="metric"><strong class="accent">100%</strong><span>Offline report ready</span></div><div class="metric"><strong>0</strong><span>Config bytes on-chain</span></div></section>
-<section class="trust-section" id="trust"><div class="trust-header"><span class="eyebrow">Enterprise Grade</span><h2>Built for accountable decisions</h2></div><div class="trust-grid"><div class="trust-card"><div class="icon">01</div><div class="trust-content"><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trust-card"><div class="icon">02</div><div class="trust-content"><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trust-card"><div class="icon">03</div><div class="trust-content"><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trust-card"><div class="icon">04</div><div class="trust-content"><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></div></section>
+<section class="trust-section" id="trust"><div class="trust-header"><span class="eyebrow">Enterprise Grade</span><h2>Built for accountable decisions</h2></div><div class="trust-grid"><div class="trust-card"><div class="watermark-number">01</div><div class="trust-content"><strong>Deterministic first</strong><span>Schema-validated rules remain authoritative; unknown input fails closed.</span></div></div><div class="trust-card"><div class="watermark-number">02</div><div class="trust-content"><strong>Evidence stays local</strong><span>Uploads are processed temporarily. Reports open offline.</span></div></div><div class="trust-card"><div class="watermark-number">03</div><div class="trust-content"><strong>AI stays advisory</strong><span>Redacted discovery and cached remediation never override a result.</span></div></div><div class="trust-card"><div class="watermark-number">04</div><div class="trust-content"><strong>Hash-only proof</strong><span>Optional Sepolia anchoring publishes report hashes, never configuration.</span></div></div></div></section>
 <section class="band" id="coverage"><div class="bandhead"><div><h2>Verified coverage</h2><p>Start with controls that have real corpus or VM evidence behind them.</p></div><a class="btn secondary" href="/console">Start a scan</a></div><div class="cards"><div class="card"><strong>Windows 11 Standalone</strong><p>Native PowerShell checks against the verified Level 1 rule pack.</p><span class="pill">30 controls</span></div><div class="card"><strong>Ubuntu 22.04 Desktop</strong><p>Python checks for kernel, sysctl, services, packages, and permissions.</p><span class="pill">35 controls</span></div><div class="card"><strong>Cisco IOS / IOS-XE</strong><p>Flat and block-aware configuration checks with CIS and NIST mappings.</p><span class="pill">14 controls</span></div><div class="card"><strong>Juniper Junos</strong><p>Source-backed vendor baseline for common service and logging controls.</p><span class="pill">4 controls</span></div><div class="card"><strong>Fortinet FortiOS</strong><p>Source-backed firewall baseline for management access and administrator exposure.</p><span class="pill">3 controls</span></div><div class="card"><strong>Reports</strong><p>Per-device JSON, standalone HTML, and PDF outputs for review and handoff.</p><span class="pill">Offline-ready</span></div><div class="card"><strong>Roadmap</strong><p>Broader vendor controls, live collection, and fleet deployment remain evidence-gated.</p><span class="pill">Clearly scoped</span></div></div><p class="footer-note">Current workspace: local and single-operator. Uploads are discarded after processing; persistent organizations and live collection are roadmap items.</p></section></main></div>
 <style>
   @keyframes pyramid-spin {
@@ -934,34 +934,50 @@ body:has(.topology) .hero p {
   gap: 16px !important;
 }
 .trust-card {
+  position: relative !important;
   display: flex !important;
   align-items: flex-start !important;
   gap: 16px !important;
-  padding: 24px !important;
+  padding: 32px 28px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e6ea !important;
+  overflow: hidden !important;
   transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important;
 }
 .trust-card:hover {
   transform: translateY(-2px) !important;
-  box-shadow: var(--ui-shadow-md) !important;
-  border-color: rgba(22, 104, 178, .26) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .06) !important;
+  border-color: #d0d5da !important;
 }
-.trust-card .icon {
-  width: 38px !important;
-  height: 38px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: 1px solid rgba(22, 104, 178, .15) !important;
-  border-radius: 10px !important;
-  color: var(--ui-blue) !important;
-  background: var(--ui-blue-soft) !important;
+.trust-card .watermark-number {
+  position: absolute !important;
+  top: 10px !important;
+  right: 15px !important;
+  font-size: 130px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  color: #f2f4f6 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  letter-spacing: -0.05em !important;
+}
+.trust-content { 
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important; 
+  flex-direction: column !important; 
+  gap: 8px !important; 
+}
+.trust-content strong { 
+  font-size: 18px !important; 
+  color: #111 !important; 
   font-weight: 700 !important;
-  font-size: 14px !important;
-  flex-shrink: 0 !important;
 }
-.trust-content { display: flex !important; flex-direction: column !important; gap: 4px !important; }
-.trust-content strong { font-size: 15px !important; }
-.trust-content span { font-size: 13px !important; line-height: 1.4 !important; }
+.trust-content span { 
+  font-size: 14px !important; 
+  line-height: 1.5 !important; 
+  color: #4a5568 !important; 
+}
 .metrics { gap: 12px !important; }
 .metric { min-height: 108px; }
 .cards { gap: 14px !important; }
