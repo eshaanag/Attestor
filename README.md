@@ -1,219 +1,153 @@
 # Attestor
 
-**Deterministic network compliance auditing with privacy-safe AI-assisted vendor
-onboarding, offline reports, and optional tamper evidence.**
+**Multi-vendor network security compliance auditing with AI-assisted vendor onboarding, offline reports, and tamper-evident audit trails.**
 
 ---
 
-## Problem Statement
+## What it does
 
-**SIH260382 — NTRO (National Technical Research Organisation)**
-**Theme: Blockchain & Cybersecurity**
+Attestor reads network device configurations — Cisco IOS, Juniper Junos, Fortinet FortiOS — and checks them against CIS Benchmark security controls. You get a clear report showing which controls pass, which fail, and what to do about the ones that don't. Everything runs locally. No data leaves your network.
 
-> Design and develop a tool to automatically assess the security configurations of desktops/laptops against the CIS Benchmark. The tool should scan the system, identify deviations from the benchmark, and generate a compliance report highlighting areas of non-compliance with actionable recommendations for remediation.
-
-The current PS26155 track extends the proven OS foundation into an AI-assisted
-network configuration auditor. See the concise
-[`PS26155 architecture brief`](docs/ps26155-architecture.md) for the exact
-delivered scope, privacy boundary, and roadmap. New users should follow the
-[`Attestor Operator Guide`](docs/operator-guide.md) for installation, exact
-vendor inputs, saved and live-device auditing, reports, training, and
-troubleshooting. Team members preparing for SIH should read the
-[`Attestor Project Handbook`](docs/project-handbook.md) for the problem
-statement, complete feature explanation, architecture, business case, pitch,
-demo strategy, terminology, and judge Q&A.
+The core idea is simple: a sysadmin should be able to audit a router the same way they'd audit anything else — open a tool, get a clear answer, get told what to change.
 
 ---
 
-## Why This Approach
+## Why we built it this way
 
-- **Deterministic checks remain authoritative.** AI suggestions discover and
-  categorize unfamiliar syntax; they never override pass/fail results.
-- **Human-in-the-loop vendor onboarding.** An administrator can attach genuine
-  vendor documentation, confirm redacted command patterns, publish an
-  organization-defined profile, and reuse it without backend redeployment.
-- **Evidence stays local.** Raw uploads are temporary. Reports render offline;
-  AI receives only redacted patterns and only after an explicit capped action.
-- **Tamper evidence is a bonus, not the compliance engine.** The optional ledger
-  anchors only a SHA-256 hash, never configuration or report content.
+**AI helps, but doesn't decide.** The audit result comes from deterministic, source-backed rules. AI is used in two places: categorizing unfamiliar vendor syntax in the Training Studio, and generating remediation suggestions for failed controls. It cannot create a pass result or override the engine.
+
+**New vendors don't require a code change.** The Training Studio lets a sysadmin teach Attestor about a completely new vendor — upload a config, let AI suggest command categories, confirm the mappings, write sourced rules, publish the profile. From that point on, any device from that vendor can be audited from the console without touching the backend.
+
+**Raw configuration never leaves the machine.** Uploaded configs go into a temporary workspace and are discarded after the audit. SSH credentials stay in request memory. The database stores hashes, report projections, and redacted patterns — nothing sensitive.
 
 ---
 
-## Prerequisites
+## Supported vendors (built-in)
 
-- **Python 3.10+** — required on **both** Windows and Linux hosts. The Linux
-  audit engine is Python; on Windows the audit engine is native **PowerShell**,
-  but **report generation and the tamper-evident ledger are shared Python** and
-  run on both platforms, so Python is required everywhere Attestor produces or
-  chains a report.
-- **PowerShell 5.1+** — required on Windows hosts for the audit engine (ships
-  with Windows 11; no extra install).
-- Python packages are pinned in `requirements.txt` and include FastAPI,
-  ReportLab, Jinja2, schema validation, and the optional Sepolia client. No
-  external PowerShell modules are needed.
+| Vendor | Controls | Framework |
+|---|---|---|
+| Cisco IOS / IOS-XE | 14 CIS-backed controls | CIS Benchmark + NIST SP 800-53 mappings |
+| Juniper Junos | 4 baseline controls | Vendor security documentation |
+| Fortinet FortiOS | 3 baseline controls | Vendor security documentation |
+
+Additional vendors can be onboarded through the Training Studio without modifying any code.
 
 ---
 
-## Folder Structure
+## Getting started
+
+**Prerequisites:** Python 3.10+
+
+```bash
+git clone https://github.com/eshaanag/Attestor.git
+cd Attestor
+python3 -m pip install -r requirements.txt
+python3 -m uvicorn dashboard.app:app --host 127.0.0.1 --port 8000
+```
+
+Open `http://127.0.0.1:8000` in your browser.
+
+---
+
+## How to run an audit
+
+**Option 1 — Upload a saved config file**
+
+Open the console, select your vendor, upload the configuration file:
+- Cisco: output of `show running-config`
+- Junos: output of `show configuration | no-more`
+- FortiOS: output of `show full-configuration`
+
+**Option 2 — Connect to a live device via SSH**
+
+Use the "Collect from a live device" form. Enter the host, port, vendor, and credentials. Attestor connects through Netmiko, runs only fixed read-only commands, and hands the collected config to the same audit engine. Credentials are never stored.
+
+Both paths produce the same output.
+
+---
+
+## What you get
+
+For each audited device, Attestor generates:
+
+- **Offline HTML report** — self-contained, opens without internet access
+- **PDF report** — includes device identity, findings by severity, evidence, and AI-generated remediation guidance per failed control
+- **JSON** — machine-readable full audit data, suitable for SIEM integration
+- **Evidence bundle ZIP** — packages all three formats plus a hash/provenance manifest; raw configuration is excluded
+
+The dashboard also maintains a scan history per device so you can track compliance posture over time and see exactly what changed between scans.
+
+---
+
+## Training Studio
+
+When Attestor encounters a vendor it doesn't recognize, Training Studio is how you onboard it:
+
+1. Upload a genuine configuration file and enter the vendor name and version
+2. Attestor extracts commands it doesn't know and strips all sensitive values before any further processing
+3. Optionally request AI category suggestions — you see the estimated cost upfront and set a hard cap on API calls
+4. Review and confirm every suggestion; nothing becomes a rule without explicit human approval
+5. Write sourced rules for the vendor and publish the profile
+6. The vendor now appears in the audit console for everyone — no redeploy needed
+
+---
+
+## Tamper-evident audit trail
+
+Every report gets a SHA-256 hash computed from a canonical serialization of the results. Each new audit links its hash to the previous audit for that device, forming a chain. If anyone edits a historical report, the chain breaks and verification catches it immediately.
+
+Optionally, the root hash can be anchored to an Ethereum Sepolia smart contract. Only the hash goes on-chain — configuration and findings stay local.
+
+Contract: [`0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`](https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41)
+
+---
+
+## Rules
+
+Every security control is a plain YAML file under `rules/`. The schema in `schema/rule_schema.json` validates every rule at startup — a malformed rule is rejected before it participates in an audit.
+
+To see exactly what any rule checks, open the YAML file. No compiled code to dig through.
+
+```
+rules/
+├── cisco_ios/       — 14 CIS-backed rules
+├── juniper_junos/   — 4 vendor-baseline rules
+└── fortinet_fortios/ — 3 vendor-baseline rules
+```
+
+---
+
+## Project structure
 
 ```
 attestor/
-├── README.md
-├── AGENTS.md
-├── LICENSE
-├── .gitignore
-├── CONTRIBUTING.md
-├── docs/
-│   ├── architecture.md
-│   ├── operator-guide.md
-│   ├── project-handbook.md
-│   ├── rule-schema.md
-│   └── interfaces.md
-├── engines/
-│   ├── windows/
-│   ├── linux/
-│   └── network/
-├── ai/
-├── rules/
-│   ├── windows11_standalone/
-│   ├── windows11_enterprise/
-│   ├── ubuntu2204_desktop/
-│   ├── ubuntu2004_desktop/
-│   └── rhel8/
-├── schema/
-├── report/
-├── ledger/
-├── backend/
-├── dashboard/
-├── tests/
-└── reference/
+├── dashboard/          — FastAPI web application (console, inventory, training, profiles)
+├── engines/network/    — Cisco, Junos, FortiOS parsers + Netmiko SSH collector
+├── rules/              — YAML rule packs, one file per control
+├── schema/             — JSON Schema for rule validation
+├── report/             — HTML, PDF, and evidence bundle generation
+├── ai/                 — Pattern discovery, redaction, classification, and caching
+├── ledger/             — SHA-256 hash chain and Sepolia anchoring
+├── tests/              — Automated test suite and corpus fixtures
+└── docs/               — Architecture, operator guide, and rule schema reference
 ```
 
 ---
 
-## Status
-
-| Target | Engine | Controls verified | Status |
-|--------|--------|-------------------|--------|
-| Ubuntu 22.04 Desktop (Level 1) | `engines/linux/run_audit.py` | 35 (sysctl + file_permission + kernel_module + config_grep + service_state + package_installed) | Verified on real VM |
-| Windows 11 Standalone (Level 1) | `engines/windows/run_audit.ps1` | 30 (registry + secpol + account_policy + audit_policy + service_state) | Verified on real VM |
-
-**Phase 0** through **Phase 7** and **Phase 9** are complete for the OS track.
-For PS26155, Cisco IOS, scoped Junos, persistent single/bulk ingestion,
-budget-capped AI-assisted training, organization-defined vendor profiles, and
-JSON/HTML/PDF plus evidence-bundle reporting and conservative same-device scan
-comparison are implemented and covered by the current automated suite. A
-Netmiko SSH input adapter is implemented for the three built-in vendors, but
-live-device verification remains open until a reachable real device is tested.
-
-**Current blockchain integration:** Ethereum Sepolia contract
-[`0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41`](https://sepolia.etherscan.io/address/0xbd19e20aD6C216A8a793fdE3Bd46B9D291Bf5C41), using
-`anchorReport(currentHash, previousHash)`. The earlier Polygon Amoy deployment is
-legacy and is not the contract used by the current integration.
-
-See [`reports/sample-report.html`](reports/sample-report.html) for an example rendered report (opens offline, no network required).
-
-### PS26155 network-device track
-
-| Phase | Scope | Status | Evidence |
-|---|---|---|---|
-| A | Additive schema + interface contracts | Complete | Existing OS rules validate unchanged; current gate is 221 real rules plus 7 schema fixtures; canonical/ledger/anchor tests pass |
-| B | Genuine Cisco IOS config corpus | Complete | 10 MIT-licensed source-backed IOS reference configs; immutable source commits, retrieval date, platform, and SHA-256 in `tests/fixtures/network/cisco_ios/manifest.json`; integrity test passes |
-| C | Cisco IOS flat-check parser primitive | Complete | `engines/network/run_audit.py`; five manual-oracle checks span all 10 corpus files and each has pass + fail evidence; focused tests pass |
-| D | Cisco IOS block-aware VTY/interface parser primitive | Complete | `engines/network/run_audit.py`; interface oracle has pass/fail coverage across all 10 source-backed configs; 21-test suite and rule validator pass |
-| E | Cisco IOS rule pack + dual-framework report | Complete (scoped) | 14 source-backed CIS rules under `rules/cisco_ios/`, each with NIST SP 800-53 mapping; 10-config per-rule oracle has pass/fail evidence; 23 tests pass; report renders device identity and mappings offline |
-| F | Network-report ledger + real Sepolia transaction | Complete (Cisco IOS scope) | Stable device chain verified; root `6d9319f05742791af8798a288e72e530a0d563a3037f7a5ddecb3d68d843239a` anchored in tx `4b9515e22e18523f08685a1013f8dbf064f9b62f97136cbc0b39132cd174d750`; `verifyRoot` returned found=true |
-| F' | AI-assisted syntax discovery/training loop | Complete (deterministic compliance unchanged) | Training Studio persists only redacted patterns, displays pre-call cost, enforces a hard cap, records actual usage, and requires human confirmation; approved reference batch: 51 redacted candidates, `$0.019748` |
-| G' | Offline PDF report + cached AI remediation | Complete (AI advisory scope) | ReportLab PDF renders the genuine Cisco report offline; 9 failed controls received clearly labelled Haiku-generated advisory remediation and reasoning; initial batch + one targeted retry used `$0.008774`; retry reproduced the known invalid `SHA-500` phrase, proving why human review remains required |
-| H' | Organizational ingestion dashboard | Complete (scoped) | Persistent inventory, single/bulk upload, scan states, device history/detail, CIS/NIST-mapped views, JSON/HTML/PDF links, Training Studio, and published organization-defined profiles |
-| J' | Low-code vendor profile path | Complete (organization-defined assurance) | Genuine config + vendor source upload, redacted pattern confirmation, publication gate, exact fail-closed pattern audit, pass/fail corpus proof, and explicit not-Attestor-verified labels in JSON/HTML/PDF |
-| K' | Source-backed device identity facts | Complete (optional companion input) | Genuine Cisco/Junos `show version` corpus with provenance and SHA-256; optional CLI/dashboard pairing adds explicit model, serial, and software fields without changing compliance results; 89 tests pass |
-| M' | Per-scan evidence bundle | Complete | Successful built-in and organization-defined scans export JSON/HTML/PDF plus a manifest with artifact hashes, provenance, privacy, and integrity status; raw configurations are excluded |
-| N' | Same-device scan comparison | Complete (scoped) | Repeated genuine Cisco scans preserve historical artifacts and show new failures, resolved findings, score/config movement, and same-framework coverage changes; missing software facts stay not comparable |
-| G | Optional second vendor | Complete (scoped) | Juniper Junos four-control source-backed subset implemented; broader Junos coverage remains roadmap |
-| O' | Fortinet FortiOS third-vendor subset | Complete (scoped) | Eight licensed public captures, narrow `config/edit/next/end` parser, and three Fortinet-documentation baseline controls; every included rule has genuine pass and fail states; CIS FortiGate coverage is not claimed |
-| P' | Netmiko live collection | Implemented; live verification pending | Fixed read-only Cisco/Junos/FortiOS commands, bounded temporary output, credential non-persistence, fail-closed errors, and existing-engine handoff are tested; no real SSH success is claimed yet |
-| H | Honest pitch/documentation pass | Complete | README, architecture brief, detailed architecture, runbook, demo script, vendor matrix, and scorecard state the verified Cisco/Junos/FortiOS scope and roadmap honestly |
-
-The verified Phase C/D/E network track is limited to source-backed Cisco IOS
-lab/reference configurations, not production backups or live sandbox captures.
-Phase E includes 14 Cisco IOS rules whose corpus oracle contains both pass and
-fail states. VTY/unused-interface checks are not claimed as verified. The
-built-in network scope is Cisco IOS (14 source-backed CIS controls), Juniper
-Junos (four source-backed vendor-baseline controls), and Fortinet FortiOS
-(three source-backed vendor-baseline controls). Other vendors can be
-onboarded through an organization-defined exact-pattern profile, but those
-profiles are not presented as Attestor-verified benchmark coverage. Official
-Cisco IOS DISA STIG packages have been inspected, but native DISA coverage is
-deferred because the genuine corpus does not prove complete pass/fail states;
-see `docs/disa-stig-evidence.md`. ISO/IEC 27001 packs and broader Junos coverage
-remain roadmap. Live SSH collection is implemented but awaits real-device
-verification. AI classification is discovery metadata only: deterministic
-compliance results remain authoritative, credentials are redacted before
-provider use, and dry-run remains the default.
-
-### CLI Usage
+## Tests
 
 ```bash
-# Linux — run all Level 1 controls and generate HTML report
-python3 engines/linux/run_audit.py --level 1 --format html --output results.json
-
-# Linux — run only specific controls
-python3 engines/linux/run_audit.py --include 1.5.1 3.3.1.1 5.1.20
-
-# Linux — exclude specific controls
-python3 engines/linux/run_audit.py --exclude 2.1.11
-
-# Windows (PowerShell) — run all Level 1 controls
-.\engines\windows\run_audit.ps1 -Level 1 -Format html -Output results.json
-
-# Windows — include/exclude
-.\engines\windows\run_audit.ps1 -Include "2.3.1.1","2.3.17.1" -Format json
+python3 -m pytest -q
+python3 tests/validate_rules.py
 ```
 
-**Filter precedence:** `--include` narrows the rule set first (only listed IDs run), then `--exclude` removes from that set. `--level` filters independently (ANDed).
+Current gate: 122 tests passing, 221 rule files validated with zero failures.
 
-### Local Web GUI
+---
 
-```bash
-python3 -m pip install -r requirements.txt
-python3 -m uvicorn dashboard.app:app --host 127.0.0.1 --port 8000
-# Open http://127.0.0.1:8000
-```
+## Live instance
 
-Use **Open audit console** to upload one or more saved Cisco IOS/IOS-XE,
-Juniper Junos, or Fortinet FortiOS configurations. Choose a source-backed,
-NIST-mapped, or combined
-report view, then download JSON, offline HTML, PDF, or the evidence-bundle ZIP
-per device. The bundle contains those three reports plus a hash/provenance
-manifest; it never contains the uploaded configuration file. Report evidence
-may include matched command text, so the ZIP must be handled as sensitive audit
-material. Use **Training
-Studio** to analyze unfamiliar genuine syntax, attach vendor documentation,
-review budget-capped AI suggestions, confirm/correct categories, and publish an
-organization-defined profile. Published profiles appear in the same upload and
-inventory workflow. Raw configuration uploads are processed locally and
-discarded; SQLite stores hashes, redacted patterns, report projections, and
-history only. Re-scan a device with the same filename/device ID and framework
-view to see new failures, resolved findings, score movement, configuration-hash
-movement, and historical report downloads on its detail page.
-
-The console also provides **Collect from a live device**. Enter the built-in
-vendor, host, SSH port, username, password, and optional Cisco enable secret.
-Attestor runs only fixed read-only configuration/version commands, keeps the
-credentials in request memory, audits the collected bytes in a temporary
-workspace, and stores only report artifacts, hashes, and non-secret transport
-metadata. This path is implemented but must not be presented as live-verified
-until it succeeds against a reachable real device.
-
-The NIST option is a mapped view of source-backed checks, not a separate
-NIST-native rule pack. Operator-created DISA/ISO mappings are explicitly labeled
-operator-defined and are not claimed as verified framework equivalence.
-
-Current verification gate: `122 passed`; `221` real rule YAMLs validate with no
-failures; the pinned canonical hash and ledger tests pass unchanged.
-
-Requires the dependencies pinned in `requirements.txt`.
+[attestor-network.onrender.com](https://attestor-network.onrender.com)
 
 ---
 

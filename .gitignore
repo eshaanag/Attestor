@@ -2,6 +2,8 @@
 CHECKPOINT.md
 PROGRESS.md
 PROJECT_CONTEXT.md
+RESUME_POINT.md
+AGENTS.md
 .env
 .env.local
 .env*.local
@@ -17,8 +19,26 @@ reports/*.html
 !reports/sample-report.html
 reports/*.json
 reports/*.pdf
+reports/*.zip
+results.html
+results.json
 .DS_Store
 .vscode/
+
+# === Internal docs — keep locally, do not publish ===
+docs/demo-script.md
+docs/demo-video-script.md
+docs/presentation-outline.md
+docs/sih-alignment.md
+docs/project-handbook.md
+docs/schema-research.md
+docs/disa-stig-evidence.md
+docs/ps26155-architecture.md
+docs/runbook.md
+
+# === SIH submission files ===
+SIH26_147384.pdf
+*.pptx
 
 # === Python ===
 *.pyo
