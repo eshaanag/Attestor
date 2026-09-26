@@ -322,7 +322,7 @@ cd /Users/eshaanog/Documents/SIH/Attestor
 # Validate all 221 current real rules and negative fixtures
 python3 tests/validate_rules.py
 
-# Run the full test suite (current verified gate: 121 passed)
+# Run the full test suite (current verified gate: 122 passed)
 python3 -m pytest -q
 
 # Show help

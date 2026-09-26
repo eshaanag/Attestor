@@ -41,7 +41,7 @@ Nothing is marked done here without repository evidence.
 
 ## Current exit evidence
 
-- `python3 -m pytest -q`: 121 passed.
+- `python3 -m pytest -q`: 122 passed.
 - `python3 tests/validate_rules.py`: 221 real rules, 0 failures; all seven
   fixtures behaved as expected.
 - Canonical/ledger regression subset: 12 passed unchanged.

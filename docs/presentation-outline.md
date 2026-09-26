@@ -39,7 +39,7 @@ Key point: AI is an onboarding assistant, never the compliance authority.
   severity/evidence/remediation, and JSON/HTML/PDF exports.
 - Training Studio: redaction, dry-run, pre-call cost, hard cap, cache, human
   confirmation, source attachment, draft/publish lifecycle.
-- 121 automated tests; 221 validated rule files.
+- 122 automated tests; 221 validated rule files.
 
 Scope label: custom profiles are organization-defined, not Attestor-verified.
 

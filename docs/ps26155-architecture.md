@@ -120,7 +120,7 @@ loop while retaining a conservative compliance core.
 
 ## Verified evidence
 
-- `121` automated tests pass.
+- `122` automated tests pass.
 - `221` real rule YAMLs validate; all negative fixtures fail as expected.
 - Pinned canonical hash and ledger contracts pass unchanged.
 - Cisco: ten source-backed configs; all 14 included controls have pass and fail

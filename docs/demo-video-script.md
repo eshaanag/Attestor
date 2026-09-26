@@ -45,7 +45,7 @@ Open the custom PDF notice and failed remediation.
 ## 1:42-2:00 - Evidence and close
 
 "Attestor currently includes verified Cisco IOS plus scoped Junos and FortiOS
-adapters, 121 automated tests, and 221 schema-valid rules across the retained platform. The
+adapters, 122 automated tests, and 221 schema-valid rules across the retained platform. The
 same foundation already audits Windows and Ubuntu. As a bonus, report hashes can
 be chained and anchored on Ethereum Sepolia; only the hash is public."
 

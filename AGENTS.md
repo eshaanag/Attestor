@@ -128,12 +128,55 @@ done. Each phase has an exit condition — do not move on until it's met.
   demos worse than a rock-solid standalone tool.
 
 **PHASE 9 — [STRETCH] TESTNET ANCHORING**
-  Periodic ledger root hash → Polygon Amoy testnet contract. Only after
+  Report hash + previous report hash → Ethereum Sepolia testnet contract. Only after
   Phase 4's local chain is fully working and tested.
 
 **PHASE 10 — SHIP**
   Full re-run of every control against clean VMs, demo script locked,
   fallback video recorded, README finalized.
+
+### PS26155 additive network-device track (2026 cycle)
+
+The completed SIH260382 Windows/Linux track remains load-bearing and unchanged.
+Network-device work proceeds through these phases in order:
+
+**PHASE A — NETWORK CONTRACTS**
+  Additive rule schema + results interface for device metadata, secondary
+  framework mappings, and future block-aware checks. Existing rule packs must
+  validate without modification.
+  Exit: all existing rules validate; valid network fixtures pass; malformed
+  network/mapping fixtures fail; pinned canonical-hash and ledger tests pass.
+
+**PHASE B — GENUINE CISCO CONFIG CORPUS**
+  Assemble 5-8 traceable IOS/IOS-XE configs from authoritative or licensed public
+  sources. No fabricated configs.
+  Exit: every config has source, retrieval date, redistribution status, and hash.
+
+**PHASE C — CISCO FLAT-CHECK ENGINE**
+  Add the network engine and reuse config_grep behavior for flat IOS checks.
+  Exit: results match manual review of the Phase B configs; unreadable input errors.
+
+**PHASE D — BLOCK-AWARE IOS CHECKS**
+  Implement the brainstormed minimal VTY/interface block parser, not a full grammar.
+  Exit: same-block semantics proven against genuine configs; ambiguity fails closed.
+
+**PHASE E — CISCO RULE PACK + REPORT**
+  Complete 10-15 source-backed Cisco rules and render optional NIST mappings.
+  Exit: each rule and mapping has evidence; legacy and network reports render offline.
+
+**PHASE F — LEDGER + SEPOLIA PROOF**
+  Prove the unchanged canonical/chain contracts on network reports and anchor a
+  real network report to the deployed Sepolia contract.
+  Exit: tamper tests pass and a real transaction hash/verifyRoot result is recorded.
+
+
+**PHASE G — OPTIONAL SECOND VENDOR**
+  Start only if A-F are verified and a genuine corpus/benchmark/parser fit exists.
+  Otherwise explicitly defer; do not claim multi-vendor support.
+
+**PHASE H — PITCH/DOC ALIGNMENT**
+  State exactly what is built, keep other vendors/frameworks as roadmap, and
+  document the real DevNet pull as a presentation-day input step, never a mock.
 
 ════════════════════════════════════════════════════════
 SECTION 3 — CONTEXT PRESERVATION (you will lose context — plan for it)

@@ -690,6 +690,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.format != "ndjson":
         Path(args.output).write_text(
             json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        os.chmod(args.output, 0o644)  # readable by all (fixes sudo ownership issue)
 
     if args.format == "html":
         # Invoke report generator
@@ -699,6 +700,7 @@ def main(argv: list[str] | None = None) -> int:
             from report.generate_report import load_results as _lr, render
             html = render(results)
             Path(html_path).write_text(html, encoding="utf-8")
+            os.chmod(html_path, 0o644)  # readable by all
             print(f"HTML report → {html_path}", file=sys.stderr)
         except Exception as exc:
             print(f"WARNING: HTML generation failed: {exc}", file=sys.stderr)
@@ -718,7 +720,6 @@ def main(argv: list[str] | None = None) -> int:
     # --- Blockchain anchoring ---
     if args.blockchain and args.format != "ndjson":
         try:
-            import os
             from web3 import Web3
             from eth_account import Account
 

@@ -77,7 +77,7 @@ Windows controls. Reports can be hash-chained, and a real Cisco report hash was
 anchored on Ethereum Sepolia. Only the SHA-256 hash is public, never the report
 or configuration."
 
-Close with the evidence: `121` tests, `221` validated rules, three built-in vendor
+Close with the evidence: `122` tests, `221` validated rules, three built-in vendor
 adapters, a reusable human training loop, and offline JSON/HTML/PDF reporting.
 
 ## Judge questions

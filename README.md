@@ -15,7 +15,13 @@ onboarding, offline reports, and optional tamper evidence.**
 The current PS26155 track extends the proven OS foundation into an AI-assisted
 network configuration auditor. See the concise
 [`PS26155 architecture brief`](docs/ps26155-architecture.md) for the exact
-delivered scope, privacy boundary, and roadmap.
+delivered scope, privacy boundary, and roadmap. New users should follow the
+[`Attestor Operator Guide`](docs/operator-guide.md) for installation, exact
+vendor inputs, saved and live-device auditing, reports, training, and
+troubleshooting. Team members preparing for SIH should read the
+[`Attestor Project Handbook`](docs/project-handbook.md) for the problem
+statement, complete feature explanation, architecture, business case, pitch,
+demo strategy, terminology, and judge Q&A.
 
 ---
 
@@ -59,6 +65,8 @@ attestor/
 ├── CONTRIBUTING.md
 ├── docs/
 │   ├── architecture.md
+│   ├── operator-guide.md
+│   ├── project-handbook.md
 │   ├── rule-schema.md
 │   └── interfaces.md
 ├── engines/
@@ -202,7 +210,7 @@ The NIST option is a mapped view of source-backed checks, not a separate
 NIST-native rule pack. Operator-created DISA/ISO mappings are explicitly labeled
 operator-defined and are not claimed as verified framework equivalence.
 
-Current verification gate: `121 passed`; `221` real rule YAMLs validate with no
+Current verification gate: `122 passed`; `221` real rule YAMLs validate with no
 failures; the pinned canonical hash and ledger tests pass unchanged.
 
 Requires the dependencies pinned in `requirements.txt`.
